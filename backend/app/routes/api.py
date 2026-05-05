@@ -1,19 +1,52 @@
 from flask import Blueprint, request, jsonify
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_chroma import Chroma
+from langchain_openai import ChatOpenAI
+from dotenv import load_dotenv
 
-bp = Blueprint('api', __name__, url_prefix='/api')
+load_dotenv()
 
-@bp.route('/health', methods=['GET'])
-def health():
-    return jsonify({"status": "healthy", "message": "Backend is working"})
+api = Blueprint('api', __name__)
 
-@bp.route('/ask', methods=['POST'])
+# Load once when module is imported
+embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+vectorstore = Chroma(persist_directory="chroma_db_free", embedding_function=embeddings)
+llm = ChatOpenAI(
+    model="gpt-4o-mini", 
+    temperature=0.1,      # Very important - was 0.3
+    max_tokens=800
+)
+
+@api.route('/ask', methods=['POST'])
 def ask():
-    """Placeholder for RAG Chatbot - You will implement this in your branch"""
     data = request.get_json()
-    query = data.get('query', '') if data else ''
-    
-    return jsonify({
-        "answer": "This is a placeholder response. RAG functionality will be added in feature/rag branch.",
-        "query": query,
-        "sources": []
-    })
+    query = data.get('query', '').strip()
+
+    if not query:
+        return jsonify({"error": "Query is required"}), 400
+
+    # Retrieval
+    docs = vectorstore.similarity_search(query, k=6)
+    context = "\n\n".join([doc.page_content for doc in docs])
+
+    prompt = f"""You are a highly accurate Sri Lankan Ayurvedic expert. 
+
+**Strict Rules:**
+- Answer **only** based on the given context.
+- Never mix different plants. If user asks about අඩතොඩ, only talk about අඩතොඩ.
+- If the context does not contain the answer, reply exactly: "මට මේ ප්‍රශ්නයට ප්‍රමාණවත් තොරතුරු නැහැ."
+- Answer in Sinhala.
+- Be consistent every time.
+
+Context:
+{context}
+
+Question: {query}
+
+Answer:"""
+
+    try:
+        response = llm.invoke(prompt)
+        return jsonify({"answer": response.content})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
