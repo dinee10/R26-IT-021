@@ -34,8 +34,7 @@ def ask():
 **Strict Rules:**
 - Answer **only** based on the given context.
 - Never mix different plants. If user asks about අඩතොඩ, only talk about අඩතොඩ.
-- If the context does not contain the answer, reply exactly: "මට මේ ප්‍රශ්නයට ප්‍රමාණවත් තොරතුරු නැහැ."
-- Answer in Sinhala.
+- If the context does not contain the answer, You don't have enough information.
 - Be consistent every time.
 
 Context:
