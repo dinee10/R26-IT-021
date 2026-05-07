@@ -12,12 +12,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ආයුර්වේද උපදේශක',
+      title: 'Ayurvedic Advisor',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.green,
         scaffoldBackgroundColor: const Color(0xFFF8F9FA),
-        fontFamily: 'NotoSansSinhala', // Optional: Better Sinhala support
+        fontFamily: 'NotoSans', // You can keep 'NotoSansSinhala' if you still want Sinhala support
       ),
       home: const ChatScreen(),
     );
@@ -77,7 +77,7 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     } catch (e) {
       setState(() {
-        _messages.add(Message(text: "Cannot connect to server. Is backend running?", isUser: false));
+        _messages.add(Message(text: "Cannot connect to server. Is the backend running?", isUser: false));
       });
     } finally {
       setState(() => _isLoading = false);
@@ -88,7 +88,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("🌿 ආයුර්වේද උපදේශක"),
+        title: const Text("🌿 Ayurvedic Advisor"),
         backgroundColor: Colors.green[700],
         foregroundColor: Colors.white,
       ),
@@ -104,7 +104,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         Icon(Icons.medical_services, size: 80, color: Colors.green),
                         SizedBox(height: 16),
                         Text(
-                          "අඩතොඩ, කුරුදු, ඉඟුරු ගැන අහවන්න...",
+                          "Ask about Adhatoda, Cinnamon, Ginger...",
                           style: TextStyle(fontSize: 18, color: Colors.grey),
                           textAlign: TextAlign.center,
                         ),
@@ -161,7 +161,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: TextField(
                     controller: _controller,
                     decoration: InputDecoration(
-                      hintText: "ප්‍රශ්නයක් අහවන්න...",
+                      hintText: "Ask a question...",
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
