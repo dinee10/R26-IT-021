@@ -12,8 +12,8 @@ MODEL_PATH = BACKEND_DIR / "ml" / "exports" / "herb_model.keras"
 LABELS_PATH = BACKEND_DIR / "ml" / "exports" / "labels.json"
 BENEFITS_PATH = BACKEND_DIR / "ml" / "metadata" / "benefits.json"
 IMAGE_SIZE = (224, 224)
-CONFIDENCE_WARNING = 0.70
-CROP_SCALES = (1.0, 0.9, 0.8)
+CONFIDENCE_WARNING = 0.95
+CROP_SCALES = (1.0, 0.95, 0.9, 0.8)
 
 _model = None
 _labels = None
@@ -62,18 +62,19 @@ def _load_model():
 
 def _image_to_arrays(uploaded_file):
     import numpy as np
-    from PIL import Image, UnidentifiedImageError
+    from PIL import Image, ImageOps, UnidentifiedImageError
 
     try:
-        image = Image.open(uploaded_file.stream).convert("RGB")
+        image = ImageOps.exif_transpose(Image.open(uploaded_file.stream)).convert("RGB")
     except UnidentifiedImageError as exc:
         raise ValueError(f"{uploaded_file.filename} is not a valid image.") from exc
 
     arrays = []
     for scale in CROP_SCALES:
         crop = _center_crop(image, scale)
-        crop = crop.resize(IMAGE_SIZE)
+        crop = crop.resize(IMAGE_SIZE, Image.Resampling.LANCZOS)
         arrays.append(np.asarray(crop, dtype=np.float32))
+        arrays.append(np.asarray(ImageOps.mirror(crop), dtype=np.float32))
 
     return np.stack(arrays, axis=0)
 
@@ -114,7 +115,7 @@ def predict_herb(uploaded_files):
         "confidence_percent": round(confidence * 100, 2),
         "warning": None
         if confidence >= CONFIDENCE_WARNING
-        else "Low confidence. Capture clearer leaf/seed images and do not use this as medical advice.",
+        else "The model is not 95% confident yet. Add 3 to 5 clearer leaf/seed photos from different angles before trusting this result.",
         "benefits": _benefits_for_label(benefits, best_label),
         "top_predictions": [
             {

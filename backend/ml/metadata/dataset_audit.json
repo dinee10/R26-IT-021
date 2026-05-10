@@ -1,0 +1,57 @@
+{
+  "dataset": "E:\\project\\R26-IT-021\\backend\\ml\\dataset\\plant_dataset_raw",
+  "total_classes": 6,
+  "total_images": 73,
+  "minimum_recommended_images_per_class": 50,
+  "classes": [
+    {
+      "class_name": "Aloe barbadensis miller (Aloevera)",
+      "image_count": 11,
+      "needs_more_images": true,
+      "small_images": [
+        "Aloe barbadensis miller (Aloevera)\\10.jpg",
+        "Aloe barbadensis miller (Aloevera)\\106.jpg",
+        "Aloe barbadensis miller (Aloevera)\\2.jpg",
+        "Aloe barbadensis miller (Aloevera)\\200.jpg",
+        "Aloe barbadensis miller (Aloevera)\\210.jpg",
+        "Aloe barbadensis miller (Aloevera)\\download.jpg",
+        "Aloe barbadensis miller (Aloevera)\\images.jpg"
+      ]
+    },
+    {
+      "class_name": "Alpinia Galanga (Rasna)",
+      "image_count": 12,
+      "needs_more_images": true,
+      "small_images": []
+    },
+    {
+      "class_name": "Amaranthus Viridis (Arive-Dantu)",
+      "image_count": 13,
+      "needs_more_images": true,
+      "small_images": []
+    },
+    {
+      "class_name": "Andrographis paniculata (Nelavembu)",
+      "image_count": 17,
+      "needs_more_images": true,
+      "small_images": [
+        "Andrographis paniculata (Nelavembu)\\1206.jpg",
+        "Andrographis paniculata (Nelavembu)\\1230.jpg"
+      ]
+    },
+    {
+      "class_name": "Annona squamosa (Seethapala)",
+      "image_count": 9,
+      "needs_more_images": true,
+      "small_images": []
+    },
+    {
+      "class_name": "Azadirachta indica (Neem)",
+      "image_count": 11,
+      "needs_more_images": true,
+      "small_images": []
+    }
+  ],
+  "duplicates": [],
+  "invalid_images": []
+}
