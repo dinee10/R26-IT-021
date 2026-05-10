@@ -53,3 +53,11 @@ MANIFEST
 *.log
 logs/
 *.log.*
+
+# ML artifacts and raw datasets are too large for git
+ml/dataset/plant_dataset_raw/*
+!ml/dataset/plant_dataset_raw/.gitkeep
+ml/exports/*
+!ml/exports/.gitkeep
+ml/models/*
+!ml/models/.gitkeep

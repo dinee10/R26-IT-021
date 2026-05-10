@@ -1,0 +1,167 @@
+import json
+from pathlib import Path
+
+try:
+    import tensorflow as tf
+except ImportError:  # Allows the Flask app to start before ML deps are installed.
+    tf = None
+
+
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+MODEL_PATH = BACKEND_DIR / "ml" / "exports" / "herb_model.keras"
+LABELS_PATH = BACKEND_DIR / "ml" / "exports" / "labels.json"
+BENEFITS_PATH = BACKEND_DIR / "ml" / "metadata" / "benefits.json"
+IMAGE_SIZE = (224, 224)
+CONFIDENCE_WARNING = 0.70
+CROP_SCALES = (1.0, 0.9, 0.8)
+
+_model = None
+_labels = None
+_benefits = None
+
+
+class ModelNotReadyError(RuntimeError):
+    pass
+
+
+def _load_json(path, default):
+    if not path.exists():
+        return default
+    with path.open("r", encoding="utf-8") as file:
+        return json.load(file)
+
+
+def _load_model():
+    global _model, _labels, _benefits
+
+    if tf is None:
+        raise ModelNotReadyError(
+            "TensorFlow is not installed. Install backend/ml/requirements.txt and train the model first."
+        )
+
+    try:
+        import numpy as np
+        from PIL import Image, UnidentifiedImageError
+    except ImportError as exc:
+        raise ModelNotReadyError(
+            "ML image dependencies are not installed. Use Python 3.11 and install backend/ml/requirements.txt."
+        ) from exc
+
+    if not MODEL_PATH.exists() or not LABELS_PATH.exists():
+        raise ModelNotReadyError(
+            "Model is not ready. Run backend/ml/scripts/train_model.py after adding the Kaggle dataset."
+        )
+
+    if _model is None:
+        _model = tf.keras.models.load_model(MODEL_PATH)
+        _labels = _load_json(LABELS_PATH, [])
+        _benefits = _load_json(BENEFITS_PATH, {})
+
+    return _model, _labels, _benefits
+
+
+def _image_to_arrays(uploaded_file):
+    import numpy as np
+    from PIL import Image, UnidentifiedImageError
+
+    try:
+        image = Image.open(uploaded_file.stream).convert("RGB")
+    except UnidentifiedImageError as exc:
+        raise ValueError(f"{uploaded_file.filename} is not a valid image.") from exc
+
+    arrays = []
+    for scale in CROP_SCALES:
+        crop = _center_crop(image, scale)
+        crop = crop.resize(IMAGE_SIZE)
+        arrays.append(np.asarray(crop, dtype=np.float32))
+
+    return np.stack(arrays, axis=0)
+
+
+def _center_crop(image, scale):
+    if scale >= 1:
+        return image
+
+    width, height = image.size
+    crop_width = int(width * scale)
+    crop_height = int(height * scale)
+    left = (width - crop_width) // 2
+    top = (height - crop_height) // 2
+    return image.crop((left, top, left + crop_width, top + crop_height))
+
+
+def predict_herb(uploaded_files):
+    import numpy as np
+
+    model, labels, benefits = _load_model()
+
+    predictions = []
+    for uploaded_file in uploaded_files:
+        if not uploaded_file.filename:
+            raise ValueError("One uploaded image has no filename.")
+        image_predictions = model.predict(_image_to_arrays(uploaded_file), verbose=0)
+        predictions.append(np.mean(image_predictions, axis=0))
+
+    mean_prediction = np.mean(predictions, axis=0)
+    top_indexes = mean_prediction.argsort()[-5:][::-1]
+    best_index = int(top_indexes[0])
+    best_label = labels[best_index]
+    confidence = float(mean_prediction[best_index])
+
+    return {
+        "plant": best_label,
+        "confidence": round(confidence, 4),
+        "confidence_percent": round(confidence * 100, 2),
+        "warning": None
+        if confidence >= CONFIDENCE_WARNING
+        else "Low confidence. Capture clearer leaf/seed images and do not use this as medical advice.",
+        "benefits": _benefits_for_label(benefits, best_label),
+        "top_predictions": [
+            {
+                "plant": labels[int(index)],
+                "confidence": round(float(mean_prediction[int(index)]), 4),
+                "confidence_percent": round(float(mean_prediction[int(index)]) * 100, 2),
+            }
+            for index in top_indexes
+        ],
+    }
+
+
+def _benefits_for_label(benefits, label):
+    if label in benefits:
+        return benefits[label]
+
+    normalized_label = _normalize_label(label)
+    for key, value in benefits.items():
+        if _normalize_label(key) == normalized_label:
+            return value
+
+    label_without_common_name = label.split("(")[0].strip()
+    normalized_without_common_name = _normalize_label(label_without_common_name)
+    for key, value in benefits.items():
+        if _normalize_label(key) == normalized_without_common_name:
+            return value
+
+    return _fallback_benefits(label)
+
+
+def _normalize_label(label):
+    return "".join(character.lower() for character in label if character.isalnum())
+
+
+def _fallback_benefits(label):
+    pretty_name = label.replace("_", " ").title()
+    return {
+        "common_name": pretty_name,
+        "scientific_name": pretty_name,
+        "traditional_uses": [
+            "Traditional use information has not been added yet for this plant.",
+            "Add verified traditional uses in backend/ml/metadata/benefits.json.",
+        ],
+        "preparation_notes": [
+            "Preparation notes have not been added yet.",
+            "Do not prepare or consume this plant without expert guidance.",
+        ],
+        "safety_warning": "Do not consume or apply herbal remedies without advice from a qualified professional.",
+        "medical_disclaimer": "This app is for educational plant identification only and is not medical advice.",
+    }

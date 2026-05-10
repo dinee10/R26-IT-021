@@ -1,5 +1,7 @@
 from flask import Blueprint, request, jsonify
 
+from app.services.predictor import ModelNotReadyError, predict_herb
+
 bp = Blueprint('api', __name__, url_prefix='/api')
 
 @bp.route('/health', methods=['GET'])
@@ -17,3 +19,23 @@ def ask():
         "query": query,
         "sources": []
     })
+
+
+@bp.route('/predict', methods=['POST'])
+def predict():
+    images = request.files.getlist('images')
+
+    if not images:
+        return jsonify({"error": "Upload 1 to 5 images using the form field name 'images'."}), 400
+
+    if len(images) > 5:
+        return jsonify({"error": "Maximum 5 images are allowed."}), 400
+
+    try:
+        result = predict_herb(images)
+    except ModelNotReadyError as exc:
+        return jsonify({"error": str(exc)}), 503
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    return jsonify(result)
