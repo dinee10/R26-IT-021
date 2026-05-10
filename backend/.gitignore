@@ -54,10 +54,17 @@ MANIFEST
 logs/
 *.log.*
 
-# ML artifacts and raw datasets are too large for git
+# Raw datasets and local training work dirs are too large for git
 ml/dataset/plant_dataset_raw/*
 !ml/dataset/plant_dataset_raw/.gitkeep
+
+# Keep deployable trained model exports in git
 ml/exports/*
 !ml/exports/.gitkeep
+!ml/exports/*.json
+!ml/exports/*.csv
+!ml/exports/*.keras
+!ml/exports/*.tflite
+
 ml/models/*
 !ml/models/.gitkeep
