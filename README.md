@@ -59,7 +59,7 @@ An integrated platform consisting of four interconnected modules:
 | Module | Technologies |
 |--------|--------------|
 | Plant Detection | CNN, TensorFlow / PyTorch, OpenCV, Mobile (Flutter/React Native) |
-| Knowledge Assistant | RAG, OpenAI embeddings (`text-embedding-3-large`), ChromaDB, GPT-3.5-turbo, Flask |
+| Knowledge Assistant | RAG, OpenAI embeddings (`text-embedding-3-large`), ChromaDB, GPT-4.0-mini, Flask |
 | Cultivation Recommendation | Random Forest, Gradient Boosting, Python, Flask |
 | Quality Assessment | ResNet50 (Transfer Learning), Grad-CAM, PyTorch, OpenCV |
 | Frontend | Flutter  |
