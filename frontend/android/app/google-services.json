@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1077216604890",
+    "project_id": "ayurplant-ad761",
+    "storage_bucket": "ayurplant-ad761.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1077216604890:android:126ecea2c0a107d9752be3",
+        "android_client_info": {
+          "package_name": "com.r26it021.ayurplant"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1077216604890-lugk7nv89s5sn2bhb7h2jr5nurdtr500.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.r26it021.ayurplant",
+            "certificate_hash": "ec8b74af7b2e154c00fa5d6af0812dd32c32b37c"
+          }
+        },
+        {
+          "client_id": "1077216604890-un1520cdn51plbss2g0h8imdo8912bf7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBwehMo_fDE2_Nv1PX5LAz5BpPmjo6j8ws"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1077216604890-un1520cdn51plbss2g0h8imdo8912bf7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
