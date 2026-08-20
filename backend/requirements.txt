@@ -12,3 +12,14 @@ langchain-openai
 langchain-chroma
 langchain-huggingface
 sentence-transformers
+
+# Hybrid retrieval + reranking
+rank_bm25
+ 
+# RAG evaluation
+ragas
+datasets
+ 
+# Fuzzy matching for plant name entity linking
+rapidfuzz
+ 

@@ -1,0 +1,10 @@
+[
+  {"query": "What is Gotukola used for?", "is_in_domain": true},
+  {"query": "What is Kohomba used for?", "is_in_domain": true},
+  {"query": "How is Venivel prepared?", "is_in_domain": true},
+  {"query": "කෝමාරිකා වලින් සුව කරන රෝග මොනවාද?", "is_in_domain": true},
+  {"query": "What is dragon fruit used for?", "is_in_domain": false},
+  {"query": "How do I fix my car engine?", "is_in_domain": false},
+  {"query": "What is the capital of France?", "is_in_domain": false},
+  {"query": "Tell me about aspirin dosage for headaches", "is_in_domain": false}
+]

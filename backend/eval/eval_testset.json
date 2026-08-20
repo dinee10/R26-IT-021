@@ -1,0 +1,27 @@
+[
+  {
+    "id": 1,
+    "question": "What is Kohomba used for?",
+    "ground_truth": "Kohomba (Neem) is traditionally used for skin conditions, as an antiseptic, and to treat fevers, with leaves and bark used in preparations."
+  },
+  {
+    "id": 2,
+    "question": "Komarika වලින් සුව කරන රෝග මොනවාද?",
+    "ground_truth": "REPLACE with the correct ground-truth answer in Sinhala based on your knowledge base entry for Komarika (Aloe vera)."
+  },
+  {
+    "id": 3,
+    "question": "How is Venivel prepared as a medicine?",
+    "ground_truth": "REPLACE with the correct preparation method from your knowledge base entry for Venivel."
+  },
+  {
+    "id": 4,
+    "question": "What is dragon fruit used for medicinally?",
+    "ground_truth": "The system should state it does not have verified information about this plant, since dragon fruit is not in the knowledge base."
+  },
+  {
+    "id": 5,
+    "question": "What part of Nelli is used and what disease does it treat?",
+    "ground_truth": "REPLACE with the correct plant-part and disease info from your knowledge base entry for Nelli (Amla)."
+  }
+]
