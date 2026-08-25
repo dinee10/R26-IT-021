@@ -1,4 +1,22 @@
+import importlib.util
+import sys
+from pathlib import Path
+
 from flask import Blueprint, request, jsonify
+
+_validator_path = (
+    Path(__file__).resolve().parents[1]
+    / "quality-services"
+    / "quality.image_validator.py"
+)
+_validator_spec = importlib.util.spec_from_file_location(
+    "quality_image_validator",
+    _validator_path,
+)
+quality_image_validator = importlib.util.module_from_spec(_validator_spec)
+assert _validator_spec.loader is not None
+sys.modules[_validator_spec.name] = quality_image_validator
+_validator_spec.loader.exec_module(quality_image_validator)
 
 bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -17,3 +35,18 @@ def ask():
         "query": query,
         "sources": []
     })
+
+@bp.route('/quality/validate-image', methods=['POST'])
+def validate_quality_image():
+    image_file = request.files.get('image')
+
+    if image_file is None:
+        return jsonify({"valid": False, "reason": "INVALID_IMAGE"}), 400
+
+    result = quality_image_validator.validate_image_bytes(image_file.read())
+    status_code = 200 if result.get("valid") else 422
+
+    if result.get("reason") == "INVALID_IMAGE":
+        status_code = 400
+
+    return jsonify(result), status_code

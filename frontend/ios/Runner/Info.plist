@@ -49,6 +49,10 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>AyurPlant uses the camera to capture leaf images for visual quality assessment.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>AyurPlant uses your photo library to select leaf images for visual quality assessment.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

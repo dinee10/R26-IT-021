@@ -39,6 +39,7 @@ dependencies:
   firebase_storage: ^12.4.0
   flutter_svg: ^2.0.17
   google_sign_in: ^6.2.2
+  http: ^1.2.2
   image_picker: ^1.1.2
 
 dev_dependencies:
