@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -10,6 +11,7 @@ class HerbApi {
   HerbApi({http.Client? client}) : _client = client ?? http.Client();
 
   final http.Client _client;
+  static const Duration _requestTimeout = Duration(seconds: 45);
 
   static const String _configuredBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
@@ -50,9 +52,16 @@ class HerbApi {
     }
 
     try {
-      final streamed = await _client.send(request);
+      final streamed = await _client.send(request).timeout(_requestTimeout);
       final response = await http.Response.fromStream(streamed);
-      final decodedBody = jsonDecode(response.body);
+      Object? decodedBody;
+      try {
+        decodedBody = jsonDecode(response.body);
+      } on FormatException {
+        throw HerbApiException(
+          'The backend returned an invalid response (status ${response.statusCode}).',
+        );
+      }
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
         if (decodedBody is Map<String, dynamic>) {
@@ -74,8 +83,14 @@ class HerbApi {
       throw HerbApiException(
         'Could not reach the backend at $baseUrl. Make sure the Flask API is running on port 5000. ${error.message}',
       );
+    } on HerbApiException {
+      rethrow;
+    } on TimeoutException {
+      throw HerbApiException(
+        'Prediction timed out. Try fewer or smaller images and check the backend.',
+      );
     } catch (error) {
-      throw HerbApiException(error.toString());
+      throw HerbApiException('Prediction failed: $error');
     }
   }
 }

@@ -1,12 +1,17 @@
 from flask import Blueprint, request, jsonify
 
-from app.services.predictor import ModelNotReadyError, predict_herb
+from app.services.predictor import ModelNotReadyError, model_status, predict_herb
 
 bp = Blueprint('api', __name__, url_prefix='/api')
 
 @bp.route('/health', methods=['GET'])
 def health():
-    return jsonify({"status": "healthy", "message": "Backend is working"})
+    status = model_status()
+    return jsonify({
+        "status": "healthy" if status["ready"] else "degraded",
+        "message": "Backend is working",
+        "model": status,
+    })
 
 @bp.route('/ask', methods=['POST'])
 def ask():
@@ -30,6 +35,13 @@ def predict():
 
     if len(images) > 5:
         return jsonify({"error": "Maximum 5 images are allowed."}), 400
+
+    allowed_types = {"image/jpeg", "image/png", "image/webp"}
+    for image in images:
+        if image.mimetype not in allowed_types:
+            return jsonify({
+                "error": f"{image.filename or 'Uploaded file'} must be a JPEG, PNG, or WebP image."
+            }), 415
 
     try:
         result = predict_herb(images)

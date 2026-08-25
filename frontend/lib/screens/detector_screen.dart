@@ -21,6 +21,7 @@ class _DetectorScreenState extends State<DetectorScreen> {
   PredictionResult? _result;
   bool _isLoading = false;
   String? _error;
+  int _requestId = 0;
 
   Future<void> _pickImages() async {
     final selected = await _picker.pickMultiImage(imageQuality: 88);
@@ -69,6 +70,7 @@ class _DetectorScreenState extends State<DetectorScreen> {
       return;
     }
 
+    final requestId = ++_requestId;
     setState(() {
       _isLoading = true;
       _error = null;
@@ -79,19 +81,25 @@ class _DetectorScreenState extends State<DetectorScreen> {
       final result = await _api.predict(
         _images.map((image) => image.file).toList(),
       );
-      setState(() => _result = result);
+      if (mounted && requestId == _requestId) {
+        setState(() => _result = result);
+      }
     } catch (error) {
-      setState(() => _error = error.toString());
+      if (mounted && requestId == _requestId) {
+        setState(() => _error = error.toString());
+      }
     } finally {
-      if (mounted) {
+      if (mounted && requestId == _requestId) {
         setState(() => _isLoading = false);
       }
     }
   }
 
   void _removeImage(int index) {
+    _requestId++;
     setState(() {
       _images.removeAt(index);
+      _isLoading = false;
       _result = null;
       _error = null;
     });

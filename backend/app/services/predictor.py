@@ -24,6 +24,16 @@ class ModelNotReadyError(RuntimeError):
     pass
 
 
+def model_status():
+    """Report artifact availability without loading the large ML model."""
+    missing = [path.name for path in (MODEL_PATH, LABELS_PATH) if not path.exists()]
+    return {
+        "ready": tf is not None and not missing,
+        "tensorflow_installed": tf is not None,
+        "missing_artifacts": missing,
+    }
+
+
 def _load_json(path, default):
     if not path.exists():
         return default
@@ -57,6 +67,14 @@ def _load_model():
         _labels = _load_json(LABELS_PATH, [])
         _benefits = _load_json(BENEFITS_PATH, {})
 
+        output_size = int(_model.output_shape[-1])
+        if not _labels or len(_labels) != output_size:
+            _model = None
+            raise ModelNotReadyError(
+                f"Model output has {output_size} classes but labels.json has "
+                f"{len(_labels)} labels. Retrain or export matching artifacts."
+            )
+
     return _model, _labels, _benefits
 
 
@@ -66,8 +84,13 @@ def _image_to_arrays(uploaded_file):
 
     try:
         image = ImageOps.exif_transpose(Image.open(uploaded_file.stream)).convert("RGB")
-    except UnidentifiedImageError as exc:
+    except (UnidentifiedImageError, OSError) as exc:
         raise ValueError(f"{uploaded_file.filename} is not a valid image.") from exc
+    if image.width < 32 or image.height < 32:
+        raise ValueError(
+            f"{uploaded_file.filename} is too small. "
+            "Use an image at least 32x32 pixels."
+        )
 
     arrays = []
     for scale in CROP_SCALES:
