@@ -53,3 +53,7 @@ MANIFEST
 *.log
 logs/
 *.log.*
+
+# Quality assessment datasets
+quality-raw-dataset/
+quality-plant-identification-dataset/

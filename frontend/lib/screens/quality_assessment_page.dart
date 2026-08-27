@@ -19,7 +19,9 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
   final ImagePicker _picker = ImagePicker();
   Uint8List? _selectedImageBytes;
   QualityValidationResult? _validationResult;
+  QualityPlantResult? _plantResult;
   bool _validating = false;
+  bool _identifyingPlant = false;
 
   Future<void> _pickImage(ImageSource source) async {
     final image = await _picker.pickImage(
@@ -37,7 +39,9 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
     setState(() {
       _selectedImageBytes = imageBytes;
       _validationResult = null;
+      _plantResult = null;
       _validating = true;
+      _identifyingPlant = false;
     });
 
     await _validateImage(image, imageBytes);
@@ -67,7 +71,12 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
 
       setState(() {
         _validationResult = QualityValidationResult.fromJson(data);
+        _validating = false;
       });
+
+      if (_validationResult?.valid == true) {
+        await _identifyPlant(image, imageBytes);
+      }
     } on TimeoutException {
       _showValidationError('Image validation timed out. Please try again.');
     } on http.ClientException {
@@ -81,6 +90,53 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
     }
   }
 
+  Future<void> _identifyPlant(XFile image, Uint8List imageBytes) async {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _plantResult = null;
+      _identifyingPlant = true;
+    });
+
+    try {
+      final uri = Uri.parse('${_apiBaseUrl()}/api/quality/identify-plant');
+      final request = http.MultipartRequest('POST', uri)
+        ..files.add(
+          http.MultipartFile.fromBytes(
+            'image',
+            imageBytes,
+            filename: image.name.isEmpty
+                ? 'quality.leaf-image.jpg'
+                : image.name,
+          ),
+        );
+
+      final response = await request.send().timeout(const Duration(seconds: 30));
+      final responseBody = await response.stream.bytesToString();
+      final data = jsonDecode(responseBody) as Map<String, dynamic>;
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _plantResult = QualityPlantResult.fromJson(data);
+      });
+    } on TimeoutException {
+      _showPlantError('Plant identification timed out. Please try again.');
+    } on http.ClientException {
+      _showPlantError('Could not reach the plant identification service.');
+    } catch (_) {
+      _showPlantError('Could not identify this plant image.');
+    } finally {
+      if (mounted) {
+        setState(() => _identifyingPlant = false);
+      }
+    }
+  }
+
   void _showValidationError(String message) {
     if (!mounted) {
       return;
@@ -90,6 +146,22 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
       _validationResult = QualityValidationResult.failure(
         reason: 'INVALID_IMAGE',
       );
+      _plantResult = null;
+      _identifyingPlant = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  void _showPlantError(String message) {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _plantResult = QualityPlantResult.failure(reason: 'MODEL_NOT_AVAILABLE');
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -126,10 +198,121 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
               result: _validationResult,
               validating: _validating,
             ),
+            const SizedBox(height: 18),
+            _PlantIdentificationPanel(
+              result: _plantResult,
+              identifying: _identifyingPlant,
+              enabled: _validationResult?.valid == true,
+            ),
           ],
         ),
       ),
     );
+  }
+}
+
+class _PlantIdentificationPanel extends StatelessWidget {
+  const _PlantIdentificationPanel({
+    required this.result,
+    required this.identifying,
+    required this.enabled,
+  });
+
+  final QualityPlantResult? result;
+  final bool identifying;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    if (identifying) {
+      return const _StatusPanel(
+        icon: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2.4),
+        ),
+        title: 'Identifying plant',
+        subtitle: 'Preparing a 224 x 224 letterbox image for species prediction.',
+      );
+    }
+
+    if (!enabled) {
+      return const _StatusPanel(
+        icon: Icon(Icons.eco_outlined, color: AppColors.muted),
+        title: 'Plant identification waiting',
+        subtitle: 'A valid image is required before species prediction.',
+      );
+    }
+
+    if (result == null) {
+      return const _StatusPanel(
+        icon: Icon(Icons.eco_outlined, color: AppColors.muted),
+        title: 'Plant identification ready',
+        subtitle: 'Species prediction starts after validation passes.',
+      );
+    }
+
+    final title = result!.accepted
+        ? '${result!.species} detected'
+        : _plantReasonTitle(result!.reason);
+    final subtitle = result!.accepted
+        ? _acceptedSubtitle(result!)
+        : _plantReasonHelp(result!.reason, result!);
+
+    return _StatusPanel(
+      icon: Icon(
+        result!.accepted
+            ? Icons.check_circle_outline_rounded
+            : Icons.info_outline_rounded,
+        color: result!.accepted ? AppColors.primary : AppColors.danger,
+      ),
+      title: title,
+      subtitle: subtitle,
+      plantResult: result,
+    );
+  }
+
+  String _acceptedSubtitle(QualityPlantResult result) {
+    final scientificName = result.scientificName;
+    if (scientificName == null || scientificName.isEmpty) {
+      return 'Accepted for the next model stage.';
+    }
+
+    return '$scientificName. Accepted for the next model stage.';
+  }
+
+  String _plantReasonTitle(String? reason) {
+    switch (reason) {
+      case 'UNKNOWN_PLANT':
+        return 'Unsupported plant species';
+      case 'LOW_SPECIES_CONFIDENCE':
+        return 'Low species confidence';
+      case 'INVALID_IMAGE':
+        return 'Image could not be identified';
+      case 'MODEL_NOT_AVAILABLE':
+        return 'Plant model is unavailable';
+      case 'MODEL_RUNTIME_MISSING':
+        return 'Plant model runtime is missing';
+      default:
+        return 'Plant identification stopped';
+    }
+  }
+
+  String _plantReasonHelp(String? reason, QualityPlantResult result) {
+    switch (reason) {
+      case 'UNKNOWN_PLANT':
+        return 'The model selected Unknown, so the pipeline should stop here.';
+      case 'LOW_SPECIES_CONFIDENCE':
+        return 'Confidence was ${result.confidencePercent}; retake a clearer leaf image.';
+      case 'INVALID_IMAGE':
+        return 'Choose a valid leaf image and try again.';
+      case 'MODEL_NOT_AVAILABLE':
+        return 'Train or configure the EfficientNetV2-B0 model before real use.';
+      case 'MODEL_RUNTIME_MISSING':
+        return 'Install TensorFlow in the backend environment before real model inference.';
+      default:
+        return 'Please try another image.';
+    }
   }
 }
 
@@ -413,12 +596,14 @@ class _StatusPanel extends StatelessWidget {
     required this.title,
     required this.subtitle,
     this.result,
+    this.plantResult,
   });
 
   final Widget icon;
   final String title;
   final String subtitle;
   final QualityValidationResult? result;
+  final QualityPlantResult? plantResult;
 
   @override
   Widget build(BuildContext context) {
@@ -466,8 +651,47 @@ class _StatusPanel extends StatelessWidget {
             const SizedBox(height: 14),
             _MetricGrid(result: result!),
           ],
+          if (plantResult != null) ...[
+            const SizedBox(height: 14),
+            _PlantResultDetails(result: plantResult!),
+          ],
         ],
       ),
+    );
+  }
+}
+
+class _PlantResultDetails extends StatelessWidget {
+  const _PlantResultDetails({required this.result});
+
+  final QualityPlantResult result;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            _MetricChip(label: 'Species', value: result.species),
+            _MetricChip(label: 'Confidence', value: result.confidencePercent),
+            _MetricChip(label: 'Model', value: result.model ?? 'Configured model'),
+          ],
+        ),
+        if (result.mode == 'mock') ...[
+          const SizedBox(height: 10),
+          const Text(
+            'Mock prediction active until a trained model file is configured.',
+            style: TextStyle(
+              color: AppColors.muted,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
@@ -606,4 +830,47 @@ class QualityImageResolution {
 
   final int width;
   final int height;
+}
+
+class QualityPlantResult {
+  const QualityPlantResult({
+    required this.species,
+    required this.confidence,
+    required this.accepted,
+    this.scientificName,
+    this.reason,
+    this.model,
+    this.mode,
+  });
+
+  factory QualityPlantResult.failure({required String reason}) {
+    return QualityPlantResult(
+      species: 'Unknown',
+      confidence: 0,
+      accepted: false,
+      reason: reason,
+    );
+  }
+
+  factory QualityPlantResult.fromJson(Map<String, dynamic> json) {
+    return QualityPlantResult(
+      species: (json['species'] as String?) ?? 'Unknown',
+      scientificName: json['scientific_name'] as String?,
+      confidence: (json['confidence'] as num?)?.toDouble() ?? 0,
+      accepted: json['accepted'] == true,
+      reason: json['reason'] as String?,
+      model: json['model'] as String?,
+      mode: json['mode'] as String?,
+    );
+  }
+
+  final String species;
+  final String? scientificName;
+  final double confidence;
+  final bool accepted;
+  final String? reason;
+  final String? model;
+  final String? mode;
+
+  String get confidencePercent => '${(confidence * 100).toStringAsFixed(1)}%';
 }
