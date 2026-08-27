@@ -97,6 +97,26 @@ Backend URLs:
 
 For `/api/predict`, send multipart form-data with field name `images`. You can upload 1 to 5 images.
 
+## Expert Verification Loop
+
+Low-confidence results can be submitted to `POST /api/verifications` with 1 to 5
+`images`, `ai_identification`, `ai_confidence`, and optional `training_consent`.
+The server re-encodes every photo without EXIF metadata before storing it, so GPS
+and device metadata are not shared with reviewers. Users can check progress at
+`GET /api/verifications/<id>`.
+
+Set `EXPERT_REVIEW_KEY` in the backend environment. Reviewers use that value in
+the `X-Expert-Key` header with:
+
+- `GET /api/expert/verifications` to see pending requests.
+- `GET /api/expert/verifications/<id>/images/image_1.jpg` to inspect an image.
+- `POST /api/expert/verifications/<id>` with JSON fields `identification`,
+  `reviewer_name`, and optional `notes` to complete a review.
+
+Unreviewed results retain the `AI identified` label. Completed reviews use the
+separate `Expert verified` label. Images are eligible for future training only
+when `training_consent` is true.
+
 ## Flutter Setup
 
 ```powershell

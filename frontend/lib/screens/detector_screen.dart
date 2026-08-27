@@ -20,6 +20,8 @@ class _DetectorScreenState extends State<DetectorScreen> {
 
   PredictionResult? _result;
   bool _isLoading = false;
+  bool _isVerifying = false;
+  VerificationRequest? _verification;
   String? _error;
   int _requestId = 0;
 
@@ -37,6 +39,7 @@ class _DetectorScreenState extends State<DetectorScreen> {
         ..clear()
         ..addAll(previews);
       _result = null;
+      _verification = null;
       _error = null;
     });
 
@@ -58,6 +61,7 @@ class _DetectorScreenState extends State<DetectorScreen> {
       }
       _images.add(preview);
       _result = null;
+      _verification = null;
       _error = null;
     });
 
@@ -75,6 +79,7 @@ class _DetectorScreenState extends State<DetectorScreen> {
       _isLoading = true;
       _error = null;
       _result = null;
+      _verification = null;
     });
 
     try {
@@ -93,6 +98,38 @@ class _DetectorScreenState extends State<DetectorScreen> {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  Future<void> _requestExpertReview() async {
+    final result = _result;
+    if (result == null || _images.isEmpty) return;
+    var consent = false;
+    final submit = await showDialog<bool>(context: context, builder: (context) => StatefulBuilder(builder: (context, setDialogState) => AlertDialog(
+      title: const Text('Request expert verification'),
+      content: Column(mainAxisSize: MainAxisSize.min, children: [
+        const Text('Your photos will be re-encoded to remove location and device metadata before a botanist or Ayurvedic expert reviews them.'),
+        const SizedBox(height: 12),
+        CheckboxListTile(contentPadding: EdgeInsets.zero, value: consent, onChanged: (value) => setDialogState(() => consent = value ?? false), title: const Text('Help improve future models'), subtitle: const Text('Allow verified images to be used for model training. Optional.')),
+      ]),
+      actions: [TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')), FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Submit securely'))],
+    )));
+    if (submit != true || !mounted) return;
+    setState(() { _isVerifying = true; _error = null; });
+    try {
+      final value = await _api.requestVerification(images: _images.map((item) => item.file).toList(), prediction: result, trainingConsent: consent);
+      if (mounted) setState(() => _verification = value);
+    } catch (error) { if (mounted) setState(() => _error = error.toString()); }
+    finally { if (mounted) setState(() => _isVerifying = false); }
+  }
+
+  Future<void> _refreshExpertReview() async {
+    if (_verification == null) return;
+    setState(() => _isVerifying = true);
+    try {
+      final value = await _api.getVerification(_verification!.id);
+      if (mounted) setState(() => _verification = value);
+    } catch (error) { if (mounted) setState(() => _error = error.toString()); }
+    finally { if (mounted) setState(() => _isVerifying = false); }
   }
 
   void _removeImage(int index) {
@@ -163,6 +200,10 @@ class _DetectorScreenState extends State<DetectorScreen> {
       error: _error,
       errorColor: scheme.errorContainer,
       errorTextColor: scheme.onErrorContainer,
+      verification: _verification,
+      isVerifying: _isVerifying,
+      onRequestVerification: _requestExpertReview,
+      onRefreshVerification: _refreshExpertReview,
     );
   }
 }
@@ -464,12 +505,20 @@ class _InsightPanel extends StatelessWidget {
     required this.error,
     required this.errorColor,
     required this.errorTextColor,
+    required this.verification,
+    required this.isVerifying,
+    required this.onRequestVerification,
+    required this.onRefreshVerification,
   });
 
   final PredictionResult? result;
   final String? error;
   final Color errorColor;
   final Color errorTextColor;
+  final VerificationRequest? verification;
+  final bool isVerifying;
+  final VoidCallback onRequestVerification;
+  final VoidCallback onRefreshVerification;
 
   @override
   Widget build(BuildContext context) {
@@ -494,7 +543,7 @@ class _InsightPanel extends StatelessWidget {
           if (result == null && error == null) const _EmptyResult(),
           if (result != null) ...[
             const SizedBox(height: 18),
-            _ResultPanel(result: result!),
+            _ResultPanel(result: result!, verification: verification, isVerifying: isVerifying, onRequestVerification: onRequestVerification, onRefreshVerification: onRefreshVerification),
           ],
         ],
       ),
@@ -540,9 +589,13 @@ class _EmptyResult extends StatelessWidget {
 }
 
 class _ResultPanel extends StatelessWidget {
-  const _ResultPanel({required this.result});
+  const _ResultPanel({required this.result, required this.verification, required this.isVerifying, required this.onRequestVerification, required this.onRefreshVerification});
 
   final PredictionResult result;
+  final VerificationRequest? verification;
+  final bool isVerifying;
+  final VoidCallback onRequestVerification;
+  final VoidCallback onRefreshVerification;
 
   @override
   Widget build(BuildContext context) {
@@ -562,8 +615,10 @@ class _ResultPanel extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _StatusBadge(text: verification?.identificationLabel ?? 'AI identified', verified: verification?.isVerified ?? false),
+              const SizedBox(height: 12),
               Text(
-                result.benefits.commonName,
+                verification?.expertIdentification ?? result.benefits.commonName,
                 style: textTheme.headlineSmall?.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w800,
@@ -598,6 +653,10 @@ class _ResultPanel extends StatelessWidget {
             ],
           ),
         ),
+        if (result.warning != null || verification != null) ...[
+          const SizedBox(height: 12),
+          _ExpertReviewCard(verification: verification, isLoading: isVerifying, onSubmit: onRequestVerification, onRefresh: onRefreshVerification),
+        ],
         if (result.warning != null) ...[
           const SizedBox(height: 12),
           _MessageBox(
@@ -742,6 +801,60 @@ class _InfoSection extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  const _StatusBadge({required this.text, required this.verified});
+  final String text;
+  final bool verified;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    decoration: BoxDecoration(
+      color: verified ? const Color(0xFFB9E769) : Colors.white.withValues(alpha: 0.16),
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Row(mainAxisSize: MainAxisSize.min, children: [
+      Icon(verified ? Icons.verified_rounded : Icons.auto_awesome_rounded, size: 16, color: verified ? const Color(0xFF173D2B) : Colors.white),
+      const SizedBox(width: 6),
+      Text(text, style: TextStyle(color: verified ? const Color(0xFF173D2B) : Colors.white, fontWeight: FontWeight.w800)),
+    ]),
+  );
+}
+
+class _ExpertReviewCard extends StatelessWidget {
+  const _ExpertReviewCard({required this.verification, required this.isLoading, required this.onSubmit, required this.onRefresh});
+  final VerificationRequest? verification;
+  final bool isLoading;
+  final VoidCallback onSubmit;
+  final VoidCallback onRefresh;
+
+  @override
+  Widget build(BuildContext context) {
+    final verified = verification?.isVerified ?? false;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(color: const Color(0xFFEFF5EA), border: Border.all(color: const Color(0xFFD4E2CF)), borderRadius: BorderRadius.circular(8)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(verified ? 'Identification verified' : verification == null ? 'Low confidence? Ask an expert' : 'Expert review pending', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+        const SizedBox(height: 6),
+        Text(verified
+          ? '${verification!.expertIdentification}${verification!.reviewerName == null ? '' : ' — reviewed by ${verification!.reviewerName}'}'
+          : verification == null
+            ? 'Submit these photos for review by a botanist or Ayurvedic expert. Location metadata is removed first.'
+            : 'Your private image set is in the review queue. Reference: ${verification!.id.substring(0, 8)}'),
+        if (verified && (verification!.expertNotes?.isNotEmpty ?? false)) ...[const SizedBox(height: 6), Text(verification!.expertNotes!)],
+        const SizedBox(height: 10),
+        Align(alignment: Alignment.centerRight, child: FilledButton.tonalIcon(
+          onPressed: isLoading ? null : verification == null ? onSubmit : onRefresh,
+          icon: isLoading ? const SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2)) : Icon(verification == null ? Icons.verified_user_rounded : Icons.refresh_rounded),
+          label: Text(isLoading ? 'Please wait...' : verification == null ? 'Request verification' : 'Check status'),
+        )),
+      ]),
     );
   }
 }

@@ -1,6 +1,15 @@
-from flask import Blueprint, request, jsonify
+import os
+
+from flask import Blueprint, request, jsonify, send_file
 
 from app.services.predictor import ModelNotReadyError, model_status, predict_herb
+from app.services.expert_verification import (
+    create_request,
+    get_request,
+    image_path,
+    list_pending_requests,
+    verify_request,
+)
 
 bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -44,3 +53,67 @@ def predict():
         return jsonify({"error": str(exc)}), 400
 
     return jsonify(result)
+
+
+def _expert_authorized():
+    expected = os.getenv("EXPERT_REVIEW_KEY")
+    return bool(expected) and request.headers.get("X-Expert-Key") == expected
+
+
+@bp.route('/verifications', methods=['POST'])
+def submit_verification():
+    images = request.files.getlist('images')
+    try:
+        record = create_request(
+            images,
+            request.form.get('ai_identification', ''),
+            request.form.get('ai_confidence', 0),
+            request.form.get('training_consent', '').lower() in {'1', 'true', 'yes'},
+        )
+    except (ValueError, TypeError) as exc:
+        return jsonify({"error": str(exc)}), 400
+    return jsonify(record), 201
+
+
+@bp.route('/verifications/<request_id>', methods=['GET'])
+def verification_status(request_id):
+    record = get_request(request_id)
+    if not record:
+        return jsonify({"error": "Verification request not found."}), 404
+    return jsonify(record)
+
+
+@bp.route('/expert/verifications', methods=['GET'])
+def expert_queue():
+    if not _expert_authorized():
+        return jsonify({"error": "Expert authorization required."}), 401
+    return jsonify({"requests": list_pending_requests()})
+
+
+@bp.route('/expert/verifications/<request_id>', methods=['POST'])
+def expert_verify(request_id):
+    if not _expert_authorized():
+        return jsonify({"error": "Expert authorization required."}), 401
+    data = request.get_json(silent=True) or {}
+    try:
+        record = verify_request(
+            request_id,
+            data.get('identification', ''),
+            data.get('notes', ''),
+            data.get('reviewer_name', ''),
+        )
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    if not record:
+        return jsonify({"error": "Verification request not found."}), 404
+    return jsonify(record)
+
+
+@bp.route('/expert/verifications/<request_id>/images/<image_name>', methods=['GET'])
+def expert_image(request_id, image_name):
+    if not _expert_authorized():
+        return jsonify({"error": "Expert authorization required."}), 401
+    path = image_path(request_id, image_name)
+    if not path:
+        return jsonify({"error": "Image not found."}), 404
+    return send_file(path, mimetype='image/jpeg')

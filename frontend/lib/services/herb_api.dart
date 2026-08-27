@@ -93,6 +93,45 @@ class HerbApi {
       throw HerbApiException('Prediction failed: $error');
     }
   }
+
+  Future<VerificationRequest> requestVerification({required List<XFile> images, required PredictionResult prediction, required bool trainingConsent}) async {
+    final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/api/verifications'))
+      ..fields['ai_identification'] = prediction.plant
+      ..fields['ai_confidence'] = prediction.confidencePercent.toString()
+      ..fields['training_consent'] = trainingConsent.toString();
+    for (final image in images) {
+      request.files.add(http.MultipartFile.fromBytes('images', await image.readAsBytes(), filename: image.name));
+    }
+    try {
+      final streamed = await _client.send(request).timeout(_requestTimeout);
+      return _decodeVerification(await http.Response.fromStream(streamed));
+    } on TimeoutException {
+      throw HerbApiException('Submitting for expert review timed out.');
+    } on http.ClientException catch (error) {
+      throw HerbApiException('Could not reach the backend. ${error.message}');
+    }
+  }
+
+  Future<VerificationRequest> getVerification(String id) async {
+    try {
+      final response = await _client.get(Uri.parse('$baseUrl/api/verifications/$id')).timeout(_requestTimeout);
+      return _decodeVerification(response);
+    } on TimeoutException {
+      throw HerbApiException('Checking the expert review timed out.');
+    } on http.ClientException catch (error) {
+      throw HerbApiException('Could not reach the backend. ${error.message}');
+    }
+  }
+
+  VerificationRequest _decodeVerification(http.Response response) {
+    Object? body;
+    try { body = jsonDecode(response.body); } on FormatException { throw HerbApiException('The backend returned an invalid response.'); }
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw HerbApiException(body is Map<String, dynamic> ? body['error'] as String? ?? 'Verification request failed.' : 'Verification request failed.');
+    }
+    if (body is! Map<String, dynamic>) throw HerbApiException('Unexpected verification response.');
+    return VerificationRequest.fromJson(body);
+  }
 }
 
 class HerbApiException implements Exception {

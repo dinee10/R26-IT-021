@@ -123,3 +123,27 @@ class TopPrediction {
     );
   }
 }
+
+class VerificationRequest {
+  VerificationRequest({required this.id, required this.status, required this.identificationLabel, required this.aiIdentification, required this.trainingConsent, this.expertIdentification, this.expertNotes, this.reviewerName});
+  final String id;
+  final String status;
+  final String identificationLabel;
+  final String aiIdentification;
+  final bool trainingConsent;
+  final String? expertIdentification;
+  final String? expertNotes;
+  final String? reviewerName;
+  bool get isVerified => status == 'verified';
+
+  factory VerificationRequest.fromJson(Map<String, dynamic> json) => VerificationRequest(
+    id: json['id'] as String? ?? '',
+    status: json['status'] as String? ?? 'pending',
+    identificationLabel: json['identification_label'] as String? ?? 'AI identified',
+    aiIdentification: json['ai_identification'] as String? ?? 'Unknown',
+    trainingConsent: json['training_consent'] as bool? ?? false,
+    expertIdentification: json['expert_identification'] as String?,
+    expertNotes: json['expert_notes'] as String?,
+    reviewerName: json['reviewer_name'] as String?,
+  );
+}
