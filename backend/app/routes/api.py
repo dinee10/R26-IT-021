@@ -38,6 +38,7 @@ def ask():
 @bp.route('/predict', methods=['POST'])
 def predict():
     images = request.files.getlist('images')
+    model_type = request.form.get('model_type', 'plant').lower()
 
     if not images:
         return jsonify({"error": "Upload 1 to 5 images using the form field name 'images'."}), 400
@@ -45,8 +46,11 @@ def predict():
     if len(images) > 5:
         return jsonify({"error": "Maximum 5 images are allowed."}), 400
 
+    if model_type not in {'plant', 'seed'}:
+        return jsonify({"error": "model_type must be 'plant' or 'seed'."}), 400
+
     try:
-        result = predict_herb(images)
+        result = predict_herb(images, model_type=model_type)
     except ModelNotReadyError as exc:
         return jsonify({"error": str(exc)}), 503
     except ValueError as exc:

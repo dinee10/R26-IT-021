@@ -37,9 +37,13 @@ class HerbApi {
     return 'http://10.0.2.2:5000';
   }
 
-  Future<PredictionResult> predict(List<XFile> images) async {
+  Future<PredictionResult> predict(
+    List<XFile> images, {
+    String modelType = 'plant',
+  }) async {
     final uri = Uri.parse('$baseUrl/api/predict');
     final request = http.MultipartRequest('POST', uri);
+    request.fields['model_type'] = modelType;
 
     for (final image in images) {
       request.files.add(
@@ -94,13 +98,24 @@ class HerbApi {
     }
   }
 
-  Future<VerificationRequest> requestVerification({required List<XFile> images, required PredictionResult prediction, required bool trainingConsent}) async {
-    final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/api/verifications'))
-      ..fields['ai_identification'] = prediction.plant
-      ..fields['ai_confidence'] = prediction.confidencePercent.toString()
-      ..fields['training_consent'] = trainingConsent.toString();
+  Future<VerificationRequest> requestVerification({
+    required List<XFile> images,
+    required PredictionResult prediction,
+    required bool trainingConsent,
+  }) async {
+    final request =
+        http.MultipartRequest('POST', Uri.parse('$baseUrl/api/verifications'))
+          ..fields['ai_identification'] = prediction.plant
+          ..fields['ai_confidence'] = prediction.confidencePercent.toString()
+          ..fields['training_consent'] = trainingConsent.toString();
     for (final image in images) {
-      request.files.add(http.MultipartFile.fromBytes('images', await image.readAsBytes(), filename: image.name));
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'images',
+          await image.readAsBytes(),
+          filename: image.name,
+        ),
+      );
     }
     try {
       final streamed = await _client.send(request).timeout(_requestTimeout);
@@ -114,7 +129,9 @@ class HerbApi {
 
   Future<VerificationRequest> getVerification(String id) async {
     try {
-      final response = await _client.get(Uri.parse('$baseUrl/api/verifications/$id')).timeout(_requestTimeout);
+      final response = await _client
+          .get(Uri.parse('$baseUrl/api/verifications/$id'))
+          .timeout(_requestTimeout);
       return _decodeVerification(response);
     } on TimeoutException {
       throw HerbApiException('Checking the expert review timed out.');
@@ -125,11 +142,21 @@ class HerbApi {
 
   VerificationRequest _decodeVerification(http.Response response) {
     Object? body;
-    try { body = jsonDecode(response.body); } on FormatException { throw HerbApiException('The backend returned an invalid response.'); }
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw HerbApiException(body is Map<String, dynamic> ? body['error'] as String? ?? 'Verification request failed.' : 'Verification request failed.');
+    try {
+      body = jsonDecode(response.body);
+    } on FormatException {
+      throw HerbApiException('The backend returned an invalid response.');
     }
-    if (body is! Map<String, dynamic>) throw HerbApiException('Unexpected verification response.');
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw HerbApiException(
+        body is Map<String, dynamic>
+            ? body['error'] as String? ?? 'Verification request failed.'
+            : 'Verification request failed.',
+      );
+    }
+    if (body is! Map<String, dynamic>) {
+      throw HerbApiException('Unexpected verification response.');
+    }
     return VerificationRequest.fromJson(body);
   }
 }

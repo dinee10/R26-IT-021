@@ -1,0 +1,70 @@
+{
+  "dataset": "E:\\project\\R26-IT-021\\backend\\ml\\dataset\\seed_dataset",
+  "total_classes": 10,
+  "total_images": 50,
+  "minimum_recommended_images_per_class": 50,
+  "classes": [
+    {
+      "class_name": "Belleric Myrobalan",
+      "image_count": 5,
+      "needs_more_images": true,
+      "small_images": []
+    },
+    {
+      "class_name": "Black Pepper",
+      "image_count": 5,
+      "needs_more_images": true,
+      "small_images": []
+    },
+    {
+      "class_name": "Chebulic Myrobalan",
+      "image_count": 5,
+      "needs_more_images": true,
+      "small_images": []
+    },
+    {
+      "class_name": "Clove",
+      "image_count": 5,
+      "needs_more_images": true,
+      "small_images": []
+    },
+    {
+      "class_name": "Flax Seed",
+      "image_count": 5,
+      "needs_more_images": true,
+      "small_images": []
+    },
+    {
+      "class_name": "Garlic",
+      "image_count": 5,
+      "needs_more_images": true,
+      "small_images": []
+    },
+    {
+      "class_name": "Gooseberry",
+      "image_count": 5,
+      "needs_more_images": true,
+      "small_images": []
+    },
+    {
+      "class_name": "Psoralea Fruit",
+      "image_count": 5,
+      "needs_more_images": true,
+      "small_images": []
+    },
+    {
+      "class_name": "Star Anise",
+      "image_count": 5,
+      "needs_more_images": true,
+      "small_images": []
+    },
+    {
+      "class_name": "Turmeric",
+      "image_count": 5,
+      "needs_more_images": true,
+      "small_images": []
+    }
+  ],
+  "duplicates": [],
+  "invalid_images": []
+}

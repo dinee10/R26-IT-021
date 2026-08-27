@@ -10,15 +10,23 @@ except ImportError:  # Allows the Flask app to start before ML deps are installe
 
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
-MODEL_PATH = BACKEND_DIR / "ml" / "exports" / "herb_model.keras"
-LABELS_PATH = BACKEND_DIR / "ml" / "exports" / "labels.json"
+MODEL_ARTIFACTS = {
+    "plant": (
+        BACKEND_DIR / "ml" / "exports" / "herb_model.keras",
+        BACKEND_DIR / "ml" / "exports" / "labels.json",
+    ),
+    "seed": (
+        BACKEND_DIR / "ml" / "exports" / "seed" / "herb_model.keras",
+        BACKEND_DIR / "ml" / "exports" / "seed" / "labels.json",
+    ),
+}
 BENEFITS_PATH = BACKEND_DIR / "ml" / "metadata" / "benefits.json"
 IMAGE_SIZE = (224, 224)
 CONFIDENCE_WARNING = 0.95
 CROP_SCALES = (1.0, 0.95, 0.9, 0.8)
 
-_model = None
-_labels = None
+_models = {}
+_labels_by_type = {}
 _benefits = None
 
 
@@ -28,11 +36,19 @@ class ModelNotReadyError(RuntimeError):
 
 def model_status():
     """Report artifact availability without loading the large ML model."""
-    missing = [path.name for path in (MODEL_PATH, LABELS_PATH) if not path.exists()]
+    missing = {
+        model_type: [str(path.relative_to(BACKEND_DIR)) for path in paths if not path.exists()]
+        for model_type, paths in MODEL_ARTIFACTS.items()
+    }
+    all_ready = all(not paths for paths in missing.values())
     return {
-        "ready": tf is not None and not missing,
+        "ready": tf is not None and all_ready,
         "tensorflow_installed": tf is not None,
-        "missing_artifacts": missing,
+        "missing_artifacts": [path for paths in missing.values() for path in paths],
+        "models": {
+            model_type: {"ready": tf is not None and not paths, "missing_artifacts": paths}
+            for model_type, paths in missing.items()
+        },
     }
 
 
@@ -43,8 +59,8 @@ def _load_json(path, default):
         return json.load(file)
 
 
-def _load_model():
-    global _model, _labels, _benefits
+def _load_model(model_type="plant"):
+    global _benefits
 
     if tf is None:
         raise ModelNotReadyError(
@@ -59,25 +75,30 @@ def _load_model():
             "ML image dependencies are not installed. Use Python 3.11 and install backend/ml/requirements.txt."
         ) from exc
 
-    if not MODEL_PATH.exists() or not LABELS_PATH.exists():
+    if model_type not in MODEL_ARTIFACTS:
+        raise ValueError("model_type must be 'plant' or 'seed'.")
+    model_path, labels_path = MODEL_ARTIFACTS[model_type]
+
+    if not model_path.exists() or not labels_path.exists():
         raise ModelNotReadyError(
-            "Model is not ready. Run backend/ml/scripts/train_model.py after adding the Kaggle dataset."
+            f"The {model_type} model is not ready. Train it and export matching model and labels files."
         )
 
-    if _model is None:
-        _model = tf.keras.models.load_model(MODEL_PATH)
-        _labels = _load_json(LABELS_PATH, [])
+    if model_type not in _models:
+        model = tf.keras.models.load_model(model_path)
+        labels = _load_json(labels_path, [])
         _benefits = _load_json(BENEFITS_PATH, {})
 
-        output_size = int(_model.output_shape[-1])
-        if not _labels or len(_labels) != output_size:
-            _model = None
+        output_size = int(model.output_shape[-1])
+        if not labels or len(labels) != output_size:
             raise ModelNotReadyError(
                 f"Model output has {output_size} classes but labels.json has "
-                f"{len(_labels)} labels. Retrain or export matching artifacts."
+                f"{len(labels)} labels. Retrain or export matching artifacts."
             )
+        _models[model_type] = model
+        _labels_by_type[model_type] = labels
 
-    return _model, _labels, _benefits
+    return _models[model_type], _labels_by_type[model_type], _benefits
 
 
 def _image_to_arrays(uploaded_file):
@@ -111,10 +132,10 @@ def _center_crop(image, scale):
     return image.crop((left, top, left + crop_width, top + crop_height))
 
 
-def predict_herb(uploaded_files):
+def predict_herb(uploaded_files, model_type="plant"):
     import numpy as np
 
-    model, labels, benefits = _load_model()
+    model, labels, benefits = _load_model(model_type)
 
     predictions = []
     image_quality = []
@@ -134,6 +155,7 @@ def predict_herb(uploaded_files):
 
     return {
         "plant": best_label,
+        "model_type": model_type,
         "confidence": round(confidence, 4),
         "confidence_percent": round(confidence * 100, 2),
         "warning": None

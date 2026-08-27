@@ -12,7 +12,7 @@ import tensorflow as tf
 IMAGE_SIZE = (224, 224)
 BATCH_SIZE = 32
 SEED = 22168986
-IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
+IMAGE_SUFFIXES = {".jpg", ".jpeg", ".jfif", ".png", ".bmp", ".webp"}
 
 
 def parse_args():
@@ -21,6 +21,11 @@ def parse_args():
         "--data-dir",
         default="backend/ml/dataset/plant_dataset_raw",
         help="Folder containing one subfolder per plant class.",
+    )
+    parser.add_argument(
+        "--export-dir",
+        default="backend/ml/exports",
+        help="Folder for model artifacts, labels, logs, and evaluation output.",
     )
     parser.add_argument("--epochs", type=int, default=25)
     parser.add_argument("--fine-tune-epochs", type=int, default=10)
@@ -156,7 +161,9 @@ def main():
     data_dir = Path(args.data_dir)
     if not data_dir.is_absolute():
         data_dir = repo_root / data_dir
-    export_dir = repo_root / "backend" / "ml" / "exports"
+    export_dir = Path(args.export_dir)
+    if not export_dir.is_absolute():
+        export_dir = repo_root / export_dir
     export_dir.mkdir(parents=True, exist_ok=True)
 
     if not data_dir.exists():

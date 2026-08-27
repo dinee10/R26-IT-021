@@ -8,7 +8,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
+IMAGE_SUFFIXES = {".jpg", ".jpeg", ".jfif", ".png", ".bmp", ".webp"}
 MIN_IMAGES_PER_CLASS = 50
 
 
@@ -24,6 +24,11 @@ def parse_args():
         type=int,
         default=MIN_IMAGES_PER_CLASS,
         help="Minimum recommended images per class.",
+    )
+    parser.add_argument(
+        "--output",
+        default="backend/ml/metadata/dataset_audit.json",
+        help="Path for the generated JSON audit report.",
     )
     return parser.parse_args()
 
@@ -105,7 +110,9 @@ def main():
         "invalid_images": invalid_images,
     }
 
-    output_path = REPO_ROOT / "backend" / "ml" / "metadata" / "dataset_audit.json"
+    output_path = Path(args.output)
+    if not output_path.is_absolute():
+        output_path = REPO_ROOT / output_path
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", encoding="utf-8") as file:
         json.dump(report, file, indent=2)

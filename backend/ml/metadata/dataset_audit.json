@@ -1,12 +1,12 @@
 {
   "dataset": "E:\\project\\R26-IT-021\\backend\\ml\\dataset\\plant_dataset_raw",
   "total_classes": 6,
-  "total_images": 73,
+  "total_images": 76,
   "minimum_recommended_images_per_class": 50,
   "classes": [
     {
       "class_name": "Aloe barbadensis miller (Aloevera)",
-      "image_count": 11,
+      "image_count": 14,
       "needs_more_images": true,
       "small_images": [
         "Aloe barbadensis miller (Aloevera)\\10.jpg",
