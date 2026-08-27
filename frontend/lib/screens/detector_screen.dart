@@ -607,6 +607,38 @@ class _ResultPanel extends StatelessWidget {
             text: result.warning!,
           ),
         ],
+        if (result.imageQuality.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          Text(
+            'Image preprocessing',
+            style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 8),
+          ...result.imageQuality.map((quality) {
+            final details = quality.warnings.isEmpty
+                ? quality.foregroundCropped
+                      ? 'Foreground found and excess background cropped.'
+                      : 'Image quality is suitable; original framing preserved.'
+                : quality.warnings.join(' ');
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    quality.warnings.isEmpty
+                        ? Icons.auto_fix_high_rounded
+                        : Icons.photo_camera_back_rounded,
+                    size: 18,
+                    color: const Color(0xFF2F7347),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text('${quality.filename}: $details')),
+                ],
+              ),
+            );
+          }),
+        ],
         const SizedBox(height: 18),
         _InfoSection(
           title: 'Traditional Uses',

@@ -4,6 +4,7 @@ class PredictionResult {
     required this.confidencePercent,
     required this.benefits,
     required this.topPredictions,
+    required this.imageQuality,
     this.warning,
   });
 
@@ -11,6 +12,7 @@ class PredictionResult {
   final double confidencePercent;
   final HerbBenefits benefits;
   final List<TopPrediction> topPredictions;
+  final List<UploadedImageQuality> imageQuality;
   final String? warning;
 
   factory PredictionResult.fromJson(Map<String, dynamic> json) {
@@ -24,6 +26,30 @@ class PredictionResult {
       topPredictions: (json['top_predictions'] as List<dynamic>? ?? const [])
           .map((item) => TopPrediction.fromJson(item as Map<String, dynamic>))
           .toList(),
+      imageQuality: (json['image_quality'] as List<dynamic>? ?? const [])
+          .whereType<Map<String, dynamic>>()
+          .map(UploadedImageQuality.fromJson)
+          .toList(),
+    );
+  }
+}
+
+class UploadedImageQuality {
+  UploadedImageQuality({
+    required this.filename,
+    required this.foregroundCropped,
+    required this.warnings,
+  });
+
+  final String filename;
+  final bool foregroundCropped;
+  final List<String> warnings;
+
+  factory UploadedImageQuality.fromJson(Map<String, dynamic> json) {
+    return UploadedImageQuality(
+      filename: json['filename'] as String? ?? 'Image',
+      foregroundCropped: json['foreground_cropped'] as bool? ?? false,
+      warnings: HerbBenefits._stringList(json['warnings']),
     );
   }
 }

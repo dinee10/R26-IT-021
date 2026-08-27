@@ -36,13 +36,6 @@ def predict():
     if len(images) > 5:
         return jsonify({"error": "Maximum 5 images are allowed."}), 400
 
-    allowed_types = {"image/jpeg", "image/png", "image/webp"}
-    for image in images:
-        if image.mimetype not in allowed_types:
-            return jsonify({
-                "error": f"{image.filename or 'Uploaded file'} must be a JPEG, PNG, or WebP image."
-            }), 415
-
     try:
         result = predict_herb(images)
     except ModelNotReadyError as exc:

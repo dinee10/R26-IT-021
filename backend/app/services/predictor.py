@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 
+from app.services.image_preprocessor import preprocess_upload
+
 try:
     import tensorflow as tf
 except ImportError:  # Allows the Flask app to start before ML deps are installed.
@@ -83,14 +85,9 @@ def _image_to_arrays(uploaded_file):
     from PIL import Image, ImageOps, UnidentifiedImageError
 
     try:
-        image = ImageOps.exif_transpose(Image.open(uploaded_file.stream)).convert("RGB")
+        image, quality = preprocess_upload(uploaded_file)
     except (UnidentifiedImageError, OSError) as exc:
         raise ValueError(f"{uploaded_file.filename} is not a valid image.") from exc
-    if image.width < 32 or image.height < 32:
-        raise ValueError(
-            f"{uploaded_file.filename} is too small. "
-            "Use an image at least 32x32 pixels."
-        )
 
     arrays = []
     for scale in CROP_SCALES:
@@ -99,7 +96,7 @@ def _image_to_arrays(uploaded_file):
         arrays.append(np.asarray(crop, dtype=np.float32))
         arrays.append(np.asarray(ImageOps.mirror(crop), dtype=np.float32))
 
-    return np.stack(arrays, axis=0)
+    return np.stack(arrays, axis=0), quality
 
 
 def _center_crop(image, scale):
@@ -120,11 +117,14 @@ def predict_herb(uploaded_files):
     model, labels, benefits = _load_model()
 
     predictions = []
+    image_quality = []
     for uploaded_file in uploaded_files:
         if not uploaded_file.filename:
             raise ValueError("One uploaded image has no filename.")
-        image_predictions = model.predict(_image_to_arrays(uploaded_file), verbose=0)
+        image_arrays, quality = _image_to_arrays(uploaded_file)
+        image_predictions = model.predict(image_arrays, verbose=0)
         predictions.append(np.mean(image_predictions, axis=0))
+        image_quality.append({"filename": uploaded_file.filename, **quality.to_dict()})
 
     mean_prediction = np.mean(predictions, axis=0)
     top_indexes = mean_prediction.argsort()[-5:][::-1]
@@ -140,6 +140,7 @@ def predict_herb(uploaded_files):
         if confidence >= CONFIDENCE_WARNING
         else "The model is not 95% confident yet. Add 3 to 5 clearer leaf/seed photos from different angles before trusting this result.",
         "benefits": _benefits_for_label(benefits, best_label),
+        "image_quality": image_quality,
         "top_predictions": [
             {
                 "plant": labels[int(index)],
