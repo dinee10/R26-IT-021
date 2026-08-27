@@ -73,3 +73,23 @@ def identify_quality_plant():
         status_code = 400
 
     return jsonify(result), status_code
+
+@bp.route('/quality/identify-plant-multiple', methods=['POST'])
+def identify_quality_plant_multiple():
+    image_files = request.files.getlist('image')
+
+    if not image_files:
+        return jsonify({"accepted": False, "reason": "INVALID_IMAGE"}), 400
+
+    if len(image_files) > 3:
+        return jsonify({"accepted": False, "reason": "TOO_MANY_IMAGES"}), 400
+
+    result = quality_plant_identifier.identify_plant_from_multiple_images([
+        image_file.read() for image_file in image_files
+    ])
+    status_code = 200 if result.get("accepted") else 422
+
+    if result.get("reason") == "INVALID_IMAGE":
+        status_code = 400
+
+    return jsonify(result), status_code

@@ -18,18 +18,83 @@ _MODEL_CACHE: dict[str, Any] = {}
 
 def identify_plant_from_bytes(image_bytes: bytes) -> dict[str, Any]:
     config = _load_config()
+    prediction = _predict_plant_image(image_bytes, config)
+    return _format_prediction_result(prediction, config)
+
+
+def identify_plant_from_multiple_images(image_bytes_list: list[bytes]) -> dict[str, Any]:
+    config = _load_config()
+    predictions = [
+        _predict_plant_image(image_bytes, config)
+        for image_bytes in image_bytes_list[:3]
+    ]
+    invalid_predictions = [
+        prediction for prediction in predictions
+        if prediction.get("reason") == "INVALID_IMAGE"
+    ]
+
+    if invalid_predictions:
+        return {
+            "accepted": False,
+            "reason": "INVALID_IMAGE",
+            "image_count": len(image_bytes_list),
+        }
+
+    runtime_missing = [
+        prediction for prediction in predictions
+        if prediction.get("reason") == MODEL_RUNTIME_MISSING
+    ]
+
+    if runtime_missing:
+        return _format_prediction_result(runtime_missing[0], config)
+
+    probability_predictions = [
+        prediction for prediction in predictions
+        if "probabilities" in prediction
+    ]
+
+    if not probability_predictions:
+        return {"accepted": False, "reason": "INVALID_IMAGE"}
+
+    averaged_probabilities = np.mean(
+        [prediction["probabilities"] for prediction in probability_predictions],
+        axis=0,
+    )
+    class_ids = _model_class_ids(config)
+    class_index = int(np.argmax(averaged_probabilities))
+    combined_prediction = {
+        "class_id": class_ids[class_index],
+        "confidence": float(averaged_probabilities[class_index]),
+        "model": probability_predictions[0]["model"],
+    }
+    result = _format_prediction_result(combined_prediction, config)
+    result["image_count"] = len(probability_predictions)
+    result["aggregation"] = "AVERAGE_PROBABILITIES"
+    result["per_image_predictions"] = [
+        _format_prediction_result(prediction, config)
+        for prediction in probability_predictions
+    ]
+    return result
+
+
+def _predict_plant_image(image_bytes: bytes, config: dict[str, Any]) -> dict[str, Any]:
     image = _decode_image(image_bytes)
 
     if image is None:
-        return {"accepted": False, "reason": "INVALID_IMAGE"}
+        return {"reason": "INVALID_IMAGE"}
 
     preprocessed = preprocess_for_plant_model(
         image,
         width=int(config["input_size"]["width"]),
         height=int(config["input_size"]["height"]),
     )
-    prediction = _predict(preprocessed, image_bytes, config)
+    return _predict(preprocessed, image_bytes, config)
 
+
+def _format_prediction_result(
+    prediction: dict[str, Any],
+    config: dict[str, Any],
+) -> dict[str, Any]:
     if prediction.get("reason") == MODEL_RUNTIME_MISSING:
         return {
             "species": "Unknown",
@@ -41,6 +106,9 @@ def identify_plant_from_bytes(image_bytes: bytes) -> dict[str, Any]:
             "input_size": config["input_size"],
             "preprocessing": "LETTERBOX_224",
         }
+
+    if prediction.get("reason") == "INVALID_IMAGE":
+        return {"accepted": False, "reason": "INVALID_IMAGE"}
 
     plant_class = _class_by_id(config, prediction["class_id"])
     confidence = round(float(prediction["confidence"]), 3)
@@ -139,6 +207,7 @@ def _predict(
         "class_id": class_ids[class_index],
         "confidence": float(probabilities[class_index]),
         "model": config["models"][config["active_model"]]["display_name"],
+        "probabilities": probabilities,
     }
 
 
@@ -172,11 +241,23 @@ def _mock_prediction(image_bytes: bytes, config: dict[str, Any]) -> dict[str, An
     class_index = digest[0] % len(class_ids)
     confidence = 0.5 + (digest[1] / 255.0 * 0.45)
 
+    if len(class_ids) == 1:
+        probabilities = np.array([1.0])
+        confidence = 1.0
+    else:
+        probabilities = np.full(
+            len(class_ids),
+            (1 - confidence) / (len(class_ids) - 1),
+        )
+
+    probabilities[class_index] = confidence
+
     return {
         "class_id": class_ids[class_index],
         "confidence": confidence,
         "model": config["models"][config["active_model"]]["display_name"],
         "mode": "mock",
+        "probabilities": probabilities,
     }
 
 

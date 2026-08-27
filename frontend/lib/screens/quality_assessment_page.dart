@@ -16,8 +16,9 @@ class QualityAssessmentPage extends StatefulWidget {
 }
 
 class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
+  static const int _maxImages = 3;
   final ImagePicker _picker = ImagePicker();
-  Uint8List? _selectedImageBytes;
+  final List<QualitySelectedImage> _selectedImages = [];
   QualityValidationResult? _validationResult;
   QualityPlantResult? _plantResult;
   bool _validating = false;
@@ -34,48 +35,85 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
       return;
     }
 
-    final imageBytes = await image.readAsBytes();
+    await _addImages([image]);
+  }
+
+  Future<void> _pickDeviceImages() async {
+    final remainingSlots = _maxImages - _selectedImages.length;
+    if (remainingSlots <= 0) {
+      _showMessage('You can add up to 3 images.');
+      return;
+    }
+
+    final images = await _picker.pickMultiImage(
+      imageQuality: 95,
+      limit: remainingSlots,
+    );
+
+    if (images.isEmpty) {
+      return;
+    }
+
+    await _addImages(images.take(remainingSlots).toList());
+  }
+
+  Future<void> _addImages(List<XFile> images) async {
+    final selectedImages = <QualitySelectedImage>[];
+
+    for (final image in images) {
+      selectedImages.add(
+        QualitySelectedImage(
+          file: image,
+          bytes: await image.readAsBytes(),
+        ),
+      );
+    }
 
     setState(() {
-      _selectedImageBytes = imageBytes;
+      _selectedImages.addAll(selectedImages);
       _validationResult = null;
       _plantResult = null;
       _validating = true;
       _identifyingPlant = false;
     });
 
-    await _validateImage(image, imageBytes);
+    await _validateImages();
   }
 
-  Future<void> _validateImage(XFile image, Uint8List imageBytes) async {
+  Future<void> _validateImages() async {
     try {
-      final uri = Uri.parse('${_apiBaseUrl()}/api/quality/validate-image');
-      final request = http.MultipartRequest('POST', uri)
-        ..files.add(
-          http.MultipartFile.fromBytes(
-            'image',
-            imageBytes,
-            filename: image.name.isEmpty
-                ? 'quality.leaf-image.jpg'
-                : image.name,
-          ),
-        );
+      final validationResults = <QualityValidationResult>[];
 
-      final response = await request.send().timeout(const Duration(seconds: 25));
-      final responseBody = await response.stream.bytesToString();
-      final data = jsonDecode(responseBody) as Map<String, dynamic>;
+      for (final image in _selectedImages) {
+        final data = await _postSingleImage(
+          endpoint: '/api/quality/validate-image',
+          image: image,
+          timeout: const Duration(seconds: 25),
+        );
+        validationResults.add(QualityValidationResult.fromJson(data));
+      }
 
       if (!mounted) {
         return;
       }
 
+      QualityValidationResult? failedResult;
+      for (final result in validationResults) {
+        if (!result.valid) {
+          failedResult = result;
+          break;
+        }
+      }
+      final validationResult = failedResult ??
+          QualityValidationResult.combinedSuccess(validationResults);
+
       setState(() {
-        _validationResult = QualityValidationResult.fromJson(data);
+        _validationResult = validationResult;
         _validating = false;
       });
 
-      if (_validationResult?.valid == true) {
-        await _identifyPlant(image, imageBytes);
+      if (validationResult.valid) {
+        await _identifyPlant();
       }
     } on TimeoutException {
       _showValidationError('Image validation timed out. Please try again.');
@@ -90,7 +128,7 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
     }
   }
 
-  Future<void> _identifyPlant(XFile image, Uint8List imageBytes) async {
+  Future<void> _identifyPlant() async {
     if (!mounted) {
       return;
     }
@@ -101,16 +139,18 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
     });
 
     try {
-      final uri = Uri.parse('${_apiBaseUrl()}/api/quality/identify-plant');
+      final uri = Uri.parse(
+        '${_apiBaseUrl()}/api/quality/identify-plant-multiple',
+      );
       final request = http.MultipartRequest('POST', uri)
-        ..files.add(
-          http.MultipartFile.fromBytes(
+        ..files.addAll(
+          _selectedImages.map((image) => http.MultipartFile.fromBytes(
             'image',
-            imageBytes,
-            filename: image.name.isEmpty
+            image.bytes,
+            filename: image.file.name.isEmpty
                 ? 'quality.leaf-image.jpg'
-                : image.name,
-          ),
+                : image.file.name,
+          )),
         );
 
       final response = await request.send().timeout(const Duration(seconds: 30));
@@ -137,6 +177,46 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
     }
   }
 
+  Future<Map<String, dynamic>> _postSingleImage({
+    required String endpoint,
+    required QualitySelectedImage image,
+    required Duration timeout,
+  }) async {
+    final uri = Uri.parse('${_apiBaseUrl()}$endpoint');
+    final request = http.MultipartRequest('POST', uri)
+      ..files.add(
+        http.MultipartFile.fromBytes(
+          'image',
+          image.bytes,
+          filename: image.file.name.isEmpty
+              ? 'quality.leaf-image.jpg'
+              : image.file.name,
+        ),
+      );
+
+    final response = await request.send().timeout(timeout);
+    final responseBody = await response.stream.bytesToString();
+    return jsonDecode(responseBody) as Map<String, dynamic>;
+  }
+
+  void _removeImage(int index) {
+    if (index < 0 || index >= _selectedImages.length) {
+      return;
+    }
+
+    setState(() {
+      _selectedImages.removeAt(index);
+      _validationResult = null;
+      _plantResult = null;
+      _validating = _selectedImages.isNotEmpty;
+      _identifyingPlant = false;
+    });
+
+    if (_selectedImages.isNotEmpty) {
+      _validateImages();
+    }
+  }
+
   void _showValidationError(String message) {
     if (!mounted) {
       return;
@@ -149,6 +229,16 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
       _plantResult = null;
       _identifyingPlant = false;
     });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) {
+      return;
+    }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
@@ -188,10 +278,12 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
             const _QualityHeader(),
             const SizedBox(height: 22),
             _ImagePickerPanel(
-              selectedImageBytes: _selectedImageBytes,
-              validating: _validating,
+              selectedImages: _selectedImages,
+              busy: _validating || _identifyingPlant,
+              maxImages: _maxImages,
               onCameraPressed: () => _pickImage(ImageSource.camera),
-              onGalleryPressed: () => _pickImage(ImageSource.gallery),
+              onGalleryPressed: _pickDeviceImages,
+              onRemoveImage: _removeImage,
             ),
             const SizedBox(height: 18),
             _ValidationPanel(
@@ -303,7 +395,11 @@ class _PlantIdentificationPanel extends StatelessWidget {
       case 'UNKNOWN_PLANT':
         return 'The model selected Unknown, so the pipeline should stop here.';
       case 'LOW_SPECIES_CONFIDENCE':
-        return 'Confidence was ${result.confidencePercent}; retake a clearer leaf image.';
+        if ((result.imageCount ?? 1) < 3) {
+          return 'Confidence was ${result.confidencePercent}; add another view of the same plant.';
+        }
+
+        return 'Confidence was ${result.confidencePercent}; expert verification is recommended.';
       case 'INVALID_IMAGE':
         return 'Choose a valid leaf image and try again.';
       case 'MODEL_NOT_AVAILABLE':
@@ -367,19 +463,25 @@ class _QualityHeader extends StatelessWidget {
 
 class _ImagePickerPanel extends StatelessWidget {
   const _ImagePickerPanel({
-    required this.selectedImageBytes,
-    required this.validating,
+    required this.selectedImages,
+    required this.busy,
+    required this.maxImages,
     required this.onCameraPressed,
     required this.onGalleryPressed,
+    required this.onRemoveImage,
   });
 
-  final Uint8List? selectedImageBytes;
-  final bool validating;
+  final List<QualitySelectedImage> selectedImages;
+  final bool busy;
+  final int maxImages;
   final VoidCallback onCameraPressed;
   final VoidCallback onGalleryPressed;
+  final ValueChanged<int> onRemoveImage;
 
   @override
   Widget build(BuildContext context) {
+    final hasImages = selectedImages.isNotEmpty;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -406,14 +508,43 @@ class _ImagePickerPanel extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: AppColors.border),
               ),
-              child: selectedImageBytes == null
+              child: !hasImages
                   ? const _EmptyImageState()
                   : Image.memory(
-                      selectedImageBytes!,
-                      fit: BoxFit.cover,
+                      selectedImages.last.bytes,
+                      fit: BoxFit.contain,
                     ),
             ),
           ),
+          if (hasImages) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${selectedImages.length} of $maxImages images selected',
+                    style: const TextStyle(
+                      color: AppColors.muted,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                if (selectedImages.length < maxImages)
+                  const Text(
+                    'Add another view',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            _SelectedImageStrip(
+              selectedImages: selectedImages,
+              onRemoveImage: busy ? null : onRemoveImage,
+            ),
+          ],
           const SizedBox(height: 14),
           Row(
             children: [
@@ -421,7 +552,9 @@ class _ImagePickerPanel extends StatelessWidget {
                 child: _PickerButton(
                   label: 'Camera',
                   icon: Icons.photo_camera_rounded,
-                  onPressed: validating ? null : onCameraPressed,
+                  onPressed: busy || selectedImages.length >= maxImages
+                      ? null
+                      : onCameraPressed,
                 ),
               ),
               const SizedBox(width: 12),
@@ -429,12 +562,74 @@ class _ImagePickerPanel extends StatelessWidget {
                 child: _PickerButton(
                   label: 'Device',
                   icon: Icons.photo_library_rounded,
-                  onPressed: validating ? null : onGalleryPressed,
+                  onPressed: busy || selectedImages.length >= maxImages
+                      ? null
+                      : onGalleryPressed,
                 ),
               ),
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SelectedImageStrip extends StatelessWidget {
+  const _SelectedImageStrip({
+    required this.selectedImages,
+    required this.onRemoveImage,
+  });
+
+  final List<QualitySelectedImage> selectedImages;
+  final ValueChanged<int>? onRemoveImage;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 72,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: selectedImages.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
+        itemBuilder: (context, index) {
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF7F9F7),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Image.memory(
+                  selectedImages[index].bytes,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              Positioned(
+                top: -8,
+                right: -8,
+                child: IconButton.filled(
+                  onPressed: onRemoveImage == null
+                      ? null
+                      : () => onRemoveImage!(index),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: AppColors.danger,
+                    fixedSize: const Size(28, 28),
+                    padding: EdgeInsets.zero,
+                    side: const BorderSide(color: AppColors.border),
+                  ),
+                  icon: const Icon(Icons.close_rounded, size: 16),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -678,6 +873,8 @@ class _PlantResultDetails extends StatelessWidget {
             _MetricChip(label: 'Species', value: result.species),
             _MetricChip(label: 'Confidence', value: result.confidencePercent),
             _MetricChip(label: 'Model', value: result.model ?? 'Configured model'),
+            if (result.imageCount != null)
+              _MetricChip(label: 'Images', value: '${result.imageCount} used'),
           ],
         ),
         if (result.mode == 'mock') ...[
@@ -791,6 +988,37 @@ class QualityValidationResult {
     return QualityValidationResult(valid: false, reason: reason);
   }
 
+  factory QualityValidationResult.combinedSuccess(
+    List<QualityValidationResult> results,
+  ) {
+    QualityImageResolution? firstResolution;
+    for (final result in results) {
+      if (result.resolution != null) {
+        firstResolution = result.resolution;
+        break;
+      }
+    }
+    final blurScores = results
+        .where((result) => result.blurScore != null)
+        .map((result) => result.blurScore!)
+        .toList();
+    final brightnessValues = results
+        .where((result) => result.brightness != null)
+        .map((result) => result.brightness!)
+        .toList();
+
+    return QualityValidationResult(
+      valid: true,
+      resolution: firstResolution,
+      blurScore: blurScores.isEmpty
+          ? null
+          : blurScores.reduce((a, b) => a + b) / blurScores.length,
+      brightness: brightnessValues.isEmpty
+          ? null
+          : brightnessValues.reduce((a, b) => a + b) / brightnessValues.length,
+    );
+  }
+
   factory QualityValidationResult.fromJson(Map<String, dynamic> json) {
     final resolutionJson = json['resolution'] as Map<String, dynamic>?;
 
@@ -841,6 +1069,8 @@ class QualityPlantResult {
     this.reason,
     this.model,
     this.mode,
+    this.imageCount,
+    this.aggregation,
   });
 
   factory QualityPlantResult.failure({required String reason}) {
@@ -861,6 +1091,8 @@ class QualityPlantResult {
       reason: json['reason'] as String?,
       model: json['model'] as String?,
       mode: json['mode'] as String?,
+      imageCount: (json['image_count'] as num?)?.toInt(),
+      aggregation: json['aggregation'] as String?,
     );
   }
 
@@ -871,6 +1103,18 @@ class QualityPlantResult {
   final String? reason;
   final String? model;
   final String? mode;
+  final int? imageCount;
+  final String? aggregation;
 
   String get confidencePercent => '${(confidence * 100).toStringAsFixed(1)}%';
+}
+
+class QualitySelectedImage {
+  const QualitySelectedImage({
+    required this.file,
+    required this.bytes,
+  });
+
+  final XFile file;
+  final Uint8List bytes;
 }
