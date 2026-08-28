@@ -48,3 +48,14 @@ app.*.map.json
 # Raw datasets and local training work dirs are too large for git
 ml/dataset/plant_dataset_raw/*
 !ml/dataset/plant_dataset_raw/.gitkeep
+
+
+# Chroma / Vector DB
+chroma_db_free/
+chroma_db/
+vectorstore/
+
+# OS
+.DS_Store
+Thumbs.db
+

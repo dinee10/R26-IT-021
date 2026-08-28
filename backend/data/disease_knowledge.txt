@@ -1,0 +1,248 @@
+Species: Neem
+Disease Name: Alternaria
+Display Name: Alternaria Leaf Spot / Blight
+Description: A fungal foliar disease reported on neem and commonly associated with Alternaria alternata. It can begin as localized spotting and progress to blighting of affected leaf tissue.
+Typical Symptoms: Dark brown to black spots, often on yellowing tissue; spots may enlarge or merge; affected areas can become necrotic and leaves may dry or shed prematurely.
+Healthy Plant Comparison: Healthy neem leaves are normally deep green and intact, without dark necrotic spots, expanding blighted areas, or abnormal yellowing.
+Recommended Action: Treat visibly affected leaves as unsuitable for medicinal use. Remove severely affected material, reduce prolonged leaf wetness where practical, and obtain local plant-pathology confirmation before applying any treatment.
+Reference: https://agritech.tnau.ac.in/forestry/forest_disease_neem.html | https://www.techscience.com/cmc/v69n2/43865/html | https://doi.org/10.48084/etasr.15752
+
+
+Species: Neem
+Disease Name: Bacterial_infection
+Display Name: Bacterial Leaf Infection
+Description: A bacterial foliar condition of neem. Bacterial leaf spot and vein-blight symptoms have been reported in neem, with Pseudomonas and Xanthomonas species among reported causal bacteria.
+Typical Symptoms: Water-soaked or angular dark spots, yellowing around lesions, vein blight, and sometimes shot-hole symptoms where dead tissue falls out; severe lesions may merge and contribute to leaf drop.
+Healthy Plant Comparison: Healthy neem leaves should not show water-soaked angular lesions, shot holes formed from dead tissue, dark bacterial-looking spots, or blighted veins.
+Recommended Action: Do not use visibly affected leaves for medicinal preparation. Separate heavily affected material, avoid unnecessary overhead wetting, and have the condition confirmed before selecting a control method.
+Reference: https://www.tandfonline.com/doi/abs/10.1080/09670877009413406 | https://agritech.tnau.ac.in/forestry/forest_disease_neem.html | https://doi.org/10.48084/etasr.15752
+
+
+Species: Neem
+Disease Name: Defoliator
+Display Name: Defoliator Damage
+Description: A pest-damage class rather than a plant disease. Defoliating insects or other leaf-feeding pests remove leaf tissue and can reduce foliage substantially.
+Typical Symptoms: Missing or eaten leaf tissue, ragged or geometric chewing marks, partial skeletonization, damaged margins, drying of remaining tissue, and partial or severe defoliation.
+Healthy Plant Comparison: Healthy neem leaves retain complete leaflets and margins without extensive chewing, skeletonization, or unexplained loss of foliage.
+Recommended Action: Do not use heavily pest-damaged leaves for medicinal preparation. Inspect both leaf surfaces and nearby shoots for feeding pests, remove severely damaged material, and identify the pest before choosing a control method.
+Reference: https://www.ncbi.nlm.nih.gov/books/NBK234651/ | https://assets.publishing.service.gov.uk/media/57a08d82e5274a31e00018d6/R7348_report.pdf | https://doi.org/10.48084/etasr.15752
+
+
+Species: Neem
+Disease Name: Dieback
+Display Name: Neem Dieback
+Description: A progressive shoot-and-branch decline syndrome reported in neem. Phomopsis azadirachtae has historically been associated with neem dieback in published reports.
+Typical Symptoms: Drying starts at terminal shoots and progresses downward; crown thinning and defoliation may occur; inflorescence blight and premature wilting of fruits can accompany severe cases.
+Healthy Plant Comparison: Healthy neem shoots remain green and actively growing, without progressive drying from the tip toward the base or widespread branch death.
+Recommended Action: Do not use leaves from actively dying or severely affected branches. Remove and isolate severely affected plant material where appropriate and seek plant-pathology confirmation because branch dieback can have multiple contributing causes.
+Reference: https://www.researchgate.net/publication/381964932_Neem_Azadirachta_indica_A_Juss_die-back_disease_-_a_report | https://doi.org/10.48084/etasr.15752
+
+
+Species: Neem
+Disease Name: Irregular_yellowing
+Display Name: Irregular Yellowing
+Description: A visible stress/condition class, not a single confirmed disease diagnosis. Irregular yellowing in neem may be associated with nutritional deficiency, water/root stress, pest pressure, or systemic disease and therefore requires further diagnosis.
+Typical Symptoms: Patchy or uneven chlorosis, yellowing of tips or margins, mottled green-and-yellow areas, reduced vigor, drooping, and in some cases premature leaf fall.
+Healthy Plant Comparison: Healthy neem foliage is generally evenly green and vigorous rather than patchily chlorotic, mottled, or prematurely yellowing.
+Recommended Action: Do not assign a pathogen from yellowing alone. Check nutrition, watering and drainage, roots, pest activity, and other disease signs. For medicinal-use screening, send strongly or unexplained yellow leaves for expert review.
+Reference: https://doi.org/10.48084/etasr.15752 | https://www.ncbi.nlm.nih.gov/books/NBK234651/ | https://www.fao.org/4/u8520e/u8520e09.htm
+
+
+Species: Neem
+Disease Name: Leaf_Blight
+Display Name: Leaf Blight
+Description: A broad foliar blight syndrome in neem. Multiple fungal causes have been reported in different studies, so this class should not be treated as a single pathogen-specific diagnosis unless the dataset provides confirmed etiology.
+Typical Symptoms: Expanding brown to dark necrotic areas, large blighted patches, drying and collapse of affected tissue, and possible premature defoliation in severe cases.
+Healthy Plant Comparison: Healthy neem leaves lack large expanding necrotic patches, widespread blighting, and rapid drying of substantial portions of the lamina.
+Recommended Action: Treat heavily blighted leaves as visually unsuitable for medicinal use. Remove severely affected material, limit prolonged leaf wetness, and confirm the causal agent before treatment because several pathogens can produce blight-like symptoms.
+Reference: https://agritech.tnau.ac.in/forestry/forest_disease_neem.html | https://www.researchgate.net/publication/237816317_Leaf_blight_of_Azadirachta_indica_and_its_management_in_vitro
+
+
+Species: Neem
+Disease Name: Leaf_Miners
+Display Name: Leaf Miner Damage
+Description: An insect-mining damage class rather than a fungal or bacterial disease. Leaf-miner larvae feed within leaf tissue and create visible mines. The exact leaf-miner species on neem should be confirmed for the local dataset.
+Typical Symptoms: Pale or whitish serpentine tunnels or blotch-like mines inside the leaf, small feeding punctures, localized drying, and in severe cases premature leaf drop.
+Healthy Plant Comparison: Healthy neem leaves do not contain winding translucent mines, internal blotches, or characteristic feeding trails within the leaf blade.
+Recommended Action: Do not use heavily mined leaves for medicinal preparation. Inspect new growth and both leaf surfaces, remove heavily affected material, and confirm the pest species before selecting a control method.
+Reference: https://www.agritech.tnau.ac.in/crop_protection/tomato/tomato_2.html
+
+
+Species: Neem
+Disease Name: Leaf_Miners_Powdery_Mildew
+Display Name: Leaf Miner Damage + Powdery Mildew
+Description: A combined condition representing simultaneous leaf-miner injury and powdery mildew symptoms. It should be treated as a mixed condition, not as one causal disease.
+Typical Symptoms: Serpentine or blotch-like mines within the leaf together with white to gray powdery fungal patches on the surface; yellowing, drying, or premature leaf drop may occur when damage is extensive.
+Healthy Plant Comparison: Healthy neem leaves lack both internal mining trails and white/gray powdery fungal growth.
+Recommended Action: Treat strongly affected leaves as visually unsuitable for medicinal use. Assess the mining pest and powdery mildew separately because they require different management decisions, and confirm the diagnosis before treatment.
+Reference: https://www.agritech.tnau.ac.in/crop_protection/tomato/tomato_2.html | https://agritech.tnau.ac.in/forestry/forest_disease_neem.html
+
+
+Species: Neem
+Disease Name: Leaf_Rust
+Display Name: Leaf Rust (Dataset Label)
+Description: A rust-like foliar condition corresponding to the dataset label. A neem-specific causal rust fungus was not reliably verified in the sources reviewed, so this row intentionally describes the visible rust syndrome rather than naming a pathogen.
+Typical Symptoms: Powdery yellow, orange, rust-brown, or dark pustule-like spots on leaves, often accompanied by chlorosis and drying when infection is severe.
+Healthy Plant Comparison: Healthy neem leaves do not show rust-colored powdery pustules or spore-like masses on the leaf surface.
+Recommended Action: Do not use visibly rust-affected leaves for medicinal preparation. Confirm that the symptoms are true rust rather than another spotting disorder before treatment; expert or laboratory confirmation is preferable.
+Reference: https://ipm.ucanr.edu/agriculture/floriculture-and-ornamental-nurseries/rust/
+
+
+Species: Neem
+Disease Name: Yellow
+Display Name: General Yellowing
+Description: A visible yellowing/stress class rather than a single pathogen-specific disease. In a recent medicinal-leaf disease dataset, neem yellowing was described as generalized yellowing and drooping associated with nutritional stress or possible early systemic infection.
+Typical Symptoms: Generalized loss of green color, pale or yellow leaflets, possible drooping, and reduced visual vigor without necessarily having a distinct lesion pattern.
+Healthy Plant Comparison: Healthy neem leaves are normally deep green and firm rather than broadly yellow, pale, or drooping.
+Recommended Action: Treat yellowing as a symptom that needs diagnosis, not proof of one disease. Check nutrition, watering and drainage, pests, and other disease signs before deciding on management or medicinal suitability.
+Reference: https://doi.org/10.1038/s41598-026-39182-3
+
+
+Species: Neem
+Disease Name: Powdery_Mildew
+Display Name: Powdery Mildew
+Description: A fungal disease of neem reported as powdery mildew and associated with Oidium azadirachtae in forestry pathology references.
+Typical Symptoms: White powdery patches on the leaf surface that can enlarge and merge; severe infection may give the lamina a gray-white appearance and contribute to premature defoliation.
+Healthy Plant Comparison: Healthy neem leaves are clean and green without white or gray powdery fungal growth on the surface.
+Recommended Action: Do not use visibly mildew-covered leaves for medicinal preparation. Remove heavily affected material, improve airflow and avoid conditions that favor persistent disease, and confirm local management recommendations before treatment.
+Reference: https://agritech.tnau.ac.in/forestry/forest_disease_neem.html
+
+
+Species: Neem
+Disease Name: Web_Blight
+Display Name: Web Blight
+Description: A fungal web-blight disease reported on neem and associated with Rhizoctonia solani. Adjacent infected leaves can become connected by fungal growth.
+Typical Symptoms: Grayish-brown blotches that enlarge, silky or web-like fungal growth between nearby leaves, leaf curling, necrosis, and possible premature detachment.
+Healthy Plant Comparison: Healthy neem leaves lack gray-brown spreading blotches, necrotic webbed tissue, and fungal strands joining neighboring leaves.
+Recommended Action: Treat visibly web-blighted leaves as unsuitable for medicinal use. Remove strongly affected material, reduce prolonged humidity and leaf-to-leaf wetness where possible, and verify the diagnosis before treatment.
+Reference: https://agritech.tnau.ac.in/forestry/forest_disease_neem.html | https://www.techscience.com/cmc/v69n2/43865/html | https://doi.org/10.1038/s41598-026-39182-3
+
+
+Species: Neem
+Disease Name: Spot
+Display Name: Leaf Spot
+Description: A general neem leaf-spot class. Recent medicinal-leaf classification work describes this class by distinct brown spots with a circular ring. Several fungal leaf-spot pathogens are reported on neem, so the label should not imply one pathogen unless confirmed.
+Typical Symptoms: Clearly defined brown spots, often circular or ringed; lesions may increase in number or size, and some leaf-spot diseases can produce pale or gray areas and premature shedding when severe.
+Healthy Plant Comparison: Healthy neem leaves should be uniformly green without clearly defined circular brown lesions or expanding necrotic spots.
+Recommended Action: Do not use strongly spotted or necrotic leaves for medicinal preparation. Confirm the causal agent if disease-specific treatment is required because several organisms can produce leaf-spot symptoms.
+Reference: https://doi.org/10.1038/s41598-026-39182-3 | https://agritech.tnau.ac.in/forestry/forest_disease_neem.html
+
+
+Species: betel
+Disease Name: Leaf_Rot
+Display Name: Leaf Rot
+Description: A destructive betel-leaf rot syndrome commonly associated with Phytophthora species in betel pathology literature, especially under warm, wet and highly humid conditions.
+Typical Symptoms: Circular or irregular dark-brown water-soaked lesions that enlarge, become black or rotten-looking, and may spread rapidly during persistent humidity; severe infection can cause defoliation.
+Healthy Plant Comparison: Healthy betel leaves are glossy, green, firm and intact without water-soaked expanding brown-black rot lesions.
+Recommended Action: Do not use rotten or water-soaked leaves for medicinal or culinary preparation. Remove affected material, avoid prolonged leaf wetness, improve drainage and airflow, and confirm the pathogen before disease-specific treatment.
+Reference: https://plantuse.plantnet.org/en/Piper_betle_%28PROSEA%29 | https://bsppjournals.onlinelibrary.wiley.com/doi/full/10.1002/ndr2.12140
+
+
+Species: betel
+Disease Name: Leaf_Spot
+Display Name: Leaf Spot / Anthracnose
+Description: A foliar spotting condition of betel. Colletotrichum-associated anthracnose/leaf spot is among the commonly reported causes, although the exact pathogen should be confirmed for a given dataset.
+Typical Symptoms: Small circular or oval brown to dark lesions, often with a yellowish border or halo; spots can enlarge, develop concentric patterns, merge, and form larger necrotic areas.
+Healthy Plant Comparison: Healthy betel leaves are evenly green and glossy without expanding brown necrotic spots, yellow halos, or coalescing lesions.
+Recommended Action: Treat heavily spotted leaves as visually unsuitable for medicinal or culinary use. Remove heavily affected leaves, minimize prolonged wetness, and confirm the causal organism before applying a disease-specific treatment.
+Reference: https://plantuse.plantnet.org/en/Piper_betle_%28PROSEA%29 | https://apsjournals.apsnet.org/doi/10.1094/PDIS-10-19-2206-PDN
+
+
+Species: centella_asiatica
+Disease Name: Dried
+Display Name: Dried Leaf Condition
+Description: A low-moisture or post-harvest quality condition, not a disease diagnosis. A published Centella asiatica image dataset includes a Dried class, and dried Centella leaves are also intentionally prepared for products such as teas, decoctions and infusions.
+Typical Symptoms: Loss of fresh turgor, shriveled or dry texture, increased brittleness, reduced pliability, and possible darkening or other color changes associated with moisture loss.
+Healthy Plant Comparison: Fresh healthy Centella leaves are generally green, pliable and turgid rather than brittle, shriveled or markedly dehydrated.
+Recommended Action: Do not automatically classify dryness as disease or unsafe. If the leaf was intentionally and hygienically dried, assess storage conditions, mold, abnormal odor, decay and contamination separately. Reject material showing mold or decomposition.
+Reference: https://doi.org/10.1016/j.dib.2024.111150 | https://pmc.ncbi.nlm.nih.gov/articles/PMC9642956/
+
+
+Species: holy_basil
+Disease Name: Downy_Mildew
+Display Name: Downy Mildew
+Description: A serious basil disease caused by the oomycete Peronospora belbahrii. Symptoms often begin as yellowing before characteristic sporulation becomes visible on the underside of the leaf.
+Typical Symptoms: Angular or vein-bounded yellow/chlorotic areas on the upper surface, gray to purplish fuzzy/downy growth on the underside, followed by brown or black necrotic tissue as disease progresses.
+Healthy Plant Comparison: Healthy holy basil leaves are evenly green without vein-bounded yellow patches or gray-purple downy growth on the lower surface.
+Recommended Action: Do not use visibly infected leaves for medicinal preparation. Remove heavily affected material, reduce prolonged leaf wetness and humidity around foliage where possible, and follow locally approved disease-management guidance.
+Reference: https://www.vegetables.cornell.edu/pest-management/disease-factsheets/basil-downy-mildew/ | https://ask.ifas.ufl.edu/publication/PP271 | https://doi.org/10.1038/s41598-026-39182-3
+
+
+Species: holy_basil
+Disease Name: Web_Blight
+Display Name: Web Blight
+Description: A web-blight condition in holy basil characterized in recent medicinal-leaf classification work by thin fungal webbing with necrosis and tissue death. The exact causal organism should be confirmed when pathogen-level diagnosis is required.
+Typical Symptoms: Thin web-like fungal growth across affected tissue, spreading brown or necrotic areas, tissue collapse or death, and possible sticking together of nearby affected leaf surfaces.
+Healthy Plant Comparison: Healthy holy basil leaves lack fungal webbing, spreading necrotic patches, and dead collapsed tissue.
+Recommended Action: Treat visibly web-blighted leaves as unsuitable for medicinal use. Remove strongly affected material, reduce prolonged humidity and wet foliage, and confirm the causal agent before selecting a treatment.
+Reference: https://doi.org/10.1038/s41598-026-39182-3
+
+
+Species: holy_basil
+Disease Name: Leaf_Spot
+Display Name: Leaf Spot
+Description: A foliar spotting disease of holy basil. Colletotrichum species, including reports of C. siamense and C. gloeosporioides, have been associated with leaf-spot symptoms in Ocimum tenuiflorum/sanctum.
+Typical Symptoms: Initially water-soaked or necrotic spots that become dark brown to black; lesions may be circular with irregular margins, increase in number, and merge into larger dead areas; yellow halos can occur in some spotting diseases.
+Healthy Plant Comparison: Healthy holy basil leaves do not show expanding dark necrotic spots, water-soaked lesions, or coalescing dead tissue.
+Recommended Action: Do not use heavily spotted or necrotic leaves for medicinal preparation. Remove strongly affected material, avoid prolonged wet foliage, and obtain pathogen confirmation when a specific disease treatment is needed.
+Reference: https://assets-eu.researchsquare.com/files/rs-5320443/v1/2b78a6b7-a55c-444c-a24a-8145f3cd7c77.pdf?c=1742832657 | https://www.intechopen.com/chapters/82331
+
+
+Species: holy_basil
+Disease Name: Yellow_Spot
+Display Name: Yellow Spot
+Description: A visible leaf-spot condition in holy basil. In a recent medicinal-leaf disease dataset, Yellow Spot was characterized by a light yellow ring around an initial lesion and was described as compatible with bacterial or fungal spotting, not a single confirmed pathogen.
+Typical Symptoms: Localized yellow spot or pale yellow halo/ring around an initial lesion, sometimes followed by darker central tissue or enlargement of the affected area.
+Healthy Plant Comparison: Healthy holy basil leaves are more uniformly green and lack localized yellow-ringed lesions or spot-associated discoloration.
+Recommended Action: Treat this as a symptom class unless the causal organism has been confirmed. Avoid medicinal use of strongly affected leaves and seek expert diagnosis if disease-specific treatment is required.
+Reference: https://doi.org/10.1038/s41598-026-39182-3
+
+
+Species: kalanchoe_pinnata
+Disease Name: Web_Blight
+Display Name: Web Blight
+Description: A fungal web-blight condition reported for Kalanchoe pinnata in medicinal-leaf classification work, characterized by mycelial webbing and confluent necrotic damage.
+Typical Symptoms: Gray mycelial or web-like growth, brown to dark necrotic spots that merge into larger affected areas, tissue death, and possible collapse of badly affected portions of the succulent leaf.
+Healthy Plant Comparison: Healthy Kalanchoe pinnata leaves are evenly green and succulent with intact edges and no gray webbing, spreading necrosis or abnormal discoloration.
+Recommended Action: Do not use visibly web-blighted or necrotic leaves for medicinal preparation. Remove heavily affected material, reduce prolonged humidity and wet foliage, and confirm the causal organism before treatment.
+Reference: https://doi.org/10.1038/s41598-026-39182-3
+
+
+Species: kalanchoe_pinnata
+Disease Name: Yellow
+Display Name: General Yellowing
+Description: A yellowing/stress condition rather than a single pathogen-specific disease. In a recent Kalanchoe pinnata dataset, the Yellow class was described as broad leaf yellowing while veins may remain greener, consistent with nutrient stress or possible early viral/systemic stress.
+Typical Symptoms: Generalized yellowing of much of the leaf blade, sometimes with greener veins, reduced normal green coloration, and no requirement for a distinct necrotic lesion.
+Healthy Plant Comparison: Healthy Kalanchoe pinnata leaves are evenly green, succulent and intact rather than broadly yellowed or chlorotic.
+Recommended Action: Do not infer a specific pathogen from yellowing alone. Check nutrition, watering and drainage, roots, pests and other infection signs. Strongly yellowed material should receive expert review before medicinal use.
+Reference: https://doi.org/10.1038/s41598-026-39182-3
+
+
+Species: kalanchoe_pinnata
+Disease Name: Yellow_Blight
+Display Name: Yellow Blight
+Description: A field-observed syndrome used as a classification label for Kalanchoe pinnata. It is characterized by extensive yellowing followed by marginal necrosis and tissue destruction; it should not be presented as a pathogen-specific disease unless independently confirmed.
+Typical Symptoms: Extensive chlorosis/yellowing, progressive browning or necrosis from leaf margins, damaged or dead edge tissue, and broader tissue destruction as the condition advances.
+Healthy Plant Comparison: Healthy leaves remain evenly green and succulent with intact living margins rather than widespread yellowing followed by marginal death.
+Recommended Action: Treat leaves showing extensive yellowing plus necrosis as visually unsuitable for medicinal use. Remove severely affected material and seek expert diagnosis because the label describes a syndrome rather than one confirmed pathogen.
+Reference: https://doi.org/10.1038/s41598-026-39182-3
+
+
+Species: murraya_koenigii
+Disease Name: Complex Foliar Damage
+Display Name: Complex Foliar Damage
+Description: A composite visual-damage class rather than a single disease diagnosis. It can represent multiple simultaneous forms of foliar injury such as chewing, sap-feeding injury, discoloration, sooty deposits, deformation or necrosis.
+Typical Symptoms: A mixture of holes or pinholes, irregular or geometric chewing cuts, damaged margins, yellowing, distorted tissue, localized necrosis, and sometimes dark sooty coating associated with sap-feeding insects.
+Healthy Plant Comparison: Healthy curry leaves have intact, green leaflets without extensive chewing, holes, distortion, sooty coating, or multiple concurrent damage patterns.
+Recommended Action: Do not infer one pathogen from this label. Treat heavily damaged leaves as unsuitable for medicinal preparation, inspect for insects and mites on both leaf surfaces and shoots, and obtain a specific diagnosis before control measures.
+Reference: https://www.researchgate.net/publication/379255673_Record_of_new_pests_of_curry_leaves_Murraya_koenigii_L_Spreng_from_Kerala_India | https://www.researchgate.net/publication/376314456_Phytochemical_Profiling_of_Primary_and_Secondary_Metabolites_in_Pest_Infested_Murraya_koenigii_L_Spreng
+
+
+Species: murraya_koenigii
+Disease Name: Insect damage
+Display Name: Insect Damage
+Description: A pest-damage class rather than a disease. Curry leaf plants are attacked by multiple insect groups, and the visible injury depends on whether the pest chews tissue, feeds on sap, or contaminates foliage with honeydew and associated sooty mold.
+Typical Symptoms: Small pinholes or nibbling on tender leaves, irregular or geometric chewing cuts, partial defoliation, yellowing or curling from sap feeding, and in some infestations black sooty coating associated with honeydew.
+Healthy Plant Comparison: Healthy curry leaf leaflets are intact and green without feeding holes, major cut-outs, pest-associated yellowing, curling, or sooty deposits.
+Recommended Action: Do not use heavily insect-damaged leaves for medicinal preparation. Inspect tender shoots and both sides of leaflets, remove severely infested material, and identify the pest before choosing a control method.
+Reference: https://www.researchgate.net/publication/379255673_Record_of_new_pests_of_curry_leaves_Murraya_koenigii_L_Spreng_from_Kerala_India | https://www.researchgate.net/publication/376314456_Phytochemical_Profiling_of_Primary_and_Secondary_Metabolites_in_Pest_Infested_Murraya_koenigii_L_Spreng
