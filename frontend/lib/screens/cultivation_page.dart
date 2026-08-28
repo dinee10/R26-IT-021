@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../services/api_service.dart';
 import '../services/weather_service.dart';
 import '../theme/app_colors.dart';
 
@@ -17,6 +18,7 @@ class _CultivationPageState extends State<CultivationPage> {
   final _rainfall = TextEditingController();
   final _budgetAmount = TextEditingController();
   final _weatherService = WeatherService();
+  final _apiService = ApiService();
   String? _soilType;
   String? _landSize;
   String _budgetCurrency = 'LKR';
@@ -26,7 +28,9 @@ class _CultivationPageState extends State<CultivationPage> {
   String? _growingDuration;
   String _weatherStatus = 'Detecting local weather...';
   bool _loadingWeather = true;
-  List<String> _recommendedPlants = const [];
+  List<PlantRecommendation> _recommendations = const [];
+  bool _loadingRecommendations = false;
+  String? _recommendationError;
 
   static const _months = [
     'January',
@@ -86,26 +90,34 @@ class _CultivationPageState extends State<CultivationPage> {
     }
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     final recommendationInput = _recommendationInput;
-    setState(() => _recommendedPlants = _recommendationsFor(recommendationInput));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Here are five plants to consider.')),
-    );
-  }
-
-  List<String> _recommendationsFor(Map<String, dynamic> input) {
-    final plants = <String>['Tulsi', 'Turmeric', 'Aloe vera', 'Ashwagandha', 'Neem'];
-    if ((input['sunlight'] as String).startsWith('Low')) {
-      plants.remove('Aloe vera');
-      plants.insert(0, 'Aloe vera');
+    setState(() {
+      _loadingRecommendations = true;
+      _recommendationError = null;
+      _recommendations = const [];
+    });
+    try {
+      final recommendations = await _apiService.recommend(recommendationInput);
+      if (!mounted) return;
+      setState(() {
+        _loadingRecommendations = false;
+        _recommendations = recommendations.take(5).toList();
+      });
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loadingRecommendations = false;
+        _recommendationError = error.message;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loadingRecommendations = false;
+        _recommendationError = 'Could not connect to the recommendation service.';
+      });
     }
-    if ((input['growingSpace'] as String) == 'Small pot or container') {
-      plants.remove('Tulsi');
-      plants.insert(0, 'Tulsi');
-    }
-    return plants.take(5).toList();
   }
 
   Map<String, dynamic> get _recommendationInput => {
@@ -177,12 +189,16 @@ class _CultivationPageState extends State<CultivationPage> {
             _dropdown('How long do you want to grow the plant?', _growingDuration, const ['Short - a few weeks to a few months', 'Medium - several months', 'Long - many months or longer'], (value) => setState(() => _growingDuration = value)),
             const Padding(padding: EdgeInsets.only(top: 0, bottom: 4), child: Text('This is how long you are willing to wait before harvesting or seeing the plant mature.', style: TextStyle(color: AppColors.muted, fontSize: 13, fontWeight: FontWeight.w600))),
             const SizedBox(height: 20),
-            FilledButton.icon(onPressed: _submit, icon: const Icon(Icons.eco_rounded), label: const Text('Get crop recommendation'), style: FilledButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white, minimumSize: const Size.fromHeight(54), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)))),
-            if (_recommendedPlants.isNotEmpty) ...[
+            FilledButton.icon(onPressed: _loadingRecommendations ? null : _submit, icon: _loadingRecommendations ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Icon(Icons.eco_rounded), label: Text(_loadingRecommendations ? 'Finding suitable plants...' : 'Get crop recommendation'), style: FilledButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white, minimumSize: const Size.fromHeight(54), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)))),
+            if (_recommendationError != null) ...[
+              const SizedBox(height: 12),
+              Text(_recommendationError!, style: const TextStyle(color: AppColors.danger, fontWeight: FontWeight.w700)),
+            ],
+            if (_recommendations.isNotEmpty) ...[
               const SizedBox(height: 28),
               const _SectionTitle(title: 'Recommended plants', icon: Icons.local_florist_rounded),
               const SizedBox(height: 12),
-              ..._recommendedPlants.asMap().entries.map((entry) => _RecommendationCard(position: entry.key + 1, plant: entry.value)),
+              ..._recommendations.asMap().entries.map((entry) => _RecommendationCard(position: entry.key + 1, recommendation: entry.value)),
             ],
           ],
         ),
@@ -221,10 +237,10 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _RecommendationCard extends StatelessWidget {
-  const _RecommendationCard({required this.position, required this.plant});
+  const _RecommendationCard({required this.position, required this.recommendation});
 
   final int position;
-  final String plant;
+  final PlantRecommendation recommendation;
 
   @override
   Widget build(BuildContext context) {
@@ -244,7 +260,7 @@ class _RecommendationCard extends StatelessWidget {
             child: Text('$position', style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w900)),
           ),
           const SizedBox(width: 12),
-          Expanded(child: Text(plant, style: const TextStyle(color: AppColors.text, fontSize: 16, fontWeight: FontWeight.w800))),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(recommendation.name, style: const TextStyle(color: AppColors.text, fontSize: 16, fontWeight: FontWeight.w800)), const SizedBox(height: 3), Text(recommendation.reason, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.muted, fontSize: 12, fontWeight: FontWeight.w600))])),
           const Icon(Icons.eco_rounded, color: AppColors.primary),
         ],
       ),
