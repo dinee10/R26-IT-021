@@ -1,9 +1,15 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:uuid/uuid.dart';
+
 import 'firebase/firebase_options.dart';
 import 'screens/auth_gate.dart';
 import 'screens/startup_error_page.dart';
 import 'theme/app_colors.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,6 +47,7 @@ class AyurPlantApp extends StatelessWidget {
       home: startupError == null
           ? const AuthGate()
           : StartupErrorPage(error: startupError!),
+
     );
   }
 }
