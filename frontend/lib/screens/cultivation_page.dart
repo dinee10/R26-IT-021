@@ -143,26 +143,61 @@ class _CultivationPageState extends State<CultivationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Cultivation')),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-          children: [
+      backgroundColor: const Color(0xFFF4F8F1),
+      appBar: AppBar(
+        title: const Text('Plant Cultivation'),
+        backgroundColor: const Color(0xFFF4F8F1),
+        surfaceTintColor: Colors.transparent,
+      ),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.42,
+              child: Image.network(
+                'https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1800&q=85',
+                fit: BoxFit.cover,
+                alignment: Alignment.topCenter,
+                errorBuilder: (context, error, stackTrace) => Image.asset(
+                  'assets/images/login_bg.png',
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: ColoredBox(color: Colors.white.withValues(alpha: 0.72)),
+          ),
+          Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+              children: [
             const _CultivationHero(),
             const SizedBox(height: 16),
             const _CultivationTabs(),
             const SizedBox(height: 18),
-            _WeatherCard(status: _weatherStatus, loading: _loadingWeather, onRefresh: _detectWeather),
-            const SizedBox(height: 24),
-            const _SectionTitle(title: 'Weather data', icon: Icons.cloud_rounded),
-            const SizedBox(height: 12),
-            Row(children: [Expanded(child: _numberField(_temperature, 'Temperature', '°C')), const SizedBox(width: 12), Expanded(child: _numberField(_humidity, 'Humidity', '%'))]),
-            const SizedBox(height: 12),
-            _numberField(_rainfall, 'Rainfall', 'mm'),
-            const SizedBox(height: 24),
-            const _SectionTitle(title: 'Farm details', icon: Icons.agriculture_rounded),
-            const SizedBox(height: 12),
+            _Panel(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _WeatherCard(status: _weatherStatus, loading: _loadingWeather, onRefresh: _detectWeather),
+                  const SizedBox(height: 20),
+                  const _SectionTitle(title: 'Weather data', icon: Icons.cloud_rounded),
+                  const SizedBox(height: 12),
+                  Row(children: [Expanded(child: _numberField(_temperature, 'Temperature', '°C')), const SizedBox(width: 12), Expanded(child: _numberField(_humidity, 'Humidity', '%'))]),
+                  const SizedBox(height: 12),
+                  _numberField(_rainfall, 'Rainfall', 'mm'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            _Panel(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _SectionTitle(title: 'Farm details', icon: Icons.agriculture_rounded),
+                  const SizedBox(height: 12),
             _dropdown('What type of soil do you have?', _soilType, const [
               'Loamy - soft, balanced soil',
               'Sandy - loose and drains quickly',
@@ -201,9 +236,9 @@ class _CultivationPageState extends State<CultivationPage> {
             const SizedBox(height: 10),
             LayoutBuilder(builder: (context, constraints) {
               final compact = constraints.maxWidth < 360;
-              final currencyField = DropdownButtonFormField<String>(initialValue: _budgetCurrency, items: _currencies.map((currency) => DropdownMenuItem(value: currency, child: Text(currency))).toList(), onChanged: (value) => setState(() => _budgetCurrency = value ?? _budgetCurrency), decoration: const InputDecoration(prefixIcon: Icon(Icons.currency_exchange_rounded)));
+              final currencyField = DropdownButtonFormField<String>(initialValue: _budgetCurrency, items: _currencies.map((currency) => DropdownMenuItem(value: currency, child: Text(currency))).toList(), onChanged: (value) => setState(() => _budgetCurrency = value ?? _budgetCurrency), decoration: const InputDecoration(prefixIcon: Icon(Icons.currency_exchange_rounded), contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 16)));
               final amountField = TextFormField(controller: _budgetAmount, keyboardType: TextInputType.number, inputFormatters: [FilteringTextInputFormatter.digitsOnly, _ThousandsSeparatorFormatter()], validator: (value) => value == null || value.trim().isEmpty ? 'Required' : null, decoration: const InputDecoration(labelText: 'Budget amount', hintText: 'Example: 5,000', prefixIcon: Icon(Icons.payments_outlined)));
-              return compact ? Column(children: [currencyField, const SizedBox(height: 12), amountField]) : Row(children: [SizedBox(width: 96, child: currencyField), const SizedBox(width: 12), Expanded(child: amountField)]);
+              return compact ? Column(children: [currencyField, const SizedBox(height: 12), amountField]) : Row(children: [SizedBox(width: 118, child: currencyField), const SizedBox(width: 12), Expanded(child: amountField)]);
             }),
             const SizedBox(height: 12),
             _dropdown('How will you provide water?', _irrigation, const ['Rain only', 'Hand watering', 'Drip irrigation', 'Sprinkler', 'Hose', 'Other'], (value) => setState(() => _irrigation = value)),
@@ -213,6 +248,9 @@ class _CultivationPageState extends State<CultivationPage> {
             const Padding(padding: EdgeInsets.only(top: 0, bottom: 4), child: Text('This is how long you are willing to wait before harvesting or seeing the plant mature.', style: TextStyle(color: AppColors.muted, fontSize: 13, fontWeight: FontWeight.w600))),
             const SizedBox(height: 20),
             FilledButton.icon(onPressed: _loadingRecommendations ? null : _submit, icon: _loadingRecommendations ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Icon(Icons.eco_rounded), label: Text(_loadingRecommendations ? 'Finding suitable plants...' : 'Get crop recommendation'), style: FilledButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white, minimumSize: const Size.fromHeight(54), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)))),
+                ],
+              ),
+            ),
             if (_recommendationError != null) ...[
               const SizedBox(height: 12),
               Text(_recommendationError!, style: const TextStyle(color: AppColors.danger, fontWeight: FontWeight.w700)),
@@ -227,8 +265,10 @@ class _CultivationPageState extends State<CultivationPage> {
               const SizedBox(height: 12),
               ..._recommendations.asMap().entries.map((entry) => _RecommendationCard(position: entry.key + 1, recommendation: entry.value)),
             ],
-          ],
-        ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -364,6 +404,32 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(children: [Icon(icon, color: AppColors.primary, size: 21), const SizedBox(width: 8), Text(title, style: const TextStyle(color: AppColors.text, fontSize: 17, fontWeight: FontWeight.w900))]);
+}
+
+class _Panel extends StatelessWidget {
+  const _Panel({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.95)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF245A36).withValues(alpha: 0.08),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
 }
 
 class _BestPlantCard extends StatelessWidget {
