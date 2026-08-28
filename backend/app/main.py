@@ -3,7 +3,6 @@ from flask_cors import CORS
 from app.routes.api import api
 
 app = Flask(__name__)
-CORS(app)
 app.config["MAX_CONTENT_LENGTH"] = int(
     os.getenv("MAX_UPLOAD_BYTES", str(25 * 1024 * 1024))
 )
