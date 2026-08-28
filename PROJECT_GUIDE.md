@@ -1,9 +1,15 @@
 # Herbal Plant Detector Project Guide
 
-This project has two parts:
+> **Frontend handoff:** The prototype Flutter frontend described in historical
+> sections of this guide was removed on 2026-08-28 so the frontend team's version
+> can replace it. See `README.md` for the preserved behavior, complete API
+> contract, and conflict-safe integration instructions.
+
+This project was designed with two parts:
 
 - `backend`: Flask API and TensorFlow model prediction.
-- `frontend`: Flutter mobile app for uploading up to 5 leaf/seed images.
+- `frontend`: supplied separately by the frontend team (the old prototype has
+  been removed).
 
 ## Important Accuracy Note
 
