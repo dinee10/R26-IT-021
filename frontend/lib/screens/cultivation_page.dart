@@ -17,6 +17,7 @@ class _CultivationPageState extends State<CultivationPage> {
   final _humidity = TextEditingController();
   final _rainfall = TextEditingController();
   final _budgetAmount = TextEditingController();
+  final _soilPh = TextEditingController();
   final _weatherService = WeatherService();
   final _apiService = ApiService();
   String? _soilType;
@@ -29,6 +30,7 @@ class _CultivationPageState extends State<CultivationPage> {
   String _weatherStatus = 'Detecting local weather...';
   bool _loadingWeather = true;
   List<PlantRecommendation> _recommendations = const [];
+  PlantRecommendation? _bestPlant;
   bool _loadingRecommendations = false;
   String? _recommendationError;
 
@@ -61,6 +63,7 @@ class _CultivationPageState extends State<CultivationPage> {
     _humidity.dispose();
     _rainfall.dispose();
     _budgetAmount.dispose();
+    _soilPh.dispose();
     super.dispose();
   }
 
@@ -97,13 +100,15 @@ class _CultivationPageState extends State<CultivationPage> {
       _loadingRecommendations = true;
       _recommendationError = null;
       _recommendations = const [];
+      _bestPlant = null;
     });
     try {
       final recommendations = await _apiService.recommend(recommendationInput);
       if (!mounted) return;
       setState(() {
         _loadingRecommendations = false;
-        _recommendations = recommendations.take(5).toList();
+        _bestPlant = recommendations.bestPlant;
+        _recommendations = recommendations.recommendations.take(5).toList();
       });
     } on ApiException catch (error) {
       if (!mounted) return;
@@ -124,6 +129,7 @@ class _CultivationPageState extends State<CultivationPage> {
         'temperature': double.parse(_temperature.text),
         'rainfall': double.parse(_rainfall.text),
         'humidity': double.parse(_humidity.text),
+        'soilPh': _soilPh.text.trim().isEmpty ? null : double.parse(_soilPh.text),
         'soilType': _soilType,
         'growingSpace': _landSize,
         'budgetAmount': int.parse(_budgetAmount.text.replaceAll(',', '')),
@@ -143,10 +149,10 @@ class _CultivationPageState extends State<CultivationPage> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
           children: [
-            const Text('Plan your crop', style: TextStyle(color: AppColors.text, fontSize: 28, fontWeight: FontWeight.w900)),
-            const SizedBox(height: 6),
-            const Text('Use current weather and farm details to prepare a recommendation.', style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 20),
+            const _CultivationHero(),
+            const SizedBox(height: 16),
+            const _CultivationTabs(),
+            const SizedBox(height: 18),
             _WeatherCard(status: _weatherStatus, loading: _loadingWeather, onRefresh: _detectWeather),
             const SizedBox(height: 24),
             const _SectionTitle(title: 'Weather data', icon: Icons.cloud_rounded),
@@ -164,6 +170,23 @@ class _CultivationPageState extends State<CultivationPage> {
               'Silty - smooth and holds moisture',
               'Not sure - I do not know',
             ], (value) => setState(() => _soilType = value)),
+            TextFormField(
+              controller: _soilPh,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) return null;
+                final ph = double.tryParse(value);
+                return ph == null || ph < 0 || ph > 14 ? 'Enter a pH value from 0 to 14' : null;
+              },
+              decoration: const InputDecoration(
+                labelText: 'Soil pH (optional)',
+                hintText: 'Leave blank if you are not sure',
+                helperText: 'You can still get recommendations without this value.',
+                prefixIcon: Icon(Icons.science_outlined),
+              ),
+            ),
+            const SizedBox(height: 12),
             _dropdown('Where will you grow the plant?', _landSize, const [
               'Small pot or container',
               'Small garden',
@@ -196,6 +219,10 @@ class _CultivationPageState extends State<CultivationPage> {
             ],
             if (_recommendations.isNotEmpty) ...[
               const SizedBox(height: 28),
+              if (_bestPlant != null) ...[
+                _BestPlantCard(recommendation: _bestPlant!),
+                const SizedBox(height: 24),
+              ],
               const _SectionTitle(title: 'Recommended plants', icon: Icons.local_florist_rounded),
               const SizedBox(height: 12),
               ..._recommendations.asMap().entries.map((entry) => _RecommendationCard(position: entry.key + 1, recommendation: entry.value)),
@@ -227,6 +254,109 @@ class _ThousandsSeparatorFormatter extends TextInputFormatter {
   }
 }
 
+class _CultivationHero extends StatelessWidget {
+  const _CultivationHero();
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(22),
+      child: SizedBox(
+        height: 176,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset('assets/images/login_bg.png', fit: BoxFit.cover),
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [Color(0xF2FFFFFF), Color(0x90FFFFFF), Color(0x15FFFFFF)],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Plan your crop', style: TextStyle(color: AppColors.text, fontSize: 27, fontWeight: FontWeight.w900)),
+                        SizedBox(height: 7),
+                        Text('Tell us about your growing space and we will find the best plants for you.', style: TextStyle(color: AppColors.muted, height: 1.3, fontWeight: FontWeight.w700)),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.9), shape: BoxShape.circle),
+                    child: const Icon(Icons.local_florist_rounded, color: AppColors.primary, size: 42),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CultivationTabs extends StatelessWidget {
+  const _CultivationTabs();
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: const [
+          _PlanTag(icon: Icons.auto_awesome_rounded, label: 'Smart plan', active: true),
+          SizedBox(width: 8),
+          _PlanTag(icon: Icons.cloud_rounded, label: 'Live weather'),
+          SizedBox(width: 8),
+          _PlanTag(icon: Icons.eco_rounded, label: 'Plant match'),
+          SizedBox(width: 8),
+          _PlanTag(icon: Icons.schedule_rounded, label: 'Best timing'),
+        ],
+      ),
+    );
+  }
+}
+
+class _PlanTag extends StatelessWidget {
+  const _PlanTag({required this.icon, required this.label, this.active = false});
+
+  final IconData icon;
+  final String label;
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+      decoration: BoxDecoration(
+        color: active ? AppColors.primary : Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: active ? AppColors.primary : AppColors.border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: active ? Colors.white : AppColors.muted),
+          const SizedBox(width: 6),
+          Text(label, style: TextStyle(color: active ? Colors.white : AppColors.text, fontSize: 12, fontWeight: FontWeight.w800)),
+        ],
+      ),
+    );
+  }
+}
+
 class _SectionTitle extends StatelessWidget {
   const _SectionTitle({required this.title, required this.icon});
   final String title;
@@ -234,6 +364,61 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(children: [Icon(icon, color: AppColors.primary, size: 21), const SizedBox(width: 8), Text(title, style: const TextStyle(color: AppColors.text, fontSize: 17, fontWeight: FontWeight.w900))]);
+}
+
+class _BestPlantCard extends StatelessWidget {
+  const _BestPlantCard({required this.recommendation});
+
+  final PlantRecommendation recommendation;
+
+  @override
+  Widget build(BuildContext context) {
+    final details = <MapEntry<String, String?>>[
+      MapEntry('Soil requirement', recommendation.soilRequirement),
+      MapEntry('Sunlight requirement', recommendation.sunlightRequirement),
+      MapEntry('Watering requirement', recommendation.wateringRequirement),
+      MapEntry('Planting method', recommendation.plantingMethod),
+      MapEntry('Fertilizer and care', recommendation.fertilizerCare),
+      MapEntry('Growing period', recommendation.growingPeriod),
+      MapEntry('Selling price', recommendation.sellingPrice),
+      MapEntry('Harvesting', recommendation.harvestingInformation),
+    ];
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0FBEF),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.45), width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.16), shape: BoxShape.circle),
+                child: const Icon(Icons.local_florist_rounded, color: AppColors.primary, size: 30),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(child: Text('Best Plant for You', style: TextStyle(color: AppColors.primary, fontSize: 14, fontWeight: FontWeight.w900))),
+              if (recommendation.score > 0) Text('${recommendation.score} pts', style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w900)),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Text(recommendation.name, style: const TextStyle(color: AppColors.text, fontSize: 25, fontWeight: FontWeight.w900)),
+          const SizedBox(height: 6),
+          Text(recommendation.whySuitable ?? recommendation.reason, style: const TextStyle(color: AppColors.muted, height: 1.35, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 16),
+          ...details.where((detail) => detail.value != null).map((detail) => Padding(
+                padding: const EdgeInsets.only(bottom: 9),
+                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [SizedBox(width: 126, child: Text(detail.key, style: const TextStyle(color: AppColors.text, fontSize: 12, fontWeight: FontWeight.w900))), Expanded(child: Text(detail.value!, style: const TextStyle(color: AppColors.muted, fontSize: 12, fontWeight: FontWeight.w600)))]),
+              )),
+        ],
+      ),
+    );
+  }
 }
 
 class _RecommendationCard extends StatelessWidget {
@@ -244,25 +429,66 @@ class _RecommendationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
+    return Semantics(
+      button: true,
+      label: 'View details for ${recommendation.name}',
+      child: InkWell(
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: AppColors.primary.withValues(alpha: 0.12),
-            child: Text('$position', style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w900)),
+        onTap: () => showModalBottomSheet<void>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => _PlantDetailsSheet(recommendation: recommendation),
+        ),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.border)),
+          child: Row(
+            children: [
+              CircleAvatar(radius: 18, backgroundColor: AppColors.primary.withValues(alpha: 0.12), child: Text('$position', style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w900))),
+              const SizedBox(width: 12),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(recommendation.name, style: const TextStyle(color: AppColors.text, fontSize: 16, fontWeight: FontWeight.w800)), const SizedBox(height: 3), Text(recommendation.reason, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.muted, fontSize: 12, fontWeight: FontWeight.w600))])),
+              const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.muted, size: 16),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(recommendation.name, style: const TextStyle(color: AppColors.text, fontSize: 16, fontWeight: FontWeight.w800)), const SizedBox(height: 3), Text(recommendation.reason, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.muted, fontSize: 12, fontWeight: FontWeight.w600))])),
-          const Icon(Icons.eco_rounded, color: AppColors.primary),
-        ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PlantDetailsSheet extends StatelessWidget {
+  const _PlantDetailsSheet({required this.recommendation});
+
+  final PlantRecommendation recommendation;
+
+  @override
+  Widget build(BuildContext context) {
+    final details = <MapEntry<String, String?>>[
+      MapEntry('Soil requirement', recommendation.soilRequirement),
+      MapEntry('Sunlight requirement', recommendation.sunlightRequirement),
+      MapEntry('Watering requirement', recommendation.wateringRequirement),
+      MapEntry('Planting method', recommendation.plantingMethod),
+      MapEntry('Fertilizer and care', recommendation.fertilizerCare),
+      MapEntry('Growing period', recommendation.growingPeriod),
+      MapEntry('Selling price', recommendation.sellingPrice),
+      MapEntry('Harvesting', recommendation.harvestingInformation),
+    ];
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 680),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      child: SingleChildScrollView(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Center(child: Container(width: 42, height: 4, decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(4)))),
+          const SizedBox(height: 18),
+          Row(children: [Container(width: 48, height: 48, decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.14), shape: BoxShape.circle), child: const Icon(Icons.local_florist_rounded, color: AppColors.primary, size: 28)), const SizedBox(width: 12), Expanded(child: Text(recommendation.name, style: const TextStyle(color: AppColors.text, fontSize: 24, fontWeight: FontWeight.w900))), Text('${recommendation.score} pts', style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w900))]),
+          const SizedBox(height: 10),
+          Text(recommendation.whySuitable ?? recommendation.reason, style: const TextStyle(color: AppColors.muted, height: 1.35, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 18),
+          ...details.where((detail) => detail.value != null).map((detail) => Padding(padding: const EdgeInsets.only(bottom: 12), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [SizedBox(width: 132, child: Text(detail.key, style: const TextStyle(color: AppColors.text, fontSize: 12, fontWeight: FontWeight.w900))), Expanded(child: Text(detail.value!, style: const TextStyle(color: AppColors.muted, fontSize: 12, fontWeight: FontWeight.w600)))]))),
+        ]),
       ),
     );
   }

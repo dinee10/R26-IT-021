@@ -7,19 +7,53 @@ class PlantRecommendation {
     required this.name,
     required this.score,
     required this.reason,
+    this.whySuitable,
+    this.soilRequirement,
+    this.sunlightRequirement,
+    this.wateringRequirement,
+    this.plantingMethod,
+    this.fertilizerCare,
+    this.growingPeriod,
+    this.sellingPrice,
+    this.harvestingInformation,
   });
 
   final String name;
   final int score;
   final String reason;
+  final String? whySuitable;
+  final String? soilRequirement;
+  final String? sunlightRequirement;
+  final String? wateringRequirement;
+  final String? plantingMethod;
+  final String? fertilizerCare;
+  final String? growingPeriod;
+  final String? sellingPrice;
+  final String? harvestingInformation;
 
   factory PlantRecommendation.fromJson(Map<String, dynamic> json) {
     return PlantRecommendation(
       name: json['name'] as String,
       score: (json['score'] as num).toInt(),
       reason: json['reason'] as String,
+      whySuitable: json['whySuitable'] as String?,
+      soilRequirement: json['soilRequirement'] as String?,
+      sunlightRequirement: json['sunlightRequirement'] as String?,
+      wateringRequirement: json['wateringRequirement'] as String?,
+      plantingMethod: json['plantingMethod'] as String?,
+      fertilizerCare: json['fertilizerCare'] as String?,
+      growingPeriod: json['growingPeriod'] as String?,
+      sellingPrice: json['sellingPrice'] as String?,
+      harvestingInformation: json['harvestingInformation'] as String?,
     );
   }
+}
+
+class RecommendationResult {
+  const RecommendationResult({required this.bestPlant, required this.recommendations});
+
+  final PlantRecommendation bestPlant;
+  final List<PlantRecommendation> recommendations;
 }
 
 class ApiService {
@@ -32,7 +66,7 @@ class ApiService {
 
   final http.Client _client;
 
-  Future<List<PlantRecommendation>> recommend(
+  Future<RecommendationResult> recommend(
     Map<String, dynamic> input,
   ) async {
     final response = await _client
@@ -49,9 +83,11 @@ class ApiService {
     }
 
     final items = body['recommendations'] as List<dynamic>;
-    return items
+    final recommendations = items
         .map((item) => PlantRecommendation.fromJson(item as Map<String, dynamic>))
         .toList();
+    final bestPlant = PlantRecommendation.fromJson(body['bestPlant'] as Map<String, dynamic>);
+    return RecommendationResult(bestPlant: bestPlant, recommendations: recommendations);
   }
 }
 

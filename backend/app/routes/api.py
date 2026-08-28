@@ -128,9 +128,37 @@ PREFERRED_SEASONS = {
 
 CURRENCY_TO_USD = {'LKR': 0.0031, 'USD': 1, 'EUR': 1.08, 'GBP': 1.27, 'INR': 0.012, 'AUD': 0.65, 'CAD': 0.73, 'JPY': 0.0067}
 
+PLANT_DETAILS = {
+    'Tulsi': ('Loamy, well-drained soil', 'Partial to full sunlight', 'Water when the topsoil feels dry', 'Sow seeds or plant a healthy cutting', 'Compost every 4 to 6 weeks', '3 to 4 months for regular leaf harvest', 'Harvest leaves and soft stems regularly'),
+    'Turmeric': ('Rich, loose loamy soil', 'Partial sunlight', 'Keep soil evenly moist, never waterlogged', 'Plant healthy rhizome pieces 5 cm deep', 'Use compost or balanced fertilizer during growth', '8 to 10 months', 'Harvest when leaves turn yellow and dry'),
+    'Aloe vera': ('Sandy, fast-draining soil', 'Partial to full sunlight', 'Water deeply but allow soil to dry between watering', 'Plant offsets or leaf-rooted pups', 'Light compost feed twice a year', '8 to 12 months for mature leaves', 'Cut outer leaves close to the base'),
+    'Ashwagandha': ('Sandy loam with good drainage', 'Full sunlight', 'Water lightly; avoid standing water', 'Sow seeds directly in prepared soil', 'Add compost before planting and once during growth', '5 to 6 months', 'Harvest roots when leaves dry and berries mature'),
+    'Neem': ('Sandy or loamy soil', 'Full sunlight', 'Water young plants regularly; mature trees need less', 'Plant fresh seeds or a nursery sapling', 'Compost once or twice yearly', '3 to 5 years for useful seed harvest', 'Collect mature seeds and prune leaves as needed'),
+    'Ginger': ('Moist, rich loamy soil', 'Partial sunlight', 'Keep soil moist with regular watering', 'Plant pieces of healthy ginger rhizome', 'Compost and organic fertilizer every 6 weeks', '8 to 10 months', 'Lift rhizomes after leaves yellow'),
+    'Lemongrass': ('Loamy or sandy soil', 'Full sunlight', 'Water regularly while establishing', 'Plant rooted divisions or stem cuttings', 'Add compost every 2 to 3 months', '4 to 6 months for first harvest', 'Cut outer stalks near the base'),
+    'Mint': ('Moist loamy or silty soil', 'Low to partial sunlight', 'Keep soil consistently moist', 'Plant stem cuttings or rooted runners', 'Use light compost monthly', '2 to 3 months', 'Pick leaves and tips often to encourage growth'),
+    'Cinnamon': ('Deep, fertile loamy soil', 'Partial to full sunlight', 'Water regularly during dry periods', 'Plant seeds or a healthy nursery sapling', 'Use compost twice yearly', '2 to 3 years for first bark harvest', 'Harvest mature bark carefully from branches'),
+    'Gotu kola': ('Moist silty or loamy soil', 'Low to partial sunlight', 'Keep soil moist without flooding', 'Plant runners or stem cuttings', 'Add compost every 4 to 6 weeks', '2 to 3 months', 'Harvest leaves and runners regularly'),
+}
+
 
 def _choice_value(value):
     return (value or '').split(' - ', 1)[0].strip()
+
+
+def _plant_details(name, reason):
+    details = PLANT_DETAILS[name]
+    return {
+        'whySuitable': reason + '.',
+        'soilRequirement': details[0],
+        'sunlightRequirement': details[1],
+        'wateringRequirement': details[2],
+        'plantingMethod': details[3],
+        'fertilizerCare': details[4],
+        'growingPeriod': details[5],
+        'sellingPrice': 'Varies by harvest size, quality, and your local market price.',
+        'harvestingInformation': details[6],
+    }
 
 
 @bp.route('/recommend', methods=['POST'])
@@ -148,10 +176,15 @@ def recommend():
         rainfall = float(data['rainfall'])
         humidity = float(data['humidity'])
         budget = float(data['budgetAmount'])
+        soil_ph = data.get('soilPh')
+        soil_ph = None if soil_ph in (None, '') else float(soil_ph)
     except (TypeError, ValueError):
-        return jsonify({'error': 'Weather and budget values must be numeric'}), 400
-    if not all(isfinite(value) for value in (temperature, rainfall, humidity, budget)) or budget < 0:
+        return jsonify({'error': 'Weather, budget, and soil pH values must be numeric'}), 400
+    numeric_values = (temperature, rainfall, humidity, budget)
+    if not all(isfinite(value) for value in numeric_values) or budget < 0:
         return jsonify({'error': 'Weather and budget values must be valid and non-negative'}), 400
+    if soil_ph is not None and (not isfinite(soil_ph) or soil_ph < 0 or soil_ph > 14):
+        return jsonify({'error': 'Soil pH must be between 0 and 14'}), 400
 
     soil = _choice_value(data['soilType'])
     space = data['growingSpace']
@@ -199,11 +232,21 @@ def recommend():
             matches.append('watering method')
         if humidity >= 60 and 'Silty' in plant['soils']:
             score += 1
+        if soil_ph is not None:
+            if soil_ph < 6.5 and plant['name'] in ['Turmeric', 'Ginger', 'Gotu kola']:
+                score += 1
+                matches.append('soil pH')
+            elif 6.5 <= soil_ph <= 7.5 and plant['name'] in ['Tulsi', 'Aloe vera', 'Lemongrass']:
+                score += 1
+                matches.append('soil pH')
         scored.append((score, plant['name'], matches))
 
     scored.sort(key=lambda item: (-item[0], item[1]))
-    recommendations = [
-        {'name': name, 'score': score, 'reason': 'Matches your ' + ', '.join(matches[:3])}
-        for score, name, matches in scored[:5]
-    ]
-    return jsonify({'recommendations': recommendations})
+    recommendations = []
+    for score, name, matches in scored[:5]:
+        reason = 'Matches your ' + ', '.join(matches[:3])
+        recommendation = {'name': name, 'score': score, 'reason': reason}
+        recommendation.update(_plant_details(name, reason))
+        recommendations.append(recommendation)
+    best = recommendations[0]
+    return jsonify({'bestPlant': best, 'recommendations': recommendations})
