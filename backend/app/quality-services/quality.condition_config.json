@@ -1,0 +1,72 @@
+{
+  "input_size": {
+    "width": 224,
+    "height": 224
+  },
+  "confidence_threshold": 0.8,
+  "active_model": "efficientnetv2_b0",
+  "models": {
+    "efficientnetv2_b0": {
+      "display_name": "EfficientNetV2-B0 Condition Model",
+      "path": "ml/quality.condition_classifier.efficientnetv2_b0.keras"
+    },
+    "mobilenetv3_large": {
+      "display_name": "MobileNetV3-Large Condition Model",
+      "path": "ml/quality.condition_classifier.mobilenetv3_large.keras"
+    },
+    "resnet50": {
+      "display_name": "ResNet50 Condition Model",
+      "path": "ml/quality.condition_classifier.resnet50.keras"
+    }
+  },
+  "heads": {
+    "betel": [
+      "Healthy",
+      "Leaf_Rot",
+      "Leaf_Spot"
+    ],
+    "centella_asiatica": [
+      "Dried",
+      "Healthy",
+      "Phosphorus_deficiency",
+      "Redmite",
+      "WormCreep"
+    ],
+    "holy_basil": [
+      "Anthocyanin_Pigmentation",
+      "Downy_Mildew",
+      "Healthy",
+      "Web_Blight",
+      "Yellow_Spot"
+    ],
+    "kalanchoe_pinnata": [
+      "Healthy",
+      "Insect_Damage",
+      "Web_Blight",
+      "Yellow",
+      "Yellow_Blight"
+    ],
+    "murraya_koenigii": [
+      "Complex_Foliar_Damage",
+      "Fungus",
+      "Healthy",
+      "Insect_Damage"
+    ],
+    "neem": [
+      "Alternaria",
+      "Bacterial_infection",
+      "Defoliator",
+      "Dieback",
+      "Healthy",
+      "Irregular_yellowing",
+      "Leaf_Blight",
+      "Leaf_Miners",
+      "Leaf_Miners_Powdery_Mildew",
+      "Leaf_Rust",
+      "Powdery_Mildew",
+      "Spot",
+      "Web_Blight",
+      "Yellow"
+    ]
+  }
+}

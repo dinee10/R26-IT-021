@@ -25,6 +25,14 @@ quality_plant_identifier = _load_quality_service(
     "quality_plant_identifier",
     "quality.plant_identifier.py",
 )
+quality_condition_classifier = _load_quality_service(
+    "quality_condition_classifier",
+    "quality.condition_classifier.py",
+)
+quality_disease_lookup = _load_quality_service(
+    "quality_disease_lookup",
+    "quality.disease_lookup.py",
+)
 
 bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -87,6 +95,32 @@ def identify_quality_plant_multiple():
     result = quality_plant_identifier.identify_plant_from_multiple_images([
         image_file.read() for image_file in image_files
     ])
+    status_code = 200 if result.get("accepted") else 422
+
+    if result.get("reason") == "INVALID_IMAGE":
+        status_code = 400
+
+    return jsonify(result), status_code
+
+@bp.route('/quality/assess-condition', methods=['POST'])
+def assess_quality_condition():
+    image_files = request.files.getlist('image')
+
+    if not image_files:
+        return jsonify({"accepted": False, "reason": "INVALID_IMAGE"}), 400
+
+    if len(image_files) > 3:
+        return jsonify({"accepted": False, "reason": "TOO_MANY_IMAGES"}), 400
+
+    image_bytes_list = [image_file.read() for image_file in image_files]
+    plant_result = quality_plant_identifier.identify_plant_from_multiple_images(
+        image_bytes_list
+    )
+    result = quality_condition_classifier.assess_condition_from_multiple_images(
+        image_bytes_list=image_bytes_list,
+        plant_result=plant_result,
+        disease_lookup=quality_disease_lookup,
+    )
     status_code = 200 if result.get("accepted") else 422
 
     if result.get("reason") == "INVALID_IMAGE":

@@ -230,7 +230,7 @@ def _load_model(config: dict[str, Any]) -> Any:
     except ImportError:
         return MODEL_RUNTIME_MISSING
 
-    model = keras.models.load_model(model_path)
+    model = keras.models.load_model(model_path, compile=False)
     _MODEL_CACHE[cache_key] = model
     return model
 

@@ -21,8 +21,10 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
   final List<QualitySelectedImage> _selectedImages = [];
   QualityValidationResult? _validationResult;
   QualityPlantResult? _plantResult;
+  QualityConditionResult? _conditionResult;
   bool _validating = false;
   bool _identifyingPlant = false;
+  bool _assessingCondition = false;
 
   Future<void> _pickImage(ImageSource source) async {
     final image = await _picker.pickImage(
@@ -73,8 +75,10 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
       _selectedImages.addAll(selectedImages);
       _validationResult = null;
       _plantResult = null;
+      _conditionResult = null;
       _validating = true;
       _identifyingPlant = false;
+      _assessingCondition = false;
     });
 
     await _validateImages();
@@ -164,6 +168,10 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
       setState(() {
         _plantResult = QualityPlantResult.fromJson(data);
       });
+
+      if (_plantResult?.accepted == true) {
+        await _assessCondition();
+      }
     } on TimeoutException {
       _showPlantError('Plant identification timed out. Please try again.');
     } on http.ClientException {
@@ -173,6 +181,53 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
     } finally {
       if (mounted) {
         setState(() => _identifyingPlant = false);
+      }
+    }
+  }
+
+  Future<void> _assessCondition() async {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _conditionResult = null;
+      _assessingCondition = true;
+    });
+
+    try {
+      final uri = Uri.parse('${_apiBaseUrl()}/api/quality/assess-condition');
+      final request = http.MultipartRequest('POST', uri)
+        ..files.addAll(
+          _selectedImages.map((image) => http.MultipartFile.fromBytes(
+            'image',
+            image.bytes,
+            filename: image.file.name.isEmpty
+                ? 'quality.leaf-image.jpg'
+                : image.file.name,
+          )),
+        );
+
+      final response = await request.send().timeout(const Duration(seconds: 35));
+      final responseBody = await response.stream.bytesToString();
+      final data = jsonDecode(responseBody) as Map<String, dynamic>;
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _conditionResult = QualityConditionResult.fromJson(data);
+      });
+    } on TimeoutException {
+      _showConditionError('Condition assessment timed out. Please try again.');
+    } on http.ClientException {
+      _showConditionError('Could not reach the condition assessment service.');
+    } catch (_) {
+      _showConditionError('Could not assess this leaf condition.');
+    } finally {
+      if (mounted) {
+        setState(() => _assessingCondition = false);
       }
     }
   }
@@ -208,8 +263,10 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
       _selectedImages.removeAt(index);
       _validationResult = null;
       _plantResult = null;
+      _conditionResult = null;
       _validating = _selectedImages.isNotEmpty;
       _identifyingPlant = false;
+      _assessingCondition = false;
     });
 
     if (_selectedImages.isNotEmpty) {
@@ -228,6 +285,8 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
       );
       _plantResult = null;
       _identifyingPlant = false;
+      _conditionResult = null;
+      _assessingCondition = false;
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -252,6 +311,24 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
 
     setState(() {
       _plantResult = QualityPlantResult.failure(reason: 'MODEL_NOT_AVAILABLE');
+      _conditionResult = null;
+      _assessingCondition = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  void _showConditionError(String message) {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _conditionResult = QualityConditionResult.failure(
+        reason: 'MODEL_NOT_AVAILABLE',
+      );
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -279,7 +356,7 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
             const SizedBox(height: 22),
             _ImagePickerPanel(
               selectedImages: _selectedImages,
-              busy: _validating || _identifyingPlant,
+              busy: _validating || _identifyingPlant || _assessingCondition,
               maxImages: _maxImages,
               onCameraPressed: () => _pickImage(ImageSource.camera),
               onGalleryPressed: _pickDeviceImages,
@@ -295,6 +372,12 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
               result: _plantResult,
               identifying: _identifyingPlant,
               enabled: _validationResult?.valid == true,
+            ),
+            const SizedBox(height: 18),
+            _ConditionAssessmentPanel(
+              result: _conditionResult,
+              assessing: _assessingCondition,
+              enabled: _plantResult?.accepted == true,
             ),
           ],
         ),
@@ -408,6 +491,101 @@ class _PlantIdentificationPanel extends StatelessWidget {
         return 'Install TensorFlow in the backend environment before real model inference.';
       default:
         return 'Please try another image.';
+    }
+  }
+}
+
+class _ConditionAssessmentPanel extends StatelessWidget {
+  const _ConditionAssessmentPanel({
+    required this.result,
+    required this.assessing,
+    required this.enabled,
+  });
+
+  final QualityConditionResult? result;
+  final bool assessing;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    if (assessing) {
+      return const _StatusPanel(
+        icon: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2.4),
+        ),
+        title: 'Assessing leaf condition',
+        subtitle: 'Using the identified plant to select the condition head.',
+      );
+    }
+
+    if (!enabled) {
+      return const _StatusPanel(
+        icon: Icon(Icons.health_and_safety_outlined, color: AppColors.muted),
+        title: 'Condition assessment waiting',
+        subtitle: 'An accepted plant prediction is required before this step.',
+      );
+    }
+
+    if (result == null) {
+      return const _StatusPanel(
+        icon: Icon(Icons.health_and_safety_outlined, color: AppColors.muted),
+        title: 'Condition assessment ready',
+        subtitle: 'The disease model runs after plant identification is accepted.',
+      );
+    }
+
+    final condition = result!.condition;
+    if (condition == null) {
+      return _StatusPanel(
+        icon: const Icon(Icons.info_outline_rounded, color: AppColors.danger),
+        title: _reasonTitle(result!.reason),
+        subtitle: _reasonHelp(result!.reason),
+      );
+    }
+
+    final isHealthy = condition.status == 'healthy';
+    return _StatusPanel(
+      icon: Icon(
+        isHealthy
+            ? Icons.check_circle_outline_rounded
+            : Icons.warning_amber_rounded,
+        color: isHealthy ? AppColors.primary : AppColors.danger,
+      ),
+      title: isHealthy
+          ? 'Leaf appears healthy'
+          : '${condition.displayName} detected',
+      subtitle: isHealthy
+          ? 'Ready for the maturity model when that stage is added.'
+          : 'Disease details were retrieved from the knowledge CSV when available.',
+      conditionResult: result,
+    );
+  }
+
+  String _reasonTitle(String? reason) {
+    switch (reason) {
+      case 'UNSUPPORTED_CONDITION_HEAD':
+        return 'No condition head for this plant';
+      case 'LOW_CONDITION_CONFIDENCE':
+        return 'Low condition confidence';
+      case 'MODEL_RUNTIME_MISSING':
+        return 'Condition model runtime is missing';
+      default:
+        return 'Condition assessment unavailable';
+    }
+  }
+
+  String _reasonHelp(String? reason) {
+    switch (reason) {
+      case 'UNSUPPORTED_CONDITION_HEAD':
+        return 'Add this species to the condition model config before disease assessment.';
+      case 'LOW_CONDITION_CONFIDENCE':
+        return 'Expert verification recommended.';
+      case 'MODEL_RUNTIME_MISSING':
+        return 'Install TensorFlow in the backend environment before real model inference.';
+      default:
+        return 'Train or configure the condition model before real use.';
     }
   }
 }
@@ -792,6 +970,7 @@ class _StatusPanel extends StatelessWidget {
     required this.subtitle,
     this.result,
     this.plantResult,
+    this.conditionResult,
   });
 
   final Widget icon;
@@ -799,6 +978,7 @@ class _StatusPanel extends StatelessWidget {
   final String subtitle;
   final QualityValidationResult? result;
   final QualityPlantResult? plantResult;
+  final QualityConditionResult? conditionResult;
 
   @override
   Widget build(BuildContext context) {
@@ -850,10 +1030,389 @@ class _StatusPanel extends StatelessWidget {
             const SizedBox(height: 14),
             _PlantResultDetails(result: plantResult!),
           ],
+          if (conditionResult != null) ...[
+            const SizedBox(height: 14),
+            _ConditionResultDetails(result: conditionResult!),
+          ],
         ],
       ),
     );
   }
+}
+
+class _ConditionResultDetails extends StatelessWidget {
+  const _ConditionResultDetails({required this.result});
+
+  final QualityConditionResult result;
+
+  @override
+  Widget build(BuildContext context) {
+    final condition = result.condition;
+    final diseaseInfo = result.diseaseInfo;
+
+    if (condition == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            _MetricChip(label: 'Status', value: condition.status),
+            _MetricChip(label: 'Class', value: condition.displayName),
+            _MetricChip(label: 'Confidence', value: condition.confidencePercent),
+            if (condition.imageCount != null)
+              _MetricChip(label: 'Images', value: '${condition.imageCount} used'),
+          ],
+        ),
+        if (condition.mode == 'mock') ...[
+          const SizedBox(height: 10),
+          const Text(
+            'Mock condition prediction active until a trained model is configured.',
+            style: TextStyle(
+              color: AppColors.muted,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+        if (diseaseInfo != null) ...[
+          const SizedBox(height: 14),
+          _DiseaseInfoView(info: diseaseInfo),
+        ],
+      ],
+    );
+  }
+}
+
+class _DiseaseInfoView extends StatefulWidget {
+  const _DiseaseInfoView({required this.info});
+
+  final QualityDiseaseInfo info;
+
+  @override
+  State<_DiseaseInfoView> createState() => _DiseaseInfoViewState();
+}
+
+class _DiseaseInfoViewState extends State<_DiseaseInfoView> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final info = widget.info;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            info.displayName,
+            style: const TextStyle(
+              color: AppColors.text,
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _MedicinalSuitabilityBar(
+            level: info.medicinalSuitabilityLevel,
+          ),
+          const SizedBox(height: 12),
+          _DiseaseInfoSection(
+            title: 'Description',
+            child: _DiseaseParagraph(info.description),
+          ),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => setState(() => _expanded = !_expanded),
+              icon: Icon(
+                _expanded
+                    ? Icons.expand_less_rounded
+                    : Icons.expand_more_rounded,
+                size: 20,
+              ),
+              label: Text(_expanded ? 'Less' : 'More'),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                padding: EdgeInsets.zero,
+                textStyle: const TextStyle(fontWeight: FontWeight.w900),
+              ),
+            ),
+          ),
+          if (_expanded) ...[
+            if (info.medicinalSuitabilityAssessment.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _DiseaseInfoSection(
+                title: 'Medicinal Suitability Assessment',
+                child: _DiseaseBulletList(
+                  items: _splitDisplayItems(
+                    info.medicinalSuitabilityAssessment,
+                  ),
+                ),
+              ),
+            ],
+            if (info.typicalSymptoms.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _DiseaseInfoSection(
+                title: 'Typical Symptoms',
+                child: _DiseaseBulletList(items: info.typicalSymptoms),
+              ),
+            ],
+            if (info.healthyDifference.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _DiseaseInfoSection(
+                title: 'Healthy Difference',
+                child: _DiseaseBulletList(
+                  items: _splitDisplayItems(info.healthyDifference),
+                ),
+              ),
+            ],
+            if (info.medicinalUseInstruction.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _DiseaseInfoSection(
+                title: 'Medicinal Use Instruction',
+                child: _DiseaseBulletList(
+                  items: _splitDisplayItems(info.medicinalUseInstruction),
+                ),
+              ),
+            ],
+            if (info.treatmentInstruction.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _DiseaseInfoSection(
+                title: 'Treatment Instruction',
+                child: _DiseaseBulletList(
+                  items: _splitDisplayItems(info.treatmentInstruction),
+                ),
+              ),
+            ],
+            if (info.reference.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _DiseaseInfoSection(
+                title: 'Reference',
+                child: _DiseaseBulletList(
+                  items: info.reference
+                      .split('|')
+                      .map((reference) => reference.trim())
+                      .where((reference) => reference.isNotEmpty)
+                      .toList(),
+                ),
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+
+  List<String> _splitDisplayItems(String value) {
+    final separator = value.contains(';') ? ';' : '. ';
+    return value
+        .split(separator)
+        .map((item) => item.trim())
+        .where((item) => item.isNotEmpty)
+        .map((item) {
+      if (separator == '. ' && !item.endsWith('.')) {
+        return '$item.';
+      }
+      return item;
+    }).toList();
+  }
+}
+
+class _DiseaseInfoSection extends StatelessWidget {
+  const _DiseaseInfoSection({
+    required this.title,
+    required this.child,
+  });
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            color: AppColors.text,
+            fontSize: 13,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: 5),
+        child,
+      ],
+    );
+  }
+}
+
+class _DiseaseParagraph extends StatelessWidget {
+  const _DiseaseParagraph(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(
+        color: AppColors.muted,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+  }
+}
+
+class _DiseaseBulletList extends StatelessWidget {
+  const _DiseaseBulletList({required this.items});
+
+  final List<String> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: items
+          .map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 5),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: SizedBox(
+                      width: 5,
+                      height: 5,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      item,
+                      style: const TextStyle(
+                        color: AppColors.muted,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+class _MedicinalSuitabilityBar extends StatelessWidget {
+  const _MedicinalSuitabilityBar({
+    required this.level,
+  });
+
+  final String level;
+
+  @override
+  Widget build(BuildContext context) {
+    final normalizedLevel = level.trim().toLowerCase().replaceAll(' ', '_');
+    final style = _styleForLevel(normalizedLevel);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                _displayLevel(level),
+                style: TextStyle(
+                  color: style.color,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            Text(
+              '${(style.value * 100).round()}%',
+              style: const TextStyle(
+                color: AppColors.muted,
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(999),
+          child: LinearProgressIndicator(
+            minHeight: 9,
+            value: style.value,
+            color: style.color,
+            backgroundColor: const Color(0xFFE8ECE8),
+          ),
+        ),
+      ],
+    );
+  }
+
+  _SuitabilityStyle _styleForLevel(String level) {
+    switch (level) {
+      case 'suitable':
+      case 'high_suitability':
+        return const _SuitabilityStyle(Color(0xFF22C55E), 1);
+      case 'conditionally_suitable':
+      case 'moderate_suitability':
+        return const _SuitabilityStyle(Color(0xFFEAB308), 0.67);
+      case 'low_suitability':
+        return const _SuitabilityStyle(Color(0xFFF97316), 0.34);
+      case 'not_recommended':
+      case 'unsuitable':
+        return const _SuitabilityStyle(Color(0xFFEF4444), 0.12);
+      default:
+        return const _SuitabilityStyle(Color(0xFF64748B), 0.5);
+    }
+  }
+
+  String _displayLevel(String value) {
+    final text = value.trim().replaceAll('_', ' ');
+    if (text.isEmpty) {
+      return 'Expert Verification Recommended';
+    }
+
+    return text
+        .split(' ')
+        .where((word) => word.isNotEmpty)
+        .map((word) => '${word[0].toUpperCase()}${word.substring(1)}')
+        .join(' ');
+  }
+}
+
+class _SuitabilityStyle {
+  const _SuitabilityStyle(this.color, this.value);
+
+  final Color color;
+  final double value;
 }
 
 class _PlantResultDetails extends StatelessWidget {
@@ -1107,6 +1666,130 @@ class QualityPlantResult {
   final String? aggregation;
 
   String get confidencePercent => '${(confidence * 100).toStringAsFixed(1)}%';
+}
+
+class QualityConditionResult {
+  const QualityConditionResult({
+    required this.accepted,
+    this.reason,
+    this.condition,
+    this.diseaseInfo,
+  });
+
+  factory QualityConditionResult.failure({required String reason}) {
+    return QualityConditionResult(accepted: false, reason: reason);
+  }
+
+  factory QualityConditionResult.fromJson(Map<String, dynamic> json) {
+    final conditionJson = json['condition'] as Map<String, dynamic>?;
+    final diseaseInfoJson = json['disease_info'] as Map<String, dynamic>?;
+
+    return QualityConditionResult(
+      accepted: json['accepted'] == true,
+      reason: json['reason'] as String?,
+      condition: conditionJson == null
+          ? null
+          : QualityConditionPrediction.fromJson(conditionJson),
+      diseaseInfo: diseaseInfoJson == null
+          ? null
+          : QualityDiseaseInfo.fromJson(diseaseInfoJson),
+    );
+  }
+
+  final bool accepted;
+  final String? reason;
+  final QualityConditionPrediction? condition;
+  final QualityDiseaseInfo? diseaseInfo;
+}
+
+class QualityConditionPrediction {
+  const QualityConditionPrediction({
+    required this.status,
+    required this.className,
+    required this.displayName,
+    required this.confidence,
+    this.reason,
+    this.model,
+    this.mode,
+    this.imageCount,
+  });
+
+  factory QualityConditionPrediction.fromJson(Map<String, dynamic> json) {
+    return QualityConditionPrediction(
+      status: (json['status'] as String?) ?? 'unavailable',
+      className: (json['class'] as String?) ?? '',
+      displayName: (json['display_name'] as String?) ??
+          ((json['class'] as String?) ?? '').replaceAll('_', ' '),
+      confidence: (json['confidence'] as num?)?.toDouble() ?? 0,
+      reason: json['reason'] as String?,
+      model: json['model'] as String?,
+      mode: json['mode'] as String?,
+      imageCount: (json['image_count'] as num?)?.toInt(),
+    );
+  }
+
+  final String status;
+  final String className;
+  final String displayName;
+  final double confidence;
+  final String? reason;
+  final String? model;
+  final String? mode;
+  final int? imageCount;
+
+  String get confidencePercent => '${(confidence * 100).toStringAsFixed(1)}%';
+}
+
+class QualityDiseaseInfo {
+  const QualityDiseaseInfo({
+    required this.found,
+    required this.displayName,
+    required this.description,
+    required this.typicalSymptoms,
+    required this.healthyDifference,
+    required this.medicinalUseInstruction,
+    required this.treatmentInstruction,
+    required this.medicinalSuitabilityLevel,
+    required this.medicinalSuitabilityAssessment,
+    required this.reference,
+  });
+
+  factory QualityDiseaseInfo.fromJson(Map<String, dynamic> json) {
+    return QualityDiseaseInfo(
+      found: json['found'] == true,
+      displayName: (json['display_name'] as String?) ??
+          'Disease information unavailable',
+      description: (json['description'] as String?) ?? '',
+      typicalSymptoms: (json['typical_symptoms'] as List<dynamic>?)
+              ?.map((symptom) => symptom.toString())
+              .toList() ??
+          [],
+      healthyDifference: (json['healthy_difference'] as String?) ?? '',
+      medicinalUseInstruction:
+          (json['medicinal_use_instruction'] as String?) ??
+              (json['instructions'] as String?) ??
+          'Expert verification recommended.',
+      treatmentInstruction: (json['treatment_instruction'] as String?) ?? '',
+      medicinalSuitabilityLevel:
+          (json['medicinal_suitability_level'] as String?) ??
+              'Expert_Verification_Recommended',
+      medicinalSuitabilityAssessment:
+          (json['medicinal_suitability_assessment'] as String?) ??
+              'Expert verification recommended.',
+      reference: (json['reference'] as String?) ?? '',
+    );
+  }
+
+  final bool found;
+  final String displayName;
+  final String description;
+  final List<String> typicalSymptoms;
+  final String healthyDifference;
+  final String medicinalUseInstruction;
+  final String treatmentInstruction;
+  final String medicinalSuitabilityLevel;
+  final String medicinalSuitabilityAssessment;
+  final String reference;
 }
 
 class QualitySelectedImage {

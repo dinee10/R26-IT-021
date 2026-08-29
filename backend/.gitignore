@@ -57,3 +57,6 @@ logs/
 # Quality assessment datasets
 quality-raw-dataset/
 quality-plant-identification-dataset/
+quality-condition-raw-dataset/
+quality-condition-dataset/
+quality-condition-training-dataset/

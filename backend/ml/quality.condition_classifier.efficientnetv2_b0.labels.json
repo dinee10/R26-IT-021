@@ -1,0 +1,50 @@
+{
+  "betel": [
+    "Healthy",
+    "Leaf_Rot",
+    "Leaf_Spot"
+  ],
+  "centella_asiatica": [
+    "Dried",
+    "Healthy",
+    "Phosphorus_deficiency",
+    "Redmite",
+    "WormCreep"
+  ],
+  "holy_basil": [
+    "Anthocyanin_Pigmentation",
+    "Downy_Mildew",
+    "Healthy",
+    "Web_Blight",
+    "Yellow_Spot"
+  ],
+  "kalanchoe_pinnata": [
+    "Healthy",
+    "Insect_Damage",
+    "Web_Blight",
+    "Yellow",
+    "Yellow_Blight"
+  ],
+  "murraya_koenigii": [
+    "Complex_Foliar_Damage",
+    "Fungus",
+    "Healthy",
+    "Insect_Damage"
+  ],
+  "neem": [
+    "Alternaria",
+    "Bacterial_infection",
+    "Defoliator",
+    "Dieback",
+    "Healthy",
+    "Irregular_yellowing",
+    "Leaf_Blight",
+    "Leaf_Miners",
+    "Leaf_Miners_Powdery_Mildew",
+    "Leaf_Rust",
+    "Powdery_Mildew",
+    "Spot",
+    "Web_Blight",
+    "Yellow"
+  ]
+}
