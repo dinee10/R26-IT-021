@@ -4,22 +4,3 @@ flask-cors==4.0.0
 python-dotenv==1.0.1
 pydantic==2.8.2          # Required for Python 3.13 compatibility
 requests==2.32.3
-
-# RAG Dependencies
-langchain
-langchain-community
-langchain-openai
-langchain-chroma
-langchain-huggingface
-sentence-transformers
-
-# Hybrid retrieval + reranking
-rank_bm25
- 
-# RAG evaluation
-ragas
-datasets
- 
-# Fuzzy matching for plant name entity linking
-rapidfuzz
- 
