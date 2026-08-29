@@ -11,11 +11,10 @@ from app.services.expert_verification import (
     verify_request,
 )
 from flask import Blueprint, request, jsonify
-from conversation_rag import ask_question, clear_conversation
 
 api = Blueprint('api', __name__)
 
-@bp.route('/health', methods=['GET'])
+@api.route('/health', methods=['GET'])
 def health():
     status = model_status()
     return jsonify({
@@ -24,7 +23,6 @@ def health():
         "model": status,
     })
 
-@bp.route('/ask', methods=['POST'])
 @api.route('/ask', methods=['POST'])
 def ask():
     data = request.get_json()
@@ -37,7 +35,7 @@ def ask():
     })
 
 
-@bp.route('/predict', methods=['POST'])
+@api.route('/predict', methods=['POST'])
 def predict():
     images = request.files.getlist('images')
     model_type = request.form.get('model_type', 'plant').lower()
@@ -66,7 +64,7 @@ def _expert_authorized():
     return bool(expected) and request.headers.get("X-Expert-Key") == expected
 
 
-@bp.route('/verifications', methods=['POST'])
+@api.route('/verifications', methods=['POST'])
 def submit_verification():
     images = request.files.getlist('images')
     try:
@@ -81,7 +79,7 @@ def submit_verification():
     return jsonify(record), 201
 
 
-@bp.route('/verifications/<request_id>', methods=['GET'])
+@api.route('/verifications/<request_id>', methods=['GET'])
 def verification_status(request_id):
     record = get_request(request_id)
     if not record:
@@ -89,14 +87,14 @@ def verification_status(request_id):
     return jsonify(record)
 
 
-@bp.route('/expert/verifications', methods=['GET'])
+@api.route('/expert/verifications', methods=['GET'])
 def expert_queue():
     if not _expert_authorized():
         return jsonify({"error": "Expert authorization required."}), 401
     return jsonify({"requests": list_pending_requests()})
 
 
-@bp.route('/expert/verifications/<request_id>', methods=['POST'])
+@api.route('/expert/verifications/<request_id>', methods=['POST'])
 def expert_verify(request_id):
     if not _expert_authorized():
         return jsonify({"error": "Expert authorization required."}), 401
@@ -115,7 +113,7 @@ def expert_verify(request_id):
     return jsonify(record)
 
 
-@bp.route('/expert/verifications/<request_id>/images/<image_name>', methods=['GET'])
+@api.route('/expert/verifications/<request_id>/images/<image_name>', methods=['GET'])
 def expert_image(request_id, image_name):
     if not _expert_authorized():
         return jsonify({"error": "Expert authorization required."}), 401
@@ -146,5 +144,9 @@ def expert_image(request_id, image_name):
 def clear():
     data = request.get_json()
     session_id = data.get('session_id', 'default')
-    clear_conversation(session_id)
-    return jsonify({"message": "Conversation history cleared"})
+    try:
+        from conversation_rag import clear_conversation
+        clear_conversation(session_id)
+        return jsonify({"message": "Conversation history cleared"})
+    except ImportError as exc:
+        return jsonify({"error": f"RAG dependencies are not installed: {exc}"}), 503
