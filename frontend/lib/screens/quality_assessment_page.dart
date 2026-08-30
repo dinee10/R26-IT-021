@@ -19,6 +19,7 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
   static const int _maxImages = 3;
   final ImagePicker _picker = ImagePicker();
   final List<QualitySelectedImage> _selectedImages = [];
+  QualityManualInputs _manualInputs = const QualityManualInputs();
   QualityValidationResult? _validationResult;
   QualityPlantResult? _plantResult;
   QualityConditionResult? _conditionResult;
@@ -156,6 +157,9 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
                 : image.file.name,
           )),
         );
+      if (_manualInputs.hasValues) {
+        request.fields['manual_inputs'] = jsonEncode(_manualInputs.toJson());
+      }
 
       final response = await request.send().timeout(const Duration(seconds: 30));
       final responseBody = await response.stream.bytesToString();
@@ -363,6 +367,17 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
               onRemoveImage: _removeImage,
             ),
             const SizedBox(height: 18),
+            _ManualCharacteristicsPanel(
+              value: _manualInputs,
+              enabled: !_validating && !_identifyingPlant && !_assessingCondition,
+              onChanged: (value) {
+                setState(() {
+                  _manualInputs = value;
+                  _conditionResult = null;
+                });
+              },
+            ),
+            const SizedBox(height: 18),
             _ValidationPanel(
               result: _validationResult,
               validating: _validating,
@@ -557,7 +572,7 @@ class _ConditionAssessmentPanel extends StatelessWidget {
           ? 'Leaf appears healthy'
           : '${condition.displayName} detected',
       subtitle: isHealthy
-          ? 'Ready for the maturity model when that stage is added.'
+          ? 'Continuing to maturity-stage assessment when supported.'
           : 'Disease details were retrieved from the knowledge CSV when available.',
       conditionResult: result,
     );
@@ -881,6 +896,222 @@ class _PickerButton extends StatelessWidget {
   }
 }
 
+class _ManualCharacteristicsPanel extends StatelessWidget {
+  const _ManualCharacteristicsPanel({
+    required this.value,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  final QualityManualInputs value;
+  final bool enabled;
+  final ValueChanged<QualityManualInputs> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return ExpansionTile(
+      tilePadding: const EdgeInsets.symmetric(horizontal: 14),
+      childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+      shape: RoundedRectangleBorder(
+        side: const BorderSide(color: AppColors.border),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      collapsedShape: RoundedRectangleBorder(
+        side: const BorderSide(color: AppColors.border),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      backgroundColor: Colors.white,
+      collapsedBackgroundColor: Colors.white,
+      title: const Text(
+        'Optional leaf characteristics',
+        style: TextStyle(
+          color: AppColors.text,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+      subtitle: const Text(
+        'Used only as maturity-stage support.',
+        style: TextStyle(
+          color: AppColors.muted,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _ManualNumberField(
+                label: 'Length cm',
+                enabled: enabled,
+                onChanged: (leafLengthCm) => onChanged(
+                  value.copyWith(leafLengthCm: leafLengthCm),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _ManualNumberField(
+                label: 'Width cm',
+                enabled: enabled,
+                onChanged: (leafWidthCm) => onChanged(
+                  value.copyWith(leafWidthCm: leafWidthCm),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        _ManualOptionGrid(
+          enabled: enabled,
+          value: value,
+          onChanged: onChanged,
+        ),
+      ],
+    );
+  }
+}
+
+class _ManualNumberField extends StatelessWidget {
+  const _ManualNumberField({
+    required this.label,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  final String label;
+  final bool enabled;
+  final ValueChanged<double?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      enabled: enabled,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(fontWeight: FontWeight.w700),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        isDense: true,
+      ),
+      onChanged: (value) => onChanged(double.tryParse(value.trim())),
+    );
+  }
+}
+
+class _ManualOptionGrid extends StatelessWidget {
+  const _ManualOptionGrid({
+    required this.enabled,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final bool enabled;
+  final QualityManualInputs value;
+  final ValueChanged<QualityManualInputs> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        _ManualDropdown(
+          label: 'Texture',
+          value: value.leafTexture,
+          enabled: enabled,
+          items: const ['Unknown', 'Smooth', 'Slightly_Rough', 'Rough'],
+          onChanged: (leafTexture) => onChanged(
+            value.copyWith(leafTexture: leafTexture),
+          ),
+        ),
+        _ManualDropdown(
+          label: 'Edge',
+          value: value.leafEdge,
+          enabled: enabled,
+          items: const ['Unknown', 'Smooth', 'Serrated', 'Irregular'],
+          onChanged: (leafEdge) => onChanged(value.copyWith(leafEdge: leafEdge)),
+        ),
+        _ManualDropdown(
+          label: 'Spots',
+          value: value.surfaceSpots,
+          enabled: enabled,
+          items: const ['Unknown', 'None', 'Few', 'Many'],
+          onChanged: (surfaceSpots) => onChanged(
+            value.copyWith(surfaceSpots: surfaceSpots),
+          ),
+        ),
+        _ManualDropdown(
+          label: 'Holes',
+          value: value.holes,
+          enabled: enabled,
+          items: const ['Unknown', 'None', 'Few', 'Many'],
+          onChanged: (holes) => onChanged(value.copyWith(holes: holes)),
+        ),
+        _ManualDropdown(
+          label: 'Discoloration',
+          value: value.discoloration,
+          enabled: enabled,
+          items: const ['Unknown', 'None', 'Yellow', 'Brown', 'Purple', 'Mixed'],
+          onChanged: (discoloration) => onChanged(
+            value.copyWith(discoloration: discoloration),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ManualDropdown extends StatelessWidget {
+  const _ManualDropdown({
+    required this.label,
+    required this.value,
+    required this.enabled,
+    required this.items,
+    required this.onChanged,
+  });
+
+  final String label;
+  final String value;
+  final bool enabled;
+  final List<String> items;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 160,
+      child: DropdownButtonFormField<String>(
+        value: value,
+        isExpanded: true,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(fontWeight: FontWeight.w700),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          isDense: true,
+        ),
+        items: items
+            .map(
+              (item) => DropdownMenuItem(
+                value: item,
+                child: Text(
+                  item.replaceAll('_', ' '),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            )
+            .toList(),
+        onChanged: enabled
+            ? (selected) {
+                if (selected != null) {
+                  onChanged(selected);
+                }
+              }
+            : null,
+      ),
+    );
+  }
+}
+
 class _ValidationPanel extends StatelessWidget {
   const _ValidationPanel({
     required this.result,
@@ -1049,6 +1280,8 @@ class _ConditionResultDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final condition = result.condition;
     final diseaseInfo = result.diseaseInfo;
+    final maturity = result.maturity;
+    final medicinalSuitability = result.medicinalSuitability;
 
     if (condition == null) {
       return const SizedBox.shrink();
@@ -1083,7 +1316,122 @@ class _ConditionResultDetails extends StatelessWidget {
           const SizedBox(height: 14),
           _DiseaseInfoView(info: diseaseInfo),
         ],
+        if (maturity != null && maturity.shouldDisplay) ...[
+          const SizedBox(height: 14),
+          _MaturityInfoView(maturity: maturity),
+        ] else if (medicinalSuitability != null) ...[
+          const SizedBox(height: 14),
+          _MedicinalSuitabilitySummary(info: medicinalSuitability),
+        ],
       ],
+    );
+  }
+}
+
+class _MaturityInfoView extends StatelessWidget {
+  const _MaturityInfoView({required this.maturity});
+
+  final QualityMaturityResult maturity;
+
+  @override
+  Widget build(BuildContext context) {
+    final decision = maturity.finalDecision;
+    final prediction = maturity.modelPrediction;
+    final manualSupport = maturity.manualSupport;
+    final suitability = maturity.medicinalSuitability;
+    final details = maturity.maturityInfo;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Maturity',
+            style: TextStyle(
+              color: AppColors.text,
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          if (decision.stageDisplay.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            _MetricChip(label: 'Stage', value: decision.stageDisplay),
+          ],
+          if (prediction != null) ...[
+            const SizedBox(height: 10),
+            _MetricChip(
+              label: 'Confidence',
+              value: prediction.confidencePercent,
+            ),
+          ],
+          if (manualSupport != null && manualSupport.evidence.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _DiseaseInfoSection(
+              title: 'Supporting Characteristics',
+              child: _DiseaseBulletList(items: manualSupport.evidence),
+            ),
+          ],
+          if (details != null && details.visualCharacteristics.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _DiseaseInfoSection(
+              title: 'Reference Characteristics',
+              child: _DiseaseBulletList(
+                items: _splitDisplayItems(details.visualCharacteristics),
+              ),
+            ),
+          ],
+          if (suitability != null) ...[
+            const SizedBox(height: 12),
+            _MedicinalSuitabilitySummary(info: suitability),
+          ],
+        ],
+      ),
+    );
+  }
+
+  List<String> _splitDisplayItems(String value) {
+    return value
+        .split(value.contains(';') ? ';' : '. ')
+        .map((item) => item.trim())
+        .where((item) => item.isNotEmpty)
+        .toList();
+  }
+}
+
+class _MedicinalSuitabilitySummary extends StatelessWidget {
+  const _MedicinalSuitabilitySummary({required this.info});
+
+  final QualityMedicinalSuitability info;
+
+  @override
+  Widget build(BuildContext context) {
+    return _DiseaseInfoSection(
+      title: 'Medicinal Suitability',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _MedicinalSuitabilityBar(level: info.level),
+          const SizedBox(height: 8),
+          Text(
+            info.display,
+            style: const TextStyle(
+              color: AppColors.text,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          if (info.assessment.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            _DiseaseParagraph(info.assessment),
+          ],
+        ],
+      ),
     );
   }
 }
@@ -1674,6 +2022,8 @@ class QualityConditionResult {
     this.reason,
     this.condition,
     this.diseaseInfo,
+    this.maturity,
+    this.medicinalSuitability,
   });
 
   factory QualityConditionResult.failure({required String reason}) {
@@ -1683,6 +2033,9 @@ class QualityConditionResult {
   factory QualityConditionResult.fromJson(Map<String, dynamic> json) {
     final conditionJson = json['condition'] as Map<String, dynamic>?;
     final diseaseInfoJson = json['disease_info'] as Map<String, dynamic>?;
+    final maturityJson = json['maturity'] as Map<String, dynamic>?;
+    final medicinalSuitabilityJson =
+        json['medicinal_suitability'] as Map<String, dynamic>?;
 
     return QualityConditionResult(
       accepted: json['accepted'] == true,
@@ -1693,6 +2046,12 @@ class QualityConditionResult {
       diseaseInfo: diseaseInfoJson == null
           ? null
           : QualityDiseaseInfo.fromJson(diseaseInfoJson),
+      maturity: maturityJson == null
+          ? null
+          : QualityMaturityResult.fromJson(maturityJson),
+      medicinalSuitability: medicinalSuitabilityJson == null
+          ? null
+          : QualityMedicinalSuitability.fromJson(medicinalSuitabilityJson),
     );
   }
 
@@ -1700,6 +2059,8 @@ class QualityConditionResult {
   final String? reason;
   final QualityConditionPrediction? condition;
   final QualityDiseaseInfo? diseaseInfo;
+  final QualityMaturityResult? maturity;
+  final QualityMedicinalSuitability? medicinalSuitability;
 }
 
 class QualityConditionPrediction {
@@ -1791,6 +2152,256 @@ class QualityDiseaseInfo {
   final String medicinalSuitabilityAssessment;
   final String reference;
 }
+
+class QualityMaturityResult {
+  const QualityMaturityResult({
+    this.modelPrediction,
+    this.manualSupport,
+    required this.finalDecision,
+    this.maturityInfo,
+    this.medicinalSuitability,
+    this.reason,
+    this.model,
+    this.mode,
+  });
+
+  factory QualityMaturityResult.fromJson(Map<String, dynamic> json) {
+    final modelPredictionJson =
+        json['model_prediction'] as Map<String, dynamic>?;
+    final manualSupportJson = json['manual_support'] as Map<String, dynamic>?;
+    final finalDecisionJson =
+        json['final_decision'] as Map<String, dynamic>? ?? {};
+    final maturityInfoJson = json['maturity_info'] as Map<String, dynamic>?;
+    final suitabilityJson =
+        json['medicinal_suitability'] as Map<String, dynamic>?;
+
+    return QualityMaturityResult(
+      modelPrediction: modelPredictionJson == null
+          ? null
+          : QualityMaturityPrediction.fromJson(modelPredictionJson),
+      manualSupport: manualSupportJson == null
+          ? null
+          : QualityManualSupport.fromJson(manualSupportJson),
+      finalDecision: QualityMaturityDecision.fromJson(finalDecisionJson),
+      maturityInfo: maturityInfoJson == null
+          ? null
+          : QualityMaturityInfo.fromJson(maturityInfoJson),
+      medicinalSuitability: suitabilityJson == null
+          ? null
+          : QualityMedicinalSuitability.fromJson(suitabilityJson),
+      reason: json['reason'] as String?,
+      model: json['model'] as String?,
+      mode: json['mode'] as String?,
+    );
+  }
+
+  final QualityMaturityPrediction? modelPrediction;
+  final QualityManualSupport? manualSupport;
+  final QualityMaturityDecision finalDecision;
+  final QualityMaturityInfo? maturityInfo;
+  final QualityMedicinalSuitability? medicinalSuitability;
+  final String? reason;
+  final String? model;
+  final String? mode;
+
+  bool get shouldDisplay =>
+      finalDecision.stageDisplay.isNotEmpty || modelPrediction != null;
+}
+
+class QualityMaturityPrediction {
+  const QualityMaturityPrediction({
+    required this.stage,
+    this.canonicalStage,
+    required this.confidence,
+  });
+
+  factory QualityMaturityPrediction.fromJson(Map<String, dynamic> json) {
+    return QualityMaturityPrediction(
+      stage: (json['stage'] as String?) ?? '',
+      canonicalStage: json['canonical_stage'] as String?,
+      confidence: (json['confidence'] as num?)?.toDouble() ?? 0,
+    );
+  }
+
+  final String stage;
+  final String? canonicalStage;
+  final double confidence;
+
+  String get confidencePercent => '${(confidence * 100).toStringAsFixed(1)}%';
+}
+
+class QualityMaturityDecision {
+  const QualityMaturityDecision({
+    this.stage,
+    this.canonicalStage,
+    this.decisionStatus,
+    this.reason,
+  });
+
+  factory QualityMaturityDecision.fromJson(Map<String, dynamic> json) {
+    return QualityMaturityDecision(
+      stage: json['stage'] as String?,
+      canonicalStage: json['canonical_stage'] as String?,
+      decisionStatus: json['decision_status'] as String?,
+      reason: json['reason'] as String?,
+    );
+  }
+
+  final String? stage;
+  final String? canonicalStage;
+  final String? decisionStatus;
+  final String? reason;
+
+  String get stageDisplay {
+    final value = canonicalStage ?? stage ?? '';
+    final normalized = value.toLowerCase();
+    if (value.isEmpty ||
+        normalized == 'unknown' ||
+        normalized == 'null' ||
+        normalized == 'not_assessed' ||
+        normalized == 'uncertain') {
+      return '';
+    }
+
+    return value.replaceAll('_', ' ');
+  }
+}
+
+class QualityManualSupport {
+  const QualityManualSupport({
+    required this.used,
+    required this.availableFeatures,
+    required this.evidence,
+  });
+
+  factory QualityManualSupport.fromJson(Map<String, dynamic> json) {
+    return QualityManualSupport(
+      used: json['used'] == true,
+      availableFeatures: (json['available_features'] as num?)?.toInt() ?? 0,
+      evidence: (json['evidence'] as List<dynamic>?)
+              ?.map((item) => item.toString())
+              .toList() ??
+          [],
+    );
+  }
+
+  final bool used;
+  final int availableFeatures;
+  final List<String> evidence;
+}
+
+class QualityMaturityInfo {
+  const QualityMaturityInfo({
+    required this.visualCharacteristics,
+  });
+
+  factory QualityMaturityInfo.fromJson(Map<String, dynamic> json) {
+    return QualityMaturityInfo(
+      visualCharacteristics: (json['visual_characteristics'] as String?) ?? '',
+    );
+  }
+
+  final String visualCharacteristics;
+}
+
+class QualityMedicinalSuitability {
+  const QualityMedicinalSuitability({
+    required this.level,
+    required this.display,
+    required this.assessment,
+    required this.evidenceStrength,
+  });
+
+  factory QualityMedicinalSuitability.fromJson(Map<String, dynamic> json) {
+    return QualityMedicinalSuitability(
+      level: (json['level'] as String?) ?? 'Expert_Verification_Recommended',
+      display: (json['display'] as String?) ??
+          'Expert verification recommended before medicinal use',
+      assessment: (json['assessment'] as String?) ?? '',
+      evidenceStrength: (json['evidence_strength'] as String?) ?? '',
+    );
+  }
+
+  final String level;
+  final String display;
+  final String assessment;
+  final String evidenceStrength;
+}
+
+class QualityManualInputs {
+  const QualityManualInputs({
+    this.leafLengthCm,
+    this.leafWidthCm,
+    this.leafTexture = 'Unknown',
+    this.leafEdge = 'Unknown',
+    this.surfaceSpots = 'Unknown',
+    this.holes = 'Unknown',
+    this.discoloration = 'Unknown',
+  });
+
+  final double? leafLengthCm;
+  final double? leafWidthCm;
+  final String leafTexture;
+  final String leafEdge;
+  final String surfaceSpots;
+  final String holes;
+  final String discoloration;
+
+  bool get hasValues => toJson().isNotEmpty;
+
+  Map<String, dynamic> toJson() {
+    final json = <String, dynamic>{};
+    if (leafLengthCm != null) {
+      json['leaf_length_cm'] = leafLengthCm;
+    }
+    if (leafWidthCm != null) {
+      json['leaf_width_cm'] = leafWidthCm;
+    }
+    _addKnown(json, 'leaf_texture', leafTexture);
+    _addKnown(json, 'leaf_edge', leafEdge);
+    _addKnown(json, 'surface_spots', surfaceSpots);
+    _addKnown(json, 'holes', holes);
+    _addKnown(json, 'discoloration', discoloration);
+    return json;
+  }
+
+  QualityManualInputs copyWith({
+    Object? leafLengthCm = _manualUnset,
+    Object? leafWidthCm = _manualUnset,
+    String? leafTexture,
+    String? leafEdge,
+    String? surfaceSpots,
+    String? holes,
+    String? discoloration,
+  }) {
+    final nextLeafLengthCm =
+        leafLengthCm == _manualUnset ? this.leafLengthCm : leafLengthCm as double?;
+    final nextLeafWidthCm =
+        leafWidthCm == _manualUnset ? this.leafWidthCm : leafWidthCm as double?;
+
+    return QualityManualInputs(
+      leafLengthCm: nextLeafLengthCm,
+      leafWidthCm: nextLeafWidthCm,
+      leafTexture: leafTexture ?? this.leafTexture,
+      leafEdge: leafEdge ?? this.leafEdge,
+      surfaceSpots: surfaceSpots ?? this.surfaceSpots,
+      holes: holes ?? this.holes,
+      discoloration: discoloration ?? this.discoloration,
+    );
+  }
+
+  static void _addKnown(
+    Map<String, dynamic> json,
+    String key,
+    String value,
+  ) {
+    if (value.trim().toLowerCase() != 'unknown') {
+      json[key] = value;
+    }
+  }
+}
+
+const Object _manualUnset = Object();
 
 class QualitySelectedImage {
   const QualitySelectedImage({

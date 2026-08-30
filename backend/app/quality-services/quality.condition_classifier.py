@@ -18,6 +18,11 @@ def assess_condition_from_multiple_images(
     image_bytes_list: list[bytes],
     plant_result: dict[str, Any],
     disease_lookup,
+    maturity_classifier=None,
+    maturity_lookup=None,
+    maturity_decision=None,
+    manual_support_service=None,
+    manual_inputs: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     config = _load_config()
     species_id = _species_id_from_result(plant_result)
@@ -33,6 +38,8 @@ def assess_condition_from_multiple_images(
             "plant": plant_response,
             "condition": None,
             "disease_info": None,
+            "maturity": None,
+            "medicinal_suitability": None,
             "accepted": False,
             "reason": plant_result.get("reason", "PLANT_NOT_ACCEPTED"),
         }
@@ -42,6 +49,8 @@ def assess_condition_from_multiple_images(
             "plant": plant_response,
             "condition": None,
             "disease_info": None,
+            "maturity": None,
+            "medicinal_suitability": None,
             "accepted": False,
             "reason": "UNSUPPORTED_CONDITION_HEAD",
         }
@@ -56,6 +65,8 @@ def assess_condition_from_multiple_images(
             "plant": plant_response,
             "condition": None,
             "disease_info": None,
+            "maturity": None,
+            "medicinal_suitability": None,
             "accepted": False,
             "reason": "INVALID_IMAGE",
         }
@@ -90,16 +101,38 @@ def assess_condition_from_multiple_images(
         condition["aggregation"] = "AVERAGE_PROBABILITIES"
 
     disease_info = None
+    maturity = None
+    medicinal_suitability = None
     if condition.get("status") == "diseased":
         disease_info = disease_lookup.get_disease_info(
             plant_response["species"],
             condition["class"],
         )
+    elif (
+        condition.get("status") == "healthy"
+        and maturity_classifier is not None
+        and maturity_lookup is not None
+        and maturity_decision is not None
+        and manual_support_service is not None
+    ):
+        maturity = maturity_classifier.assess_maturity_from_multiple_images(
+            image_bytes_list=image_bytes_list,
+            plant_result=plant_result,
+            condition_result={"condition": condition},
+            maturity_lookup=maturity_lookup,
+            maturity_decision=maturity_decision,
+            manual_support_service=manual_support_service,
+            manual_inputs=manual_inputs,
+        )
+        if maturity is not None:
+            medicinal_suitability = maturity.get("medicinal_suitability")
 
     return {
         "plant": plant_response,
         "condition": condition,
         "disease_info": disease_info,
+        "maturity": maturity,
+        "medicinal_suitability": medicinal_suitability,
         "accepted": condition.get("accepted", False),
     }
 

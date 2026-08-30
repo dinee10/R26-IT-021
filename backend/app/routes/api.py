@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import sys
 from pathlib import Path
 
@@ -32,6 +33,22 @@ quality_condition_classifier = _load_quality_service(
 quality_disease_lookup = _load_quality_service(
     "quality_disease_lookup",
     "quality.disease_lookup.py",
+)
+quality_maturity_lookup = _load_quality_service(
+    "quality_maturity_lookup",
+    "quality.maturity_lookup.py",
+)
+quality_manual_maturity_support = _load_quality_service(
+    "quality_manual_maturity_support",
+    "quality.manual_maturity_support.py",
+)
+quality_maturity_decision = _load_quality_service(
+    "quality_maturity_decision",
+    "quality.maturity_decision.py",
+)
+quality_maturity_classifier = _load_quality_service(
+    "quality_maturity_classifier",
+    "quality.maturity_classifier.py",
 )
 
 bp = Blueprint('api', __name__, url_prefix='/api')
@@ -113,6 +130,7 @@ def assess_quality_condition():
         return jsonify({"accepted": False, "reason": "TOO_MANY_IMAGES"}), 400
 
     image_bytes_list = [image_file.read() for image_file in image_files]
+    manual_inputs = _parse_manual_inputs(request.form.get("manual_inputs"))
     plant_result = quality_plant_identifier.identify_plant_from_multiple_images(
         image_bytes_list
     )
@@ -120,6 +138,11 @@ def assess_quality_condition():
         image_bytes_list=image_bytes_list,
         plant_result=plant_result,
         disease_lookup=quality_disease_lookup,
+        maturity_classifier=quality_maturity_classifier,
+        maturity_lookup=quality_maturity_lookup,
+        maturity_decision=quality_maturity_decision,
+        manual_support_service=quality_manual_maturity_support,
+        manual_inputs=manual_inputs,
     )
     status_code = 200 if result.get("accepted") else 422
 
@@ -127,3 +150,15 @@ def assess_quality_condition():
         status_code = 400
 
     return jsonify(result), status_code
+
+
+def _parse_manual_inputs(raw_value):
+    if not raw_value:
+        return {}
+
+    try:
+        parsed = json.loads(raw_value)
+    except (TypeError, ValueError):
+        return {}
+
+    return parsed if isinstance(parsed, dict) else {}

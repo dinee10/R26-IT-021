@@ -60,3 +60,6 @@ quality-plant-identification-dataset/
 quality-condition-raw-dataset/
 quality-condition-dataset/
 quality-condition-training-dataset/
+quality-maturity-raw-dataset/
+quality-maturity-dataset/
+quality-maturity-training-dataset/
