@@ -1,4 +1,7 @@
 import csv
+import importlib.util
+import json
+import sys
 from math import isfinite
 from pathlib import Path
 
@@ -44,14 +47,6 @@ def _plant_details(plant, reason):
 def health():
     return jsonify({'status': 'healthy', 'message': 'Backend is working'})
 
-
-@bp.route('/ask', methods=['POST'])
-import importlib.util
-import json
-import sys
-from pathlib import Path
-
-from flask import Blueprint, request, jsonify
 
 _quality_services_path = Path(__file__).resolve().parents[1] / "quality-services"
 
@@ -102,11 +97,7 @@ quality_gradcam = _load_quality_service(
     "quality_gradcam",
     "quality.gradcam.py",
 )
-from conversation_rag import ask_question, clear_conversation
-
-api = Blueprint('api', __name__)
-
-@api.route('/ask', methods=['POST'])
+@bp.route('/ask', methods=['POST'])
 def ask():
     """Placeholder for RAG Chatbot - You will implement this in your branch."""
     data = request.get_json() or {}
@@ -184,7 +175,7 @@ def recommend():
     return jsonify({'bestPlant': recommendations[0], 'recommendations': recommendations})
 
 
-@api.route('/quality/validate-image', methods=['POST'])
+@bp.route('/quality/validate-image', methods=['POST'])
 def validate_quality_image():
     image_file = request.files.get('image')
 
@@ -199,7 +190,7 @@ def validate_quality_image():
 
     return jsonify(result), status_code
 
-@api.route('/quality/identify-plant', methods=['POST'])
+@bp.route('/quality/identify-plant', methods=['POST'])
 def identify_quality_plant():
     image_file = request.files.get('image')
 
@@ -214,7 +205,7 @@ def identify_quality_plant():
 
     return jsonify(result), status_code
 
-@api.route('/quality/identify-plant-multiple', methods=['POST'])
+@bp.route('/quality/identify-plant-multiple', methods=['POST'])
 def identify_quality_plant_multiple():
     image_files = request.files.getlist('image')
 
@@ -234,7 +225,7 @@ def identify_quality_plant_multiple():
 
     return jsonify(result), status_code
 
-@api.route('/quality/assess-condition', methods=['POST'])
+@bp.route('/quality/assess-condition', methods=['POST'])
 def assess_quality_condition():
     image_files = request.files.getlist('image')
 
