@@ -369,31 +369,24 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
               onGalleryPressed: _pickDeviceImages,
               onRemoveImage: _removeImage,
             ),
-            const SizedBox(height: 18),
-            _ManualCharacteristicsPanel(
-              value: _manualInputs,
-              enabled: !_validating && !_identifyingPlant && !_assessingCondition,
-              onChanged: (value) {
-                setState(() {
-                  _manualInputs = value;
-                  _conditionResult = null;
-                });
-              },
-            ),
-            const SizedBox(height: 18),
-            _ValidationPanel(
-              result: _validationResult,
-              validating: _validating,
-            ),
-            const SizedBox(height: 18),
-            _PlantIdentificationPanel(
-              result: _plantResult,
-              identifying: _identifyingPlant,
-              enabled: _validationResult?.valid == true,
-            ),
+            if (_validationResult?.valid == false) ...[
+              const SizedBox(height: 18),
+              _ValidationPanel(
+                result: _validationResult,
+              ),
+            ],
+            if (_identifyingPlant || _plantResult?.accepted == false) ...[
+              const SizedBox(height: 18),
+              _PlantIdentificationPanel(
+                result: _plantResult,
+                identifying: _identifyingPlant,
+                enabled: _validationResult?.valid == true,
+              ),
+            ],
             const SizedBox(height: 18),
             _ConditionAssessmentPanel(
               result: _conditionResult,
+              plantResult: _plantResult,
               assessing: _assessingCondition,
               enabled: _plantResult?.accepted == true,
             ),
@@ -461,7 +454,6 @@ class _PlantIdentificationPanel extends StatelessWidget {
       ),
       title: title,
       subtitle: subtitle,
-      plantResult: result,
     );
   }
 
@@ -516,19 +508,28 @@ class _PlantIdentificationPanel extends StatelessWidget {
 class _ConditionAssessmentPanel extends StatelessWidget {
   const _ConditionAssessmentPanel({
     required this.result,
+    required this.plantResult,
     required this.assessing,
     required this.enabled,
   });
 
   final QualityConditionResult? result;
+  final QualityPlantResult? plantResult;
   final bool assessing;
   final bool enabled;
 
   @override
   Widget build(BuildContext context) {
+    final acceptedPlant = plantResult?.accepted == true ? plantResult : null;
+
+    return _buildStatusPanel(plantName: acceptedPlant?.species);
+  }
+
+  Widget _buildStatusPanel({String? plantName}) {
     if (assessing) {
-      return const _StatusPanel(
-        icon: SizedBox(
+      return _StatusPanel(
+        heading: plantName,
+        icon: const SizedBox(
           width: 20,
           height: 20,
           child: CircularProgressIndicator(strokeWidth: 2.4),
@@ -547,8 +548,12 @@ class _ConditionAssessmentPanel extends StatelessWidget {
     }
 
     if (result == null) {
-      return const _StatusPanel(
-        icon: Icon(Icons.health_and_safety_outlined, color: AppColors.muted),
+      return _StatusPanel(
+        heading: plantName,
+        icon: const Icon(
+          Icons.health_and_safety_outlined,
+          color: AppColors.muted,
+        ),
         title: 'Condition assessment ready',
         subtitle: 'The disease model runs after plant identification is accepted.',
       );
@@ -557,6 +562,7 @@ class _ConditionAssessmentPanel extends StatelessWidget {
     final condition = result!.condition;
     if (condition == null) {
       return _StatusPanel(
+        heading: plantName,
         icon: const Icon(Icons.info_outline_rounded, color: AppColors.danger),
         title: _reasonTitle(result!.reason),
         subtitle: _reasonHelp(result!.reason),
@@ -565,6 +571,7 @@ class _ConditionAssessmentPanel extends StatelessWidget {
 
     final isHealthy = condition.status == 'healthy';
     return _StatusPanel(
+      heading: plantName,
       icon: Icon(
         isHealthy
             ? Icons.check_circle_outline_rounded
@@ -576,7 +583,7 @@ class _ConditionAssessmentPanel extends StatelessWidget {
           : '${condition.displayName} detected',
       subtitle: isHealthy
           ? 'Continuing to maturity-stage assessment when supported.'
-          : 'Disease details were retrieved from the knowledge CSV when available.',
+          : null,
       conditionResult: result,
     );
   }
@@ -1118,52 +1125,21 @@ class _ManualDropdown extends StatelessWidget {
 class _ValidationPanel extends StatelessWidget {
   const _ValidationPanel({
     required this.result,
-    required this.validating,
   });
 
   final QualityValidationResult? result;
-  final bool validating;
 
   @override
   Widget build(BuildContext context) {
-    if (validating) {
-      return const _StatusPanel(
-        icon: SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(strokeWidth: 2.4),
-        ),
-        title: 'Validating image',
-        subtitle: 'Checking resolution, blur, darkness, and exposure.',
-      );
-    }
-
-    if (result == null) {
-      return const _StatusPanel(
-        icon: Icon(Icons.fact_check_outlined, color: AppColors.muted),
-        title: 'Input validation pending',
-        subtitle: 'The next AI steps unlock after the image passes validation.',
-      );
-    }
-
-    if (!result!.valid) {
+    if (result != null && !result!.valid) {
       return _StatusPanel(
         icon: const Icon(Icons.error_outline_rounded, color: AppColors.danger),
         title: _reasonTitle(result!.reason),
         subtitle: _reasonHelp(result!.reason),
-        result: result,
       );
     }
 
-    return _StatusPanel(
-      icon: const Icon(
-        Icons.check_circle_outline_rounded,
-        color: AppColors.primary,
-      ),
-      title: 'Image passed validation',
-      subtitle: 'Ready for plant identification and visual quality assessment.',
-      result: result,
-    );
+    return const SizedBox.shrink();
   }
 
   String _reasonTitle(String? reason) {
@@ -1201,7 +1177,8 @@ class _StatusPanel extends StatelessWidget {
   const _StatusPanel({
     required this.icon,
     required this.title,
-    required this.subtitle,
+    this.subtitle,
+    this.heading,
     this.result,
     this.plantResult,
     this.conditionResult,
@@ -1209,7 +1186,8 @@ class _StatusPanel extends StatelessWidget {
 
   final Widget icon;
   final String title;
-  final String subtitle;
+  final String? subtitle;
+  final String? heading;
   final QualityValidationResult? result;
   final QualityPlantResult? plantResult;
   final QualityConditionResult? conditionResult;
@@ -1226,6 +1204,17 @@ class _StatusPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (heading != null && heading!.isNotEmpty) ...[
+            Text(
+              heading!,
+              style: const TextStyle(
+                color: AppColors.text,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 14),
+          ],
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1243,14 +1232,16 @@ class _StatusPanel extends StatelessWidget {
                         fontWeight: FontWeight.w900,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        color: AppColors.muted,
-                        fontWeight: FontWeight.w700,
+                    if (subtitle != null && subtitle!.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle!,
+                        style: const TextStyle(
+                          color: AppColors.muted,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
@@ -1294,16 +1285,9 @@ class _ConditionResultDetails extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: [
-            _MetricChip(label: 'Status', value: condition.status),
-            _MetricChip(label: 'Class', value: condition.displayName),
-            _MetricChip(label: 'Confidence', value: condition.confidencePercent),
-            if (condition.imageCount != null)
-              _MetricChip(label: 'Images', value: '${condition.imageCount} used'),
-          ],
+        _ConditionSummaryGrid(
+          status: _statusLabel(condition.status),
+          conditionClass: condition.displayName,
         ),
         if (condition.mode == 'mock') ...[
           const SizedBox(height: 10),
@@ -1329,22 +1313,137 @@ class _ConditionResultDetails extends StatelessWidget {
         ],
         if (xai != null && xai.shouldDisplay) ...[
           const SizedBox(height: 14),
-          _XaiExplanationView(xai: xai),
+          _XaiExplanationView(
+            xai: xai,
+            condition: condition,
+          ),
         ],
       ],
     );
   }
+
+  String _statusLabel(String status) {
+    return status == 'diseased' ? 'Condition detected' : status;
+  }
 }
 
-class _XaiExplanationView extends StatelessWidget {
-  const _XaiExplanationView({required this.xai});
+class _ConditionSummaryGrid extends StatelessWidget {
+  const _ConditionSummaryGrid({
+    required this.status,
+    required this.conditionClass,
+  });
 
-  final QualityXaiResult xai;
+  final String status;
+  final String conditionClass;
 
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final useColumns = constraints.maxWidth >= 360;
+        final chips = [
+          _FlexibleMetricChip(label: 'Status', value: status),
+          _FlexibleMetricChip(label: 'Class', value: conditionClass),
+        ];
+
+        if (!useColumns) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              chips[0],
+              const SizedBox(height: 10),
+              chips[1],
+            ],
+          );
+        }
+
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: chips[0]),
+              const SizedBox(width: 12),
+              Expanded(child: chips[1]),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _FlexibleMetricChip extends StatelessWidget {
+  const _FlexibleMetricChip({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 78),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.muted,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.text,
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _XaiExplanationView extends StatefulWidget {
+  const _XaiExplanationView({
+    required this.xai,
+    this.condition,
+  });
+
+  final QualityXaiResult xai;
+  final QualityConditionPrediction? condition;
+
+  @override
+  State<_XaiExplanationView> createState() => _XaiExplanationViewState();
+}
+
+class _XaiExplanationViewState extends State<_XaiExplanationView> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final xai = widget.xai;
     final gradcam = xai.gradcam;
     final shap = xai.shap;
+    final technicalItems = _technicalItems(gradcam: gradcam, shap: shap);
 
     return Container(
       width: double.infinity,
@@ -1357,70 +1456,224 @@ class _XaiExplanationView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            xai.finalStage == 'maturity'
-                ? 'Maturity Explanation'
-                : 'Condition Explanation',
-            style: const TextStyle(
-              color: AppColors.text,
-              fontSize: 15,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          if (gradcam != null &&
-              gradcam.available &&
-              gradcam.base64Image.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            _DiseaseInfoSection(
-              title: 'Grad-CAM Heatmap',
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Row(
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.memory(
-                      base64Decode(gradcam.base64Image),
-                      width: double.infinity,
-                      fit: BoxFit.contain,
+                  Icon(
+                    _expanded
+                        ? Icons.expand_less_rounded
+                        : Icons.expand_more_rounded,
+                    color: AppColors.text,
+                  ),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'View technical explanation',
+                      style: TextStyle(
+                        color: AppColors.text,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  _DiseaseParagraph(gradcam.message),
-                  if (gradcam.limitation.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    _DiseaseParagraph(gradcam.limitation),
-                  ],
                 ],
               ),
             ),
-          ],
-          if (shap != null && shap.available) ...[
-            const SizedBox(height: 12),
-            _DiseaseInfoSection(
-              title: 'Structured Feature Influence',
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _DiseaseParagraph(shap.message),
-                  const SizedBox(height: 8),
-                  _DiseaseBulletList(
-                    items: shap.features
-                        .map(
-                          (feature) =>
-                              '${feature.feature}: ${feature.effect} - ${feature.description}',
-                        )
-                        .toList(),
-                  ),
-                  if (shap.limitation.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    _DiseaseParagraph(shap.limitation),
+          ),
+          if (_expanded) ...[
+            if (technicalItems.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _TechnicalMetricGrid(items: technicalItems),
+            ],
+            if (gradcam != null &&
+                gradcam.available &&
+                gradcam.base64Image.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _DiseaseInfoSection(
+                title: 'Grad-CAM Heatmap',
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.memory(
+                        base64Decode(gradcam.base64Image),
+                        width: double.infinity,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _DiseaseParagraph(gradcam.message),
+                    if (gradcam.limitation.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      _DiseaseParagraph(gradcam.limitation),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
+            ],
+            if (shap != null && shap.available) ...[
+              const SizedBox(height: 12),
+              _DiseaseInfoSection(
+                title: 'Structured Feature Influence',
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _DiseaseParagraph(shap.message),
+                    const SizedBox(height: 8),
+                    _DiseaseBulletList(
+                      items: shap.features
+                          .map(
+                            (feature) =>
+                                '${feature.feature}: ${feature.effect} - ${feature.description}',
+                          )
+                          .toList(),
+                    ),
+                    if (shap.limitation.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      _DiseaseParagraph(shap.limitation),
+                    ],
+                  ],
+                ),
+              ),
+            ],
           ],
         ],
       ),
+    );
+  }
+
+  List<_TechnicalMetric> _technicalItems({
+    required QualityGradCamExplanation? gradcam,
+    required QualityStructuredExplanation? shap,
+  }) {
+    final condition = widget.condition;
+
+    return [
+      if (condition != null)
+        _TechnicalMetric(
+          label: 'Prediction',
+          value: condition.displayName,
+        ),
+      if (condition != null)
+        _TechnicalMetric(
+          label: 'Status',
+          value: condition.status,
+        ),
+      if (condition != null)
+        _TechnicalMetric(
+          label: 'Confidence',
+          value: condition.confidencePercent,
+        ),
+      if (condition != null &&
+          condition.model != null &&
+          condition.model!.isNotEmpty)
+        _TechnicalMetric(label: 'Model', value: condition.model!),
+      if (condition != null && condition.imageCount != null)
+        _TechnicalMetric(
+          label: 'Images',
+          value: '${condition.imageCount} used',
+        ),
+      if (condition != null &&
+          condition.mode != null &&
+          condition.mode!.isNotEmpty)
+        _TechnicalMetric(label: 'Mode', value: condition.mode!),
+      if (widget.xai.finalStage.isNotEmpty)
+        _TechnicalMetric(label: 'XAI stage', value: widget.xai.finalStage),
+      if (gradcam != null)
+        _TechnicalMetric(
+          label: 'Grad-CAM',
+          value: gradcam.available ? 'Available' : 'Unavailable',
+        ),
+      if (shap != null)
+        _TechnicalMetric(
+          label: 'Structured features',
+          value:
+              shap.available ? '${shap.features.length} used' : 'Unavailable',
+        ),
+    ];
+  }
+}
+
+class _TechnicalMetric {
+  const _TechnicalMetric({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+}
+
+class _TechnicalMetricGrid extends StatelessWidget {
+  const _TechnicalMetricGrid({required this.items});
+
+  final List<_TechnicalMetric> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final useColumns = constraints.maxWidth >= 360;
+
+        if (!useColumns) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (var index = 0; index < items.length; index++) ...[
+                _FlexibleMetricChip(
+                  label: items[index].label,
+                  value: items[index].value,
+                ),
+                if (index != items.length - 1) const SizedBox(height: 10),
+              ],
+            ],
+          );
+        }
+
+        final rows = <Widget>[];
+        for (var index = 0; index < items.length; index += 2) {
+          final secondIndex = index + 1;
+          rows.add(
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: _FlexibleMetricChip(
+                      label: items[index].label,
+                      value: items[index].value,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: secondIndex < items.length
+                        ? _FlexibleMetricChip(
+                            label: items[secondIndex].label,
+                            value: items[secondIndex].value,
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (var index = 0; index < rows.length; index++) ...[
+              rows[index],
+              if (index != rows.length - 1) const SizedBox(height: 10),
+            ],
+          ],
+        );
+      },
     );
   }
 }

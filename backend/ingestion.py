@@ -39,14 +39,17 @@ def ingest_documents():
 
     
     if os.path.exists(PERSIST_DIRECTORY):
-        print(f"✅ Vector store already exists at '{PERSIST_DIRECTORY}'. Loading existing store.")
+        print(f"OK: Vector store already exists at '{PERSIST_DIRECTORY}'. Loading existing store.")
         vectorstore = Chroma(
             persist_directory=PERSIST_DIRECTORY,
             embedding_function=embeddings,
             collection_metadata={"hnsw:space": "cosine"}
         )
-        print(f"Loaded existing store with {vectorstore._collection.count()} chunks")
-        return vectorstore
+        chunk_count = vectorstore._collection.count()
+        print(f"Loaded existing store with {chunk_count} chunks")
+        if chunk_count > 0:
+            return vectorstore
+        print("Existing store is empty. Rebuilding from source documents.")
 
     chunks = load_and_split_documents()
 
@@ -57,7 +60,7 @@ def ingest_documents():
         persist_directory=PERSIST_DIRECTORY,
         collection_metadata={"hnsw:space": "cosine"}  
     )
-    print(f"✅ Vector store created successfully at '{PERSIST_DIRECTORY}' with {len(chunks)} chunks!")
+    print(f"OK: Vector store created successfully at '{PERSIST_DIRECTORY}' with {len(chunks)} chunks!")
     return vectorstore
 
 if __name__ == "__main__":

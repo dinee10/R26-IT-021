@@ -18,7 +18,7 @@ class ImageValidationConfig:
         return cls(
             min_width=int(os.getenv("QUALITY_MIN_WIDTH", "224")),
             min_height=int(os.getenv("QUALITY_MIN_HEIGHT", "224")),
-            blur_threshold=float(os.getenv("QUALITY_BLUR_THRESHOLD", "30")),
+            blur_threshold=float(os.getenv("QUALITY_BLUR_THRESHOLD", "20")),
             min_brightness=float(os.getenv("QUALITY_MIN_BRIGHTNESS", "35")),
             max_brightness=float(os.getenv("QUALITY_MAX_BRIGHTNESS", "220")),
         )
