@@ -18,7 +18,7 @@ class PractitionerChatPage extends StatelessWidget {
       greeting: "Ask about medicinal plants\nClinical detail, dosage notes, and contraindications included.",
       infoBanner: Container(
         width: double.infinity,
-        color: _accent.withOpacity(0.08),
+        color: _accent.withValues(alpha: 0.08),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: Row(
           children: [

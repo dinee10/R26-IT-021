@@ -7,6 +7,7 @@ requests==2.32.3
 numpy>=1.26.0,<3.0.0
 opencv-python-headless==4.10.0.84
 
+ultralytics>=8.3.0,<9.0.0
 
 # RAG Dependencies
 langchain
@@ -25,4 +26,7 @@ datasets
  
 # Fuzzy matching for plant name entity linking
 rapidfuzz
+
+# Test runner used by the documented verification command.
+pytest>=8.0,<9.0
  

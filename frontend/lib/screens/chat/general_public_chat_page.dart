@@ -19,7 +19,7 @@ class GeneralPublicChatPage extends StatelessWidget {
       initialMessage: initialMessage,
       infoBanner: Container(
         width: double.infinity,
-        color: AppColors.primary.withOpacity(0.08),
+        color: AppColors.primary.withValues(alpha: 0.08),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: const Row(
           children: [

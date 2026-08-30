@@ -6,11 +6,10 @@ import 'package:http/http.dart' as http;
 import '../model/chat_message.dart';
 import '../services/conversation_store.dart';
 import '../../theme/app_colors.dart';
+import '../../services/plant_api.dart';
 import 'conversation_sidebar.dart';
 
-
-
-/// Conversation history is kept in-memory via [ConversationStore] 
+/// Conversation history is kept in-memory via [ConversationStore]
 class PersonaChatScaffold extends StatefulWidget {
   final String personaLabel; // shown in UI, e.g. "Practitioner"
   final String userTypeKey; // sent to backend, e.g. "practitioner"
@@ -41,10 +40,7 @@ class _PersonaChatScaffoldState extends State<PersonaChatScaffold> {
   bool _isLoading = false;
   bool _initialMessageSent = false;
 
- 
-  final String backendUrl = "http://127.0.0.1:5000/api/ask";
-
-  String? _conversationId; 
+  String? _conversationId;
 
   @override
   void initState() {
@@ -98,15 +94,17 @@ class _PersonaChatScaffoldState extends State<PersonaChatScaffold> {
         );
       }
 
-      final response = await http.post(
-        Uri.parse(backendUrl),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "query": query,
-          "session_id": sessionId,
-          "user_context": {"user_type": widget.userTypeKey},
-        }),
-      );
+      final response = await http
+          .post(
+            Uri.parse('${PlantApi.baseUrl}/api/ask'),
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode({
+              "query": query,
+              "session_id": sessionId,
+              "user_context": {"user_type": widget.userTypeKey},
+            }),
+          )
+          .timeout(const Duration(seconds: 60));
 
       late final ChatMessage botMessage;
       if (response.statusCode == 200) {
@@ -117,12 +115,10 @@ class _PersonaChatScaffoldState extends State<PersonaChatScaffold> {
           hasCaution: data['safety_context_available'] == true,
         );
       } else {
-        botMessage = ChatMessage(
-          text: "Server error: ${response.statusCode}",
-          isUser: false,
-        );
+        botMessage = ChatMessage(text: _serverError(response), isUser: false);
       }
 
+      if (!mounted) return;
       setState(() => _messages.add(botMessage));
       ConversationStore.instance.appendMessage(
         userType: widget.userTypeKey,
@@ -130,12 +126,30 @@ class _PersonaChatScaffoldState extends State<PersonaChatScaffold> {
         message: botMessage,
       );
     } catch (e) {
-      setState(() => _messages.add(
-            ChatMessage(text: "Cannot connect to backend. Is it running?", isUser: false),
-          ));
+      setState(
+        () => _messages.add(
+          ChatMessage(
+            text:
+                'Cannot connect to ' +
+                PlantApi.baseUrl +
+                '. Check that the backend is running.',
+            isUser: false,
+          ),
+        ),
+      );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  String _serverError(http.Response response) {
+    try {
+      final body = jsonDecode(response.body);
+      if (body is Map<String, dynamic> && body['error'] is String) {
+        return body['error'] as String;
+      }
+    } catch (_) {}
+    return 'Server error: ${response.statusCode}';
   }
 
   void _startNewConversation() {
@@ -162,33 +176,33 @@ class _PersonaChatScaffoldState extends State<PersonaChatScaffold> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-  // ========== BACK ARROW ==========
-    leading: IconButton(
-    icon: const Icon(Icons.arrow_back, color: Colors.white),
-    onPressed: () {
-      // Goes all the way back to Home
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    },
-    tooltip: 'Back',
-  ),
-  title: Row(
-    children: [
-      Icon(widget.icon, size: 20),
-      const SizedBox(width: 8),
-      Text(widget.personaLabel),
-    ],
-  ),
-  backgroundColor: widget.accentColor,
-  foregroundColor: Colors.white,
-  centerTitle: false,
-  actions: [
-    IconButton(
-      icon: const Icon(Icons.add_comment_outlined),
-      onPressed: _startNewConversation,
-      tooltip: "New Conversation",
-    ),
-  ],
-),
+        // ========== BACK ARROW ==========
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            // Goes all the way back to Home
+            Navigator.of(context).popUntil((route) => route.isFirst);
+          },
+          tooltip: 'Back',
+        ),
+        title: Row(
+          children: [
+            Icon(widget.icon, size: 20),
+            const SizedBox(width: 8),
+            Text(widget.personaLabel),
+          ],
+        ),
+        backgroundColor: widget.accentColor,
+        foregroundColor: Colors.white,
+        centerTitle: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_comment_outlined),
+            onPressed: _startNewConversation,
+            tooltip: "New Conversation",
+          ),
+        ],
+      ),
       drawer: ConversationSidebar(
         userType: widget.userTypeKey,
         personaLabel: widget.personaLabel,
@@ -209,7 +223,11 @@ class _PersonaChatScaffoldState extends State<PersonaChatScaffold> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(widget.icon, size: 58, color: widget.accentColor),
+                            Icon(
+                              widget.icon,
+                              size: 58,
+                              color: widget.accentColor,
+                            ),
                             const SizedBox(height: 16),
                             Text(
                               widget.greeting,
@@ -235,9 +253,12 @@ class _PersonaChatScaffoldState extends State<PersonaChatScaffold> {
                           child: Container(
                             margin: const EdgeInsets.symmetric(vertical: 6),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 12),
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
                             constraints: BoxConstraints(
-                              maxWidth: MediaQuery.of(context).size.width * 0.78,
+                              maxWidth:
+                                  MediaQuery.of(context).size.width * 0.78,
                             ),
                             decoration: BoxDecoration(
                               color: msg.isUser
@@ -254,8 +275,11 @@ class _PersonaChatScaffoldState extends State<PersonaChatScaffold> {
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        const Icon(Icons.warning_amber_rounded,
-                                            size: 16, color: Color(0xFFE99A1E)),
+                                        const Icon(
+                                          Icons.warning_amber_rounded,
+                                          size: 16,
+                                          color: Color(0xFFE99A1E),
+                                        ),
                                         const SizedBox(width: 4),
                                         Text(
                                           "Includes a safety caution",
@@ -271,7 +295,9 @@ class _PersonaChatScaffoldState extends State<PersonaChatScaffold> {
                                 Text(
                                   msg.text,
                                   style: TextStyle(
-                                    color: msg.isUser ? Colors.white : AppColors.text,
+                                    color: msg.isUser
+                                        ? Colors.white
+                                        : AppColors.text,
                                     fontSize: 16,
                                   ),
                                 ),
@@ -297,9 +323,12 @@ class _PersonaChatScaffoldState extends State<PersonaChatScaffold> {
                       decoration: InputDecoration(
                         hintText: "Ask about plants or diseases...",
                         border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(25)),
+                          borderRadius: BorderRadius.circular(25),
+                        ),
                         contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 12),
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
                       ),
                       onSubmitted: _sendMessage,
                     ),
