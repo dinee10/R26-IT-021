@@ -50,6 +50,10 @@ quality_maturity_classifier = _load_quality_service(
     "quality_maturity_classifier",
     "quality.maturity_classifier.py",
 )
+quality_gradcam = _load_quality_service(
+    "quality_gradcam",
+    "quality.gradcam.py",
+)
 
 bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -142,6 +146,7 @@ def assess_quality_condition():
         maturity_lookup=quality_maturity_lookup,
         maturity_decision=quality_maturity_decision,
         manual_support_service=quality_manual_maturity_support,
+        gradcam_service=quality_gradcam,
         manual_inputs=manual_inputs,
     )
     status_code = 200 if result.get("accepted") else 422

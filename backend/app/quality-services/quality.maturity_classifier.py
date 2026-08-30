@@ -20,6 +20,7 @@ def assess_maturity_from_multiple_images(
     maturity_lookup,
     maturity_decision,
     manual_support_service,
+    gradcam_service=None,
     manual_inputs: dict[str, Any] | None = None,
 ) -> dict[str, Any] | None:
     config = _load_config()
@@ -88,6 +89,20 @@ def assess_maturity_from_multiple_images(
     maturity["image_count"] = len(probability_predictions)
     maturity["aggregation"] = "AVERAGE_PROBABILITIES"
     maturity["preprocessing"] = "LETTERBOX_224"
+    maturity["xai"] = {
+        "final_stage": "maturity",
+        "gradcam": _build_maturity_gradcam(
+            image_bytes_list=image_bytes_list,
+            species_id=species_id,
+            class_ids=class_ids,
+            model_stage=maturity["model_prediction"]["stage"],
+            config=config,
+            gradcam_service=gradcam_service,
+        ),
+        "shap": _build_structured_feature_explanation(
+            maturity.get("manual_support")
+        ),
+    }
 
     if probability_predictions[0].get("mode") == "mock":
         maturity["mode"] = "mock"
@@ -302,3 +317,104 @@ def _load_config() -> dict[str, Any]:
 
     with config_path.open("r", encoding="utf-8") as config_file:
         return json.load(config_file)
+
+
+def _build_maturity_gradcam(
+    image_bytes_list: list[bytes],
+    species_id: str,
+    class_ids: list[str],
+    model_stage: str,
+    config: dict[str, Any],
+    gradcam_service,
+) -> dict[str, Any] | None:
+    if gradcam_service is None or not image_bytes_list:
+        return None
+
+    image = _decode_image(image_bytes_list[0])
+    model = _load_model(config)
+
+    if image is None or model is None or model == MODEL_RUNTIME_MISSING:
+        return None
+
+    try:
+        class_index = class_ids.index(model_stage)
+    except ValueError:
+        return None
+
+    preprocessed = preprocess_for_maturity_model(
+        image,
+        width=int(config["input_size"]["width"]),
+        height=int(config["input_size"]["height"]),
+    )
+
+    return gradcam_service.generate_gradcam(
+        model=model,
+        preprocessed_image=preprocessed,
+        original_image=image,
+        output_name=species_id,
+        class_index=class_index,
+    )
+
+
+def _build_structured_feature_explanation(
+    manual_support: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    if not manual_support or not manual_support.get("used"):
+        return None
+
+    evidence = manual_support.get("evidence") or []
+    if not evidence:
+        return None
+
+    return {
+        "available": True,
+        "method": "Manual feature contribution",
+        "shap_ready": False,
+        "message": (
+            "Manual characteristics influenced the maturity decision through "
+            "the structured decision layer."
+        ),
+        "limitation": (
+            "These are not SHAP values from a trained tabular model yet. "
+            "True SHAP should be enabled after manual features are used as "
+            "trained model inputs."
+        ),
+        "features": [
+            {
+                "feature": _feature_name_from_evidence(item),
+                "effect": _effect_from_evidence(item),
+                "description": item,
+            }
+            for item in evidence
+        ],
+    }
+
+
+def _feature_name_from_evidence(message: str) -> str:
+    lowered = message.lower()
+
+    if "length" in lowered:
+        return "Leaf length"
+    if "width" in lowered:
+        return "Leaf width"
+    if "texture" in lowered:
+        return "Leaf texture"
+    if "edge" in lowered:
+        return "Leaf edge"
+    if "color" in lowered:
+        return "Discoloration/color"
+    if "spot" in lowered:
+        return "Surface spots"
+    if "hole" in lowered:
+        return "Holes"
+
+    return "Manual characteristic"
+
+
+def _effect_from_evidence(message: str) -> str:
+    lowered = message.lower()
+
+    if "within" in lowered or "consistent" in lowered:
+        return "supported"
+
+    return "conflicted"

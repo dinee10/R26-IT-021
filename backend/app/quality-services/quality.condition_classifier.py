@@ -22,6 +22,7 @@ def assess_condition_from_multiple_images(
     maturity_lookup=None,
     maturity_decision=None,
     manual_support_service=None,
+    gradcam_service=None,
     manual_inputs: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     config = _load_config()
@@ -40,6 +41,7 @@ def assess_condition_from_multiple_images(
             "disease_info": None,
             "maturity": None,
             "medicinal_suitability": None,
+            "xai": None,
             "accepted": False,
             "reason": plant_result.get("reason", "PLANT_NOT_ACCEPTED"),
         }
@@ -51,6 +53,7 @@ def assess_condition_from_multiple_images(
             "disease_info": None,
             "maturity": None,
             "medicinal_suitability": None,
+            "xai": None,
             "accepted": False,
             "reason": "UNSUPPORTED_CONDITION_HEAD",
         }
@@ -67,6 +70,7 @@ def assess_condition_from_multiple_images(
             "disease_info": None,
             "maturity": None,
             "medicinal_suitability": None,
+            "xai": None,
             "accepted": False,
             "reason": "INVALID_IMAGE",
         }
@@ -99,14 +103,23 @@ def assess_condition_from_multiple_images(
         )
         condition["image_count"] = len(probability_predictions)
         condition["aggregation"] = "AVERAGE_PROBABILITIES"
+        condition["_class_index"] = class_index
 
     disease_info = None
     maturity = None
     medicinal_suitability = None
+    xai = None
     if condition.get("status") == "diseased":
         disease_info = disease_lookup.get_disease_info(
             plant_response["species"],
             condition["class"],
+        )
+        xai = _build_condition_xai(
+            image_bytes_list=image_bytes_list,
+            species_id=species_id,
+            class_index=condition.get("_class_index"),
+            config=config,
+            gradcam_service=gradcam_service,
         )
     elif (
         condition.get("status") == "healthy"
@@ -122,10 +135,14 @@ def assess_condition_from_multiple_images(
             maturity_lookup=maturity_lookup,
             maturity_decision=maturity_decision,
             manual_support_service=manual_support_service,
+            gradcam_service=gradcam_service,
             manual_inputs=manual_inputs,
         )
         if maturity is not None:
             medicinal_suitability = maturity.get("medicinal_suitability")
+            xai = maturity.get("xai")
+
+    condition.pop("_class_index", None)
 
     return {
         "plant": plant_response,
@@ -133,6 +150,7 @@ def assess_condition_from_multiple_images(
         "disease_info": disease_info,
         "maturity": maturity,
         "medicinal_suitability": medicinal_suitability,
+        "xai": xai,
         "accepted": condition.get("accepted", False),
     }
 
@@ -381,3 +399,38 @@ def _normalize_key(value: str) -> str:
 
 def _display_name(value: str) -> str:
     return value.replace("_", " ").title()
+
+
+def _build_condition_xai(
+    image_bytes_list: list[bytes],
+    species_id: str,
+    class_index: int | None,
+    config: dict[str, Any],
+    gradcam_service,
+) -> dict[str, Any] | None:
+    if gradcam_service is None or class_index is None or not image_bytes_list:
+        return None
+
+    image = _decode_image(image_bytes_list[0])
+    model = _load_model(config)
+
+    if image is None or model is None or model == MODEL_RUNTIME_MISSING:
+        return None
+
+    preprocessed = preprocess_for_condition_model(
+        image,
+        width=int(config["input_size"]["width"]),
+        height=int(config["input_size"]["height"]),
+    )
+
+    return {
+        "final_stage": "condition",
+        "gradcam": gradcam_service.generate_gradcam(
+            model=model,
+            preprocessed_image=preprocessed,
+            original_image=image,
+            output_name=species_id,
+            class_index=int(class_index),
+        ),
+        "shap": None,
+    }

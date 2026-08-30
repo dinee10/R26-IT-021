@@ -211,6 +211,9 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
                 : image.file.name,
           )),
         );
+      if (_manualInputs.hasValues) {
+        request.fields['manual_inputs'] = jsonEncode(_manualInputs.toJson());
+      }
 
       final response = await request.send().timeout(const Duration(seconds: 35));
       final responseBody = await response.stream.bytesToString();
@@ -1282,6 +1285,7 @@ class _ConditionResultDetails extends StatelessWidget {
     final diseaseInfo = result.diseaseInfo;
     final maturity = result.maturity;
     final medicinalSuitability = result.medicinalSuitability;
+    final xai = result.xai;
 
     if (condition == null) {
       return const SizedBox.shrink();
@@ -1323,7 +1327,100 @@ class _ConditionResultDetails extends StatelessWidget {
           const SizedBox(height: 14),
           _MedicinalSuitabilitySummary(info: medicinalSuitability),
         ],
+        if (xai != null && xai.shouldDisplay) ...[
+          const SizedBox(height: 14),
+          _XaiExplanationView(xai: xai),
+        ],
       ],
+    );
+  }
+}
+
+class _XaiExplanationView extends StatelessWidget {
+  const _XaiExplanationView({required this.xai});
+
+  final QualityXaiResult xai;
+
+  @override
+  Widget build(BuildContext context) {
+    final gradcam = xai.gradcam;
+    final shap = xai.shap;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            xai.finalStage == 'maturity'
+                ? 'Maturity Explanation'
+                : 'Condition Explanation',
+            style: const TextStyle(
+              color: AppColors.text,
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          if (gradcam != null &&
+              gradcam.available &&
+              gradcam.base64Image.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _DiseaseInfoSection(
+              title: 'Grad-CAM Heatmap',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.memory(
+                      base64Decode(gradcam.base64Image),
+                      width: double.infinity,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _DiseaseParagraph(gradcam.message),
+                  if (gradcam.limitation.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    _DiseaseParagraph(gradcam.limitation),
+                  ],
+                ],
+              ),
+            ),
+          ],
+          if (shap != null && shap.available) ...[
+            const SizedBox(height: 12),
+            _DiseaseInfoSection(
+              title: 'Structured Feature Influence',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _DiseaseParagraph(shap.message),
+                  const SizedBox(height: 8),
+                  _DiseaseBulletList(
+                    items: shap.features
+                        .map(
+                          (feature) =>
+                              '${feature.feature}: ${feature.effect} - ${feature.description}',
+                        )
+                        .toList(),
+                  ),
+                  if (shap.limitation.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    _DiseaseParagraph(shap.limitation),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
@@ -2024,6 +2121,7 @@ class QualityConditionResult {
     this.diseaseInfo,
     this.maturity,
     this.medicinalSuitability,
+    this.xai,
   });
 
   factory QualityConditionResult.failure({required String reason}) {
@@ -2036,6 +2134,7 @@ class QualityConditionResult {
     final maturityJson = json['maturity'] as Map<String, dynamic>?;
     final medicinalSuitabilityJson =
         json['medicinal_suitability'] as Map<String, dynamic>?;
+    final xaiJson = json['xai'] as Map<String, dynamic>?;
 
     return QualityConditionResult(
       accepted: json['accepted'] == true,
@@ -2052,6 +2151,7 @@ class QualityConditionResult {
       medicinalSuitability: medicinalSuitabilityJson == null
           ? null
           : QualityMedicinalSuitability.fromJson(medicinalSuitabilityJson),
+      xai: xaiJson == null ? null : QualityXaiResult.fromJson(xaiJson),
     );
   }
 
@@ -2061,6 +2161,7 @@ class QualityConditionResult {
   final QualityDiseaseInfo? diseaseInfo;
   final QualityMaturityResult? maturity;
   final QualityMedicinalSuitability? medicinalSuitability;
+  final QualityXaiResult? xai;
 }
 
 class QualityConditionPrediction {
@@ -2326,6 +2427,122 @@ class QualityMedicinalSuitability {
   final String display;
   final String assessment;
   final String evidenceStrength;
+}
+
+class QualityXaiResult {
+  const QualityXaiResult({
+    required this.finalStage,
+    this.gradcam,
+    this.shap,
+  });
+
+  factory QualityXaiResult.fromJson(Map<String, dynamic> json) {
+    final gradcamJson = json['gradcam'] as Map<String, dynamic>?;
+    final shapJson = json['shap'] as Map<String, dynamic>?;
+
+    return QualityXaiResult(
+      finalStage: (json['final_stage'] as String?) ?? '',
+      gradcam: gradcamJson == null
+          ? null
+          : QualityGradCamExplanation.fromJson(gradcamJson),
+      shap: shapJson == null
+          ? null
+          : QualityStructuredExplanation.fromJson(shapJson),
+    );
+  }
+
+  final String finalStage;
+  final QualityGradCamExplanation? gradcam;
+  final QualityStructuredExplanation? shap;
+
+  bool get shouldDisplay =>
+      (gradcam != null &&
+          gradcam!.available &&
+          gradcam!.base64Image.isNotEmpty) ||
+      (shap != null && shap!.available);
+}
+
+class QualityGradCamExplanation {
+  const QualityGradCamExplanation({
+    required this.available,
+    required this.base64Image,
+    required this.message,
+    required this.limitation,
+  });
+
+  factory QualityGradCamExplanation.fromJson(Map<String, dynamic> json) {
+    return QualityGradCamExplanation(
+      available: json['available'] == true,
+      base64Image: _extractBase64Image((json['heatmap_image'] as String?) ?? ''),
+      message: (json['message'] as String?) ??
+          'The highlighted regions had the greatest influence on the AI prediction.',
+      limitation: (json['limitation'] as String?) ?? '',
+    );
+  }
+
+  final bool available;
+  final String base64Image;
+  final String message;
+  final String limitation;
+
+  static String _extractBase64Image(String value) {
+    final commaIndex = value.indexOf(',');
+    if (commaIndex == -1) {
+      return value;
+    }
+
+    return value.substring(commaIndex + 1);
+  }
+}
+
+class QualityStructuredExplanation {
+  const QualityStructuredExplanation({
+    required this.available,
+    required this.message,
+    required this.limitation,
+    required this.features,
+  });
+
+  factory QualityStructuredExplanation.fromJson(Map<String, dynamic> json) {
+    return QualityStructuredExplanation(
+      available: json['available'] == true,
+      message: (json['message'] as String?) ??
+          'Manual characteristics influenced the maturity decision.',
+      limitation: (json['limitation'] as String?) ?? '',
+      features: (json['features'] as List<dynamic>?)
+              ?.whereType<Map<String, dynamic>>()
+              .map(QualityStructuredFeatureInfluence.fromJson)
+              .toList() ??
+          [],
+    );
+  }
+
+  final bool available;
+  final String message;
+  final String limitation;
+  final List<QualityStructuredFeatureInfluence> features;
+}
+
+class QualityStructuredFeatureInfluence {
+  const QualityStructuredFeatureInfluence({
+    required this.feature,
+    required this.effect,
+    required this.description,
+  });
+
+  factory QualityStructuredFeatureInfluence.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return QualityStructuredFeatureInfluence(
+      feature: (json['feature'] as String?) ?? 'Manual characteristic',
+      effect: (json['effect'] as String?) ?? 'used',
+      description: (json['description'] as String?) ?? '',
+    );
+  }
+
+  final String feature;
+  final String effect;
+  final String description;
 }
 
 class QualityManualInputs {
