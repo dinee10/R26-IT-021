@@ -118,6 +118,11 @@ class _IdentifyPlantPageState extends State<IdentifyPlantPage> {
                   icon: Icon(Icons.grain_rounded),
                   label: Text('Seed / spice'),
                 ),
+                ButtonSegment(
+                  value: 'flower',
+                  icon: Icon(Icons.local_florist_rounded),
+                  label: Text('Flower'),
+                ),
               ],
               selected: {_modelType},
               showSelectedIcon: false,

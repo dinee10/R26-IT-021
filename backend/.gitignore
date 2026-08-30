@@ -45,9 +45,8 @@ app.*.map.json
 /android/app/release
 
 
-# Raw datasets and local training work dirs are too large for git
-ml/dataset/plant_dataset_raw/*
-!ml/dataset/plant_dataset_raw/.gitkeep
+# Training image datasets are local and too large for git.
+ml/dataset/
 
 
 # Chroma / Vector DB
@@ -58,4 +57,12 @@ vectorstore/
 # OS
 .DS_Store
 Thumbs.db
+
+# Generated YOLO bootstrap data and intermediate training outputs
+yolo11n.pt
+yolo_dataset/data.yaml
+yolo_dataset/images/
+yolo_dataset/labels/
+ml/exports/yolo_organ/*
+!ml/exports/yolo_organ/best.pt
 

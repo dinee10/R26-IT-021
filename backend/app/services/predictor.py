@@ -19,8 +19,13 @@ MODEL_ARTIFACTS = {
         BACKEND_DIR / "ml" / "exports" / "seed" / "herb_model.keras",
         BACKEND_DIR / "ml" / "exports" / "seed" / "labels.json",
     ),
+    "flower": (
+        BACKEND_DIR / "ml" / "exports" / "flower_retrained" / "herb_model.keras",
+        BACKEND_DIR / "ml" / "exports" / "flower_retrained" / "labels.json",
+    ),
 }
 BENEFITS_PATH = BACKEND_DIR / "ml" / "metadata" / "benefits.json"
+BENEFITS_SUPPLEMENT_PATH = BACKEND_DIR / "app" / "data" / "benefits_supplement.json"
 IMAGE_SIZE = (224, 224)
 CONFIDENCE_WARNING = 0.95
 CROP_SCALES = (1.0, 0.95, 0.9, 0.8)
@@ -76,7 +81,7 @@ def _load_model(model_type="plant"):
         ) from exc
 
     if model_type not in MODEL_ARTIFACTS:
-        raise ValueError("model_type must be 'plant' or 'seed'.")
+        raise ValueError("model_type must be 'plant', 'seed', or 'flower'.")
     model_path, labels_path = MODEL_ARTIFACTS[model_type]
 
     if not model_path.exists() or not labels_path.exists():
@@ -88,6 +93,7 @@ def _load_model(model_type="plant"):
         model = tf.keras.models.load_model(model_path)
         labels = _load_json(labels_path, [])
         _benefits = _load_json(BENEFITS_PATH, {})
+        _benefits.update(_load_json(BENEFITS_SUPPLEMENT_PATH, {}))
 
         output_size = int(model.output_shape[-1])
         if not labels or len(labels) != output_size:
@@ -160,7 +166,7 @@ def predict_herb(uploaded_files, model_type="plant"):
         "confidence_percent": round(confidence * 100, 2),
         "warning": None
         if confidence >= CONFIDENCE_WARNING
-        else "The model is not 95% confident yet. Add 3 to 5 clearer leaf/seed photos from different angles before trusting this result.",
+        else "The model is not 95% confident yet. Add 3 to 5 clearer photos from different angles before trusting this result.",
         "benefits": _benefits_for_label(benefits, best_label),
         "image_quality": image_quality,
         "top_predictions": [

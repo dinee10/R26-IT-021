@@ -6,8 +6,10 @@
 // @dart = 3.11
 
 import 'dart:io'; // flutter_ignore: dart_io_import.
+import 'package:camera_android_camerax/camera_android_camerax.dart' as camera_android_camerax;
 import 'package:google_sign_in_android/google_sign_in_android.dart' as google_sign_in_android;
 import 'package:image_picker_android/image_picker_android.dart' as image_picker_android;
+import 'package:camera_avfoundation/camera_avfoundation.dart' as camera_avfoundation;
 import 'package:google_sign_in_ios/google_sign_in_ios.dart' as google_sign_in_ios;
 import 'package:image_picker_ios/image_picker_ios.dart' as image_picker_ios;
 import 'package:file_selector_linux/file_selector_linux.dart' as file_selector_linux;
@@ -24,6 +26,15 @@ class _PluginRegistrant {
   @pragma('vm:entry-point')
   static void register() {
     if (Platform.isAndroid) {
+      try {
+        camera_android_camerax.AndroidCameraCameraX.registerWith();
+      } catch (err) {
+        print(
+          '`camera_android_camerax` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
       try {
         google_sign_in_android.GoogleSignInAndroid.registerWith();
       } catch (err) {
@@ -43,6 +54,15 @@ class _PluginRegistrant {
       }
 
     } else if (Platform.isIOS) {
+      try {
+        camera_avfoundation.AVFoundationCamera.registerWith();
+      } catch (err) {
+        print(
+          '`camera_avfoundation` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
       try {
         google_sign_in_ios.GoogleSignInIOS.registerWith();
       } catch (err) {

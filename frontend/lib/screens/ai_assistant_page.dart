@@ -104,7 +104,7 @@ class AiAssistantPage extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: option.color.withOpacity(0.1),
+                                color: option.color.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(option.icon, color: option.color),

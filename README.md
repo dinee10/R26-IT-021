@@ -139,6 +139,41 @@ python run.py
 
 The API listens on `http://127.0.0.1:5000` by default.
 
+## Live YOLO camera detector
+
+The Scan tab captures a camera frame about once per second and calls
+`POST /api/detect-organs`. The endpoint returns normalized bounding boxes for
+`leaf`, `seed`, and `flower`. It deliberately reports HTTP 503 until custom
+weights are trained, so an untrained generic model is never presented as a
+medicinal-plant detector.
+
+Annotate bounding boxes in YOLO format, copy
+`backend/yolo_dataset/data.yaml.example` to `data.yaml`, and create matching
+`images/{train,val,test}` and `labels/{train,val,test}` directories. Then run:
+
+```powershell
+cd backend
+pip install -r requirements.txt
+python train_yolo_organs.py --epochs 100 --device 0
+python run.py
+```
+
+For a bootstrap model from the existing object-centred classification images,
+generate full-frame labels first:
+
+```powershell
+cd backend
+python prepare_yolo_dataset.py
+python train_yolo_organs.py --data yolo_dataset/data.yaml --epochs 30 --device 0
+```
+
+These generated boxes are suitable for prototyping only. Manually annotated
+boxes are required to improve localization and performance on cluttered camera
+scenes.
+
+The training script copies the best weights to
+`backend/ml/exports/yolo_organ/best.pt`, where the live API loads them lazily.
+
 Useful environment variables:
 
 | Variable | Purpose | Default |

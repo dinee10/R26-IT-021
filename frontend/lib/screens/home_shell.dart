@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import 'ai_assistant_page.dart';
 import 'coming_soon_page.dart';
 import 'home_page.dart';
+import 'live_organ_detector_page.dart';
 import 'profile_page.dart';
 
 class HomeShell extends StatefulWidget {
@@ -18,8 +20,8 @@ class _HomeShellState extends State<HomeShell> {
   Widget build(BuildContext context) {
     final pages = [
       const HomePage(),
-      const ComingSoonPage(title: 'Scan', icon: Icons.camera_alt_rounded),
-      const ComingSoonPage(title: 'Chat', icon: Icons.chat_bubble_outline),
+      const LiveOrganDetectorPage(),
+      const AiAssistantPage(),
       const ComingSoonPage(title: 'History', icon: Icons.history_rounded),
       const ProfilePage(),
     ];

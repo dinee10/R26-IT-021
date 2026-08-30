@@ -41,22 +41,6 @@ def not_found(_error):
 def method_not_allowed(_error):
     return jsonify({"error": "Method not allowed."}), 405
 
-
-@app.errorhandler(413)
-def upload_too_large(_error):
-    max_mb = app.config["MAX_CONTENT_LENGTH"] // (1024 * 1024)
-    return jsonify({"error": f"Upload is too large. Maximum request size is {max_mb} MB."}), 413
-
-
-@app.errorhandler(404)
-def not_found(_error):
-    return jsonify({"error": "Endpoint not found."}), 404
-
-
-@app.errorhandler(405)
-def method_not_allowed(_error):
-    return jsonify({"error": "Method not allowed."}), 405
-
 @app.route('/')
 def home():
     return {"message": "🌿 Herbal Knowledge Assistant Backend Running!"}

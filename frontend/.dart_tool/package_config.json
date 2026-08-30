@@ -26,6 +26,36 @@
       "languageVersion": "3.1"
     },
     {
+      "name": "camera",
+      "rootUri": "file:///C:/Users/user/AppData/Local/Pub/Cache/hosted/pub.dev/camera-0.11.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.9"
+    },
+    {
+      "name": "camera_android_camerax",
+      "rootUri": "file:///C:/Users/user/AppData/Local/Pub/Cache/hosted/pub.dev/camera_android_camerax-0.6.30",
+      "packageUri": "lib/",
+      "languageVersion": "3.9"
+    },
+    {
+      "name": "camera_avfoundation",
+      "rootUri": "file:///C:/Users/user/AppData/Local/Pub/Cache/hosted/pub.dev/camera_avfoundation-0.9.23+2",
+      "packageUri": "lib/",
+      "languageVersion": "3.9"
+    },
+    {
+      "name": "camera_platform_interface",
+      "rootUri": "file:///C:/Users/user/AppData/Local/Pub/Cache/hosted/pub.dev/camera_platform_interface-2.13.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.10"
+    },
+    {
+      "name": "camera_web",
+      "rootUri": "file:///C:/Users/user/AppData/Local/Pub/Cache/hosted/pub.dev/camera_web-0.3.5+5",
+      "packageUri": "lib/",
+      "languageVersion": "3.10"
+    },
+    {
       "name": "characters",
       "rootUri": "file:///C:/Users/user/AppData/Local/Pub/Cache/hosted/pub.dev/characters-1.4.1",
       "packageUri": "lib/",
@@ -378,6 +408,12 @@
       "rootUri": "file:///C:/Users/user/AppData/Local/Pub/Cache/hosted/pub.dev/stream_channel-2.1.4",
       "packageUri": "lib/",
       "languageVersion": "3.3"
+    },
+    {
+      "name": "stream_transform",
+      "rootUri": "file:///C:/Users/user/AppData/Local/Pub/Cache/hosted/pub.dev/stream_transform-2.1.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
     },
     {
       "name": "string_scanner",

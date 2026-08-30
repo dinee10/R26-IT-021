@@ -4,6 +4,7 @@ flask-cors==4.0.0
 python-dotenv==1.0.1
 pydantic==2.8.2          # Required for Python 3.13 compatibility
 requests==2.32.3
+ultralytics>=8.3.0,<9.0.0
 
 # RAG Dependencies
 langchain
@@ -22,4 +23,7 @@ datasets
  
 # Fuzzy matching for plant name entity linking
 rapidfuzz
+
+# Test runner used by the documented verification command.
+pytest>=8.0,<9.0
  
