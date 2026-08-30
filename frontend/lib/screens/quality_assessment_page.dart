@@ -1255,10 +1255,6 @@ class _StatusPanel extends StatelessWidget {
             const SizedBox(height: 14),
             _MetricGrid(result: result!),
           ],
-          if (plantResult != null) ...[
-            const SizedBox(height: 14),
-            _PlantResultDetails(result: plantResult!),
-          ],
           if (conditionResult != null) ...[
             const SizedBox(height: 14),
             _ConditionResultDetails(
@@ -1705,6 +1701,15 @@ class _MaturityInfoView extends StatelessWidget {
     final manualSupport = maturity.manualSupport;
     final suitability = maturity.medicinalSuitability;
     final details = maturity.maturityInfo;
+    final metrics = [
+      if (decision.stageDisplay.isNotEmpty)
+        _TechnicalMetric(label: 'Stage', value: decision.stageDisplay),
+      if (prediction != null)
+        _TechnicalMetric(
+          label: 'Confidence',
+          value: prediction.confidencePercent,
+        ),
+    ];
 
     return Container(
       width: double.infinity,
@@ -1725,16 +1730,9 @@ class _MaturityInfoView extends StatelessWidget {
               fontWeight: FontWeight.w900,
             ),
           ),
-          if (decision.stageDisplay.isNotEmpty) ...[
+          if (metrics.isNotEmpty) ...[
             const SizedBox(height: 10),
-            _MetricChip(label: 'Stage', value: decision.stageDisplay),
-          ],
-          if (prediction != null) ...[
-            const SizedBox(height: 10),
-            _MetricChip(
-              label: 'Confidence',
-              value: prediction.confidencePercent,
-            ),
+            _TechnicalMetricGrid(items: metrics),
           ],
           if (manualSupport != null && manualSupport.evidence.isNotEmpty) ...[
             const SizedBox(height: 12),
@@ -2167,43 +2165,6 @@ class _SuitabilityStyle {
 
   final Color color;
   final double value;
-}
-
-class _PlantResultDetails extends StatelessWidget {
-  const _PlantResultDetails({required this.result});
-
-  final QualityPlantResult result;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: [
-            _MetricChip(label: 'Species', value: result.species),
-            _MetricChip(label: 'Confidence', value: result.confidencePercent),
-            _MetricChip(label: 'Model', value: result.model ?? 'Configured model'),
-            if (result.imageCount != null)
-              _MetricChip(label: 'Images', value: '${result.imageCount} used'),
-          ],
-        ),
-        if (result.mode == 'mock') ...[
-          const SizedBox(height: 10),
-          const Text(
-            'Mock prediction active until a trained model file is configured.',
-            style: TextStyle(
-              color: AppColors.muted,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ],
-    );
-  }
 }
 
 class _MetricGrid extends StatelessWidget {
