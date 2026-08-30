@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import '../theme/app_colors.dart';
+import 'chat/general_public_chat_page.dart';
 
 class QualityAssessmentPage extends StatefulWidget {
   const QualityAssessmentPage({super.key});
@@ -522,10 +523,12 @@ class _ConditionAssessmentPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final acceptedPlant = plantResult?.accepted == true ? plantResult : null;
 
-    return _buildStatusPanel(plantName: acceptedPlant?.species);
+    return _buildStatusPanel(plantResult: acceptedPlant);
   }
 
-  Widget _buildStatusPanel({String? plantName}) {
+  Widget _buildStatusPanel({QualityPlantResult? plantResult}) {
+    final plantName = plantResult?.species;
+
     if (assessing) {
       return _StatusPanel(
         heading: plantName,
@@ -584,6 +587,7 @@ class _ConditionAssessmentPanel extends StatelessWidget {
       subtitle: isHealthy
           ? 'Continuing to maturity-stage assessment when supported.'
           : null,
+      plantResult: plantResult,
       conditionResult: result,
     );
   }
@@ -1257,7 +1261,10 @@ class _StatusPanel extends StatelessWidget {
           ],
           if (conditionResult != null) ...[
             const SizedBox(height: 14),
-            _ConditionResultDetails(result: conditionResult!),
+            _ConditionResultDetails(
+              result: conditionResult!,
+              plantResult: plantResult,
+            ),
           ],
         ],
       ),
@@ -1266,9 +1273,13 @@ class _StatusPanel extends StatelessWidget {
 }
 
 class _ConditionResultDetails extends StatelessWidget {
-  const _ConditionResultDetails({required this.result});
+  const _ConditionResultDetails({
+    required this.result,
+    this.plantResult,
+  });
 
   final QualityConditionResult result;
+  final QualityPlantResult? plantResult;
 
   @override
   Widget build(BuildContext context) {
@@ -1302,7 +1313,11 @@ class _ConditionResultDetails extends StatelessWidget {
         ],
         if (diseaseInfo != null) ...[
           const SizedBox(height: 14),
-          _DiseaseInfoView(info: diseaseInfo),
+          _DiseaseInfoView(
+            info: diseaseInfo,
+            plantName: plantResult?.species,
+            conditionName: condition.displayName,
+          ),
         ],
         if (maturity != null && maturity.shouldDisplay) ...[
           const SizedBox(height: 14),
@@ -1787,9 +1802,15 @@ class _MedicinalSuitabilitySummary extends StatelessWidget {
 }
 
 class _DiseaseInfoView extends StatefulWidget {
-  const _DiseaseInfoView({required this.info});
+  const _DiseaseInfoView({
+    required this.info,
+    this.plantName,
+    this.conditionName,
+  });
 
   final QualityDiseaseInfo info;
+  final String? plantName;
+  final String? conditionName;
 
   @override
   State<_DiseaseInfoView> createState() => _DiseaseInfoViewState();
@@ -1908,8 +1929,43 @@ class _DiseaseInfoViewState extends State<_DiseaseInfoView> {
                 ),
               ),
             ],
+            const SizedBox(height: 14),
+            Center(
+              child: TextButton(
+                onPressed: _openGeneralPublicLearnMore,
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF7ACB8A),
+                  textStyle: const TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                  ),
+                ),
+                child: const Text('Learn more'),
+              ),
+            ),
           ],
         ],
+      ),
+    );
+  }
+
+  void _openGeneralPublicLearnMore() {
+    final message = [
+      widget.plantName,
+      widget.conditionName,
+    ]
+        .whereType<String>()
+        .map((part) => part.trim())
+        .where((part) => part.isNotEmpty)
+        .join(' ');
+
+    if (message.isEmpty) {
+      return;
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => GeneralPublicChatPage(initialMessage: message),
       ),
     );
   }

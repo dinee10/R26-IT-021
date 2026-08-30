@@ -17,6 +17,7 @@ class PersonaChatScaffold extends StatefulWidget {
   final Color accentColor;
   final IconData icon;
   final String greeting;
+  final String? initialMessage;
   final Widget? infoBanner;
 
   const PersonaChatScaffold({
@@ -26,6 +27,7 @@ class PersonaChatScaffold extends StatefulWidget {
     required this.accentColor,
     required this.icon,
     required this.greeting,
+    this.initialMessage,
     this.infoBanner,
   });
 
@@ -37,11 +39,35 @@ class _PersonaChatScaffoldState extends State<PersonaChatScaffold> {
   final TextEditingController _controller = TextEditingController();
   final List<ChatMessage> _messages = [];
   bool _isLoading = false;
+  bool _initialMessageSent = false;
 
  
   final String backendUrl = "http://127.0.0.1:5000/api/ask";
 
   String? _conversationId; 
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final message = widget.initialMessage?.trim();
+      if (!mounted ||
+          _initialMessageSent ||
+          message == null ||
+          message.isEmpty) {
+        return;
+      }
+
+      _initialMessageSent = true;
+      _sendMessage(message);
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   Future<void> _sendMessage(String query) async {
     if (query.trim().isEmpty) return;
