@@ -1,0 +1,236 @@
+{
+  "model_path": "ml\\quality.maturity_classifier.efficientnetv2_b0.keras",
+  "heads": {
+    "betel": [
+      "Mature",
+      "Young"
+    ],
+    "centella_asiatica": [
+      "Mature",
+      "Young"
+    ],
+    "kalanchoe_pinnata": [
+      "Mature",
+      "Young"
+    ],
+    "murraya_koenigii": [
+      "Developing",
+      "Mature",
+      "Young"
+    ],
+    "neem": [
+      "Mature",
+      "Young"
+    ]
+  },
+  "species_reports": {
+    "betel": {
+      "classification_report": {
+        "Mature": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 16.0
+        },
+        "Young": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 18.0
+        },
+        "accuracy": 1.0,
+        "macro avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 34.0
+        },
+        "weighted avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 34.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          16,
+          0
+        ],
+        [
+          0,
+          18
+        ]
+      ]
+    },
+    "centella_asiatica": {
+      "classification_report": {
+        "Mature": {
+          "precision": 1.0,
+          "recall": 0.9090909090909091,
+          "f1-score": 0.9523809523809523,
+          "support": 11.0
+        },
+        "Young": {
+          "precision": 0.8333333333333334,
+          "recall": 1.0,
+          "f1-score": 0.9090909090909091,
+          "support": 5.0
+        },
+        "accuracy": 0.9375,
+        "macro avg": {
+          "precision": 0.9166666666666667,
+          "recall": 0.9545454545454546,
+          "f1-score": 0.9307359307359306,
+          "support": 16.0
+        },
+        "weighted avg": {
+          "precision": 0.9479166666666667,
+          "recall": 0.9375,
+          "f1-score": 0.9388528138528138,
+          "support": 16.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          10,
+          1
+        ],
+        [
+          0,
+          5
+        ]
+      ]
+    },
+    "kalanchoe_pinnata": {
+      "classification_report": {
+        "Mature": {
+          "precision": 1.0,
+          "recall": 0.9,
+          "f1-score": 0.9473684210526315,
+          "support": 10.0
+        },
+        "Young": {
+          "precision": 0.8571428571428571,
+          "recall": 1.0,
+          "f1-score": 0.9230769230769231,
+          "support": 6.0
+        },
+        "accuracy": 0.9375,
+        "macro avg": {
+          "precision": 0.9285714285714286,
+          "recall": 0.95,
+          "f1-score": 0.9352226720647774,
+          "support": 16.0
+        },
+        "weighted avg": {
+          "precision": 0.9464285714285714,
+          "recall": 0.9375,
+          "f1-score": 0.9382591093117408,
+          "support": 16.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          9,
+          1
+        ],
+        [
+          0,
+          6
+        ]
+      ]
+    },
+    "murraya_koenigii": {
+      "classification_report": {
+        "Developing": {
+          "precision": 0.9,
+          "recall": 0.6428571428571429,
+          "f1-score": 0.75,
+          "support": 14.0
+        },
+        "Mature": {
+          "precision": 0.7916666666666666,
+          "recall": 0.95,
+          "f1-score": 0.8636363636363636,
+          "support": 20.0
+        },
+        "Young": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 5.0
+        },
+        "accuracy": 0.8461538461538461,
+        "macro avg": {
+          "precision": 0.8972222222222221,
+          "recall": 0.8642857142857143,
+          "f1-score": 0.8712121212121212,
+          "support": 39.0
+        },
+        "weighted avg": {
+          "precision": 0.8572649572649572,
+          "recall": 0.8461538461538461,
+          "f1-score": 0.8403263403263403,
+          "support": 39.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          9,
+          5,
+          0
+        ],
+        [
+          1,
+          19,
+          0
+        ],
+        [
+          0,
+          0,
+          5
+        ]
+      ]
+    },
+    "neem": {
+      "classification_report": {
+        "Mature": {
+          "precision": 0.875,
+          "recall": 0.875,
+          "f1-score": 0.875,
+          "support": 8.0
+        },
+        "Young": {
+          "precision": 0.875,
+          "recall": 0.875,
+          "f1-score": 0.875,
+          "support": 8.0
+        },
+        "accuracy": 0.875,
+        "macro avg": {
+          "precision": 0.875,
+          "recall": 0.875,
+          "f1-score": 0.875,
+          "support": 16.0
+        },
+        "weighted avg": {
+          "precision": 0.875,
+          "recall": 0.875,
+          "f1-score": 0.875,
+          "support": 16.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          7,
+          1
+        ],
+        [
+          1,
+          7
+        ]
+      ]
+    }
+  }
+}
