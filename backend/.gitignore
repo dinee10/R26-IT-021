@@ -85,3 +85,15 @@ quality-condition-training-dataset/
 quality-maturity-raw-dataset/
 quality-maturity-dataset/
 quality-maturity-training-dataset/
+
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# Environment variables
+.env
+.env.local
+.env.production
