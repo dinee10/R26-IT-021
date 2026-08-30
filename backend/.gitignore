@@ -54,10 +54,7 @@ MANIFEST
 logs/
 *.log.*
 
-# Chroma / Vector DB
-chroma_db_free/
-chroma_db/
-vectorstore/
+
 
 # OS
 .DS_Store
