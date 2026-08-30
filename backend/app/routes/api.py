@@ -1,13 +1,30 @@
 import csv
+import os
+from io import BytesIO
 import importlib.util
 import json
 import sys
 from math import isfinite
 from pathlib import Path
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, send_file
+from werkzeug.datastructures import FileStorage
 
-bp = Blueprint('api', __name__, url_prefix='/api')
+from app.services.predictor import ModelNotReadyError, model_status, predict_herb
+from app.services.organ_detector import (
+    OrganDetectorNotReadyError,
+    detect_organs,
+    detector_status,
+)
+from app.services.health_assessor import assess_plant_health
+from app.services.expert_verification import (
+    create_request,
+    get_request,
+    image_path,
+    list_pending_requests,
+    verify_request,
+)
+bp = Blueprint('api', __name__)
 DATA_FILE = Path(__file__).resolve().parents[2] / 'data' / 'medicinal_plant_cultivation.csv'
 CURRENCY_TO_USD = {'LKR': 0.0031, 'USD': 1, 'EUR': 1.08, 'GBP': 1.27, 'INR': 0.012, 'AUD': 0.65, 'CAD': 0.73, 'JPY': 0.0067}
 
@@ -41,11 +58,6 @@ def _plant_details(plant, reason):
         'sellingPrice': plant['selling_price_lkr'],
         'harvestingInformation': plant['harvesting_information'],
     }
-
-
-@bp.route('/health', methods=['GET'])
-def health():
-    return jsonify({'status': 'healthy', 'message': 'Backend is working'})
 
 
 _quality_services_path = Path(__file__).resolve().parents[1] / "quality-services"
@@ -97,26 +109,7 @@ quality_gradcam = _load_quality_service(
     "quality_gradcam",
     "quality.gradcam.py",
 )
-@bp.route('/ask', methods=['POST'])
-import os
-from io import BytesIO
-
-from flask import Blueprint, request, jsonify, send_file
-from werkzeug.datastructures import FileStorage
-
-from app.services.predictor import ModelNotReadyError, model_status, predict_herb
-from app.services.organ_detector import OrganDetectorNotReadyError, detect_organs, detector_status
-from app.services.health_assessor import assess_plant_health
-from app.services.expert_verification import (
-    create_request,
-    get_request,
-    image_path,
-    list_pending_requests,
-    verify_request,
-)
-api = Blueprint('api', __name__)
-
-@api.route('/health', methods=['GET'])
+@bp.route('/health', methods=['GET'])
 def health():
     status = model_status()
     return jsonify({
@@ -127,7 +120,7 @@ def health():
     })
 
 
-@api.route('/detect-organs', methods=['POST'])
+@bp.route('/detect-organs', methods=['POST'])
 def detect_plant_organs():
     try:
         result = detect_organs(
@@ -141,7 +134,7 @@ def detect_plant_organs():
     return jsonify(result)
 
 
-@api.route('/identify-live', methods=['POST'])
+@bp.route('/identify-live', methods=['POST'])
 def identify_live():
     upload = request.files.get('image')
     if not upload or not upload.filename:
@@ -196,20 +189,32 @@ def identify_live():
         return jsonify({"error": str(exc)}), 400
 
 
-@api.route('/assess-health', methods=['POST'])
+@bp.route('/assess-health', methods=['POST'])
 def assess_health():
     try:
         return jsonify(assess_plant_health(request.files.get('image')))
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
 
-@api.route('/ask', methods=['POST'])
+@bp.route('/ask', methods=['POST'])
 def ask():
-    """Placeholder for RAG Chatbot - You will implement this in your branch."""
-    data = request.get_json() or {}
-    query = data.get('query', '')
-    return jsonify({'answer': 'This is a placeholder response. RAG functionality will be added in feature/rag branch.', 'query': query, 'sources': []})
+    data = request.get_json(silent=True) or {}
+    query = str(data.get('query', '')).strip()
+    session_id = str(data.get('session_id', 'default')).strip() or 'default'
+    user_context = data.get('user_context', {})
 
+    if not query:
+        return jsonify({'error': 'Query is required.'}), 400
+    if not isinstance(user_context, dict):
+        return jsonify({'error': 'user_context must be an object.'}), 400
+
+    try:
+        from conversation_rag import ask_question
+        return jsonify(ask_question(query, session_id, user_context))
+    except (ImportError, ModuleNotFoundError) as exc:
+        return jsonify({'error': f'RAG dependencies are not installed: {exc}'}), 503
+    except Exception as exc:
+        return jsonify({'error': f'The knowledge assistant is unavailable: {exc}'}), 503
 
 @bp.route('/recommend', methods=['POST'])
 def recommend():
@@ -376,26 +381,7 @@ def _parse_manual_inputs(raw_value):
 
     return parsed if isinstance(parsed, dict) else {}
 
-    data = request.get_json(silent=True) or {}
-    query = str(data.get('query', '')).strip()
-    session_id = str(data.get('session_id', 'default')).strip() or 'default'
-    user_context = data.get('user_context', {})
-
-    if not query:
-        return jsonify(dict(error='Query is required.')), 400
-    if not isinstance(user_context, dict):
-        return jsonify(dict(error='user_context must be an object.')), 400
-    
-    try:
-        from conversation_rag import ask_question
-        return jsonify(ask_question(query, session_id, user_context))
-    except (ImportError, ModuleNotFoundError) as exc:
-        return jsonify(dict(error=f'RAG dependencies are not installed: {exc}')), 503
-    except Exception as exc:
-        return jsonify(dict(error=f'The knowledge assistant is unavailable: {exc}')), 503
-
-
-@api.route('/predict', methods=['POST'])
+@bp.route('/predict', methods=['POST'])
 def predict():
     images = request.files.getlist('images')
     model_type = request.form.get('model_type', 'plant').lower()
@@ -450,7 +436,7 @@ def _expert_authorized():
     return bool(expected) and request.headers.get("X-Expert-Key") == expected
 
 
-@api.route('/verifications', methods=['POST'])
+@bp.route('/verifications', methods=['POST'])
 def submit_verification():
     images = request.files.getlist('images')
     try:
@@ -465,7 +451,7 @@ def submit_verification():
     return jsonify(record), 201
 
 
-@api.route('/verifications/<request_id>', methods=['GET'])
+@bp.route('/verifications/<request_id>', methods=['GET'])
 def verification_status(request_id):
     record = get_request(request_id)
     if not record:
@@ -473,14 +459,14 @@ def verification_status(request_id):
     return jsonify(record)
 
 
-@api.route('/expert/verifications', methods=['GET'])
+@bp.route('/expert/verifications', methods=['GET'])
 def expert_queue():
     if not _expert_authorized():
         return jsonify({"error": "Expert authorization required."}), 401
     return jsonify({"requests": list_pending_requests()})
 
 
-@api.route('/expert/verifications/<request_id>', methods=['POST'])
+@bp.route('/expert/verifications/<request_id>', methods=['POST'])
 def expert_verify(request_id):
     if not _expert_authorized():
         return jsonify({"error": "Expert authorization required."}), 401
@@ -499,7 +485,7 @@ def expert_verify(request_id):
     return jsonify(record)
 
 
-@api.route('/expert/verifications/<request_id>/images/<image_name>', methods=['GET'])
+@bp.route('/expert/verifications/<request_id>/images/<image_name>', methods=['GET'])
 def expert_image(request_id, image_name):
     if not _expert_authorized():
         return jsonify({"error": "Expert authorization required."}), 401
@@ -507,7 +493,7 @@ def expert_image(request_id, image_name):
     if not path:
         return jsonify({"error": "Image not found."}), 404
     return send_file(path, mimetype='image/jpeg')
-@api.route('/clear', methods=['POST'])
+@bp.route('/clear', methods=['POST'])
 def clear():
     data = request.get_json()
     session_id = data.get('session_id', 'default')
