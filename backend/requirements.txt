@@ -4,6 +4,9 @@ flask-cors==4.0.0
 python-dotenv==1.0.1
 pydantic==2.8.2          # Required for Python 3.13 compatibility
 requests==2.32.3
+numpy>=1.26.0,<3.0.0
+opencv-python-headless==4.10.0.84
+
 ultralytics>=8.3.0,<9.0.0
 
 # RAG Dependencies

@@ -1,8 +1,16 @@
+import sys
+from pathlib import Path
+
+if __package__ in (None, ''):
+    project_root = Path(__file__).resolve().parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+
 import os
 
 from flask import Flask, jsonify
 from flask_cors import CORS
-from app.routes.api import api
+from app.routes.api import bp as api
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = int(
@@ -47,3 +55,4 @@ def home():
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000, use_reloader=False)
+

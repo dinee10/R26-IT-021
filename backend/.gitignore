@@ -66,3 +66,22 @@ yolo_dataset/labels/
 ml/exports/yolo_organ/*
 !ml/exports/yolo_organ/best.pt
 
+# Generated YOLO bootstrap data and intermediate training outputs
+yolo11n.pt
+yolo_dataset/data.yaml
+yolo_dataset/images/
+yolo_dataset/labels/
+ml/exports/yolo_organ/*
+!ml/exports/yolo_organ/best.pt
+
+
+
+# Quality assessment datasets
+quality-raw-dataset/
+quality-plant-identification-dataset/
+quality-condition-raw-dataset/
+quality-condition-dataset/
+quality-condition-training-dataset/
+quality-maturity-raw-dataset/
+quality-maturity-dataset/
+quality-maturity-training-dataset/
