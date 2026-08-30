@@ -87,7 +87,7 @@ def clear():
     clear_conversation(session_id)
     return jsonify({"message": "Conversation history cleared"})
 
-@bp.route('/quality/validate-image', methods=['POST'])
+@api.route('/quality/validate-image', methods=['POST'])
 def validate_quality_image():
     image_file = request.files.get('image')
 
@@ -102,7 +102,7 @@ def validate_quality_image():
 
     return jsonify(result), status_code
 
-@bp.route('/quality/identify-plant', methods=['POST'])
+@api.route('/quality/identify-plant', methods=['POST'])
 def identify_quality_plant():
     image_file = request.files.get('image')
 
@@ -117,7 +117,7 @@ def identify_quality_plant():
 
     return jsonify(result), status_code
 
-@bp.route('/quality/identify-plant-multiple', methods=['POST'])
+@api.route('/quality/identify-plant-multiple', methods=['POST'])
 def identify_quality_plant_multiple():
     image_files = request.files.getlist('image')
 
@@ -137,7 +137,7 @@ def identify_quality_plant_multiple():
 
     return jsonify(result), status_code
 
-@bp.route('/quality/assess-condition', methods=['POST'])
+@api.route('/quality/assess-condition', methods=['POST'])
 def assess_quality_condition():
     image_files = request.files.getlist('image')
 

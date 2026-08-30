@@ -14,7 +14,8 @@ llm = ChatOpenAI(
     model="gpt-4o-mini",          
     temperature=0.15,
     max_tokens=700,
-    model_kwargs={"frequency_penalty": 0.9, "presence_penalty": 0.7}
+    frequency_penalty=0.9,
+    presence_penalty=0.7,
 )
 
 conversation_store = {}
