@@ -1,1 +1,0 @@
- E:\\project\\R26-IT-021\\frontend\\build\\web\\manifest.json:  E:\\project\\R26-IT-021\\frontend\\web\\index.html E:\\project\\R26-IT-021\\frontend\\web\\manifest.json
