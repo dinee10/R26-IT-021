@@ -1,0 +1,44 @@
+{
+  "model_path": "ml\\quality.plant_identifier.mobilenetv3_large.keras",
+  "classes": [
+    "betel",
+    "centella_asiatica"
+  ],
+  "classification_report": {
+    "betel": {
+      "precision": 1.0,
+      "recall": 0.9974093264248705,
+      "f1-score": 0.9987029831387808,
+      "support": 386.0
+    },
+    "centella_asiatica": {
+      "precision": 0.9990689013035382,
+      "recall": 1.0,
+      "f1-score": 0.999534233814625,
+      "support": 1073.0
+    },
+    "accuracy": 0.9993145990404386,
+    "macro avg": {
+      "precision": 0.9995344506517692,
+      "recall": 0.9987046632124352,
+      "f1-score": 0.999118608476703,
+      "support": 1459.0
+    },
+    "weighted avg": {
+      "precision": 0.9993152372163787,
+      "recall": 0.9993145990404386,
+      "f1-score": 0.9993143141704331,
+      "support": 1459.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      385,
+      1
+    ],
+    [
+      0,
+      1073
+    ]
+  ]
+}
