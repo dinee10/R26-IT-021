@@ -4,7 +4,7 @@
     "height": 224
   },
   "confidence_threshold": 0.6,
-  "active_model": "mobilenetv3_large",
+  "active_model": "efficientnetv2_b0",
   "models": {
     "efficientnetv2_b0": {
       "display_name": "EfficientNetV2-B0",
