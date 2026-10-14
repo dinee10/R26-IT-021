@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import '../models/plant_prediction.dart';
+import '../models/disease_incidence_assessment.dart';
 
 class PlantApi {
   PlantApi({http.Client? client}) : _client = client ?? http.Client();
@@ -63,6 +64,59 @@ class PlantApi {
       throw PlantApiException('Could not identify these images: $error');
     }
   }
+
+  Future<DiseaseIncidenceAssessment> assessDiseaseIncidence(
+    List<XFile> images,
+    List<String?> regions,
+  ) async {
+    if (images.isEmpty || images.length > 25) {
+      throw PlantApiException('Select between 1 and 25 leaf samples.');
+    }
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/api/quality/assess-disease-incidence'),
+    )..fields['regions'] = jsonEncode(regions);
+    for (var index = 0; index < images.length; index++) {
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          index == 0 ? 'initial_image' : 'sample_images',
+          await images[index].readAsBytes(),
+          filename: images[index].name.isEmpty
+              ? 'leaf_${index + 1}.jpg'
+              : images[index].name,
+        ),
+      );
+    }
+    try {
+      final response = await http.Response.fromStream(
+        await _client.send(request).timeout(const Duration(minutes: 3)),
+      );
+      final body = _decode(response);
+      if (body is! Map<String, dynamic>) {
+        throw PlantApiException('The server returned an unexpected response.');
+      }
+      final assessment = DiseaseIncidenceAssessment.fromJson(body);
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw PlantApiException(
+          body['error'] as String? ?? _readableReason(assessment.reason),
+        );
+      }
+      return assessment;
+    } on TimeoutException {
+      throw PlantApiException(
+        'Assessment timed out. Retry with fewer or smaller images.',
+      );
+    } on http.ClientException {
+      throw PlantApiException(
+        'Cannot reach the assessment service at $baseUrl.',
+      );
+    } on PlantApiException {
+      rethrow;
+    }
+  }
+
+  String _readableReason(String? reason) =>
+      (reason ?? 'Assessment failed').replaceAll('_', ' ').toLowerCase();
 
   Future<List<OrganDetection>> detectOrgans(XFile image) async {
     final request =

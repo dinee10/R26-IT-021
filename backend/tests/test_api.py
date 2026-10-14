@@ -179,6 +179,46 @@ class ApiContractTests(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.get_json(), {"error": "Endpoint not found."})
 
+    @patch("app.routes.api.quality_disease_incidence.assess_samples")
+    def test_disease_incidence_endpoint_preserves_initial_and_sample_count(self, assess_samples):
+        assess_samples.return_value = {
+            "assessment_status": "completed",
+            "accepted": True,
+            "total_submitted_images": 3,
+            "total_accepted_images": 2,
+            "excluded_images": [{"sample_index": 2, "exclusion_reason": "IMAGE_TOO_BLURRY"}],
+            "individual_leaf_predictions": [],
+            "healthy_sample_count": 1,
+            "per_condition_results": [],
+        }
+        response = self.client.post(
+            "/api/quality/assess-disease-incidence",
+            data={
+                "initial_image": (io.BytesIO(b"initial"), "initial.jpg"),
+                "sample_images": [
+                    (io.BytesIO(b"second"), "second.jpg"),
+                    (io.BytesIO(b"third"), "third.jpg"),
+                ],
+                "regions": '["Upper", "Middle", "Lower"]',
+            },
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 200)
+        samples = assess_samples.call_args.kwargs["samples"]
+        self.assertEqual([sample["bytes"] for sample in samples], [b"initial", b"second", b"third"])
+        self.assertEqual([sample["region"] for sample in samples], ["Upper", "Middle", "Lower"])
+
+    def test_disease_incidence_endpoint_rejects_more_than_25_images(self):
+        response = self.client.post(
+            "/api/quality/assess-disease-incidence",
+            data={
+                "image": [(io.BytesIO(str(index).encode()), f"{index}.jpg") for index in range(26)],
+            },
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.get_json()["reason"], "TOO_MANY_IMAGES")
+
 
 if __name__ == "__main__":
     unittest.main()
