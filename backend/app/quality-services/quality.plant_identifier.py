@@ -13,6 +13,7 @@ DEFAULT_CONFIG_PATH = Path(__file__).with_name(
 )
 UNKNOWN_CLASS_ID = "unknown"
 MODEL_RUNTIME_MISSING = "MODEL_RUNTIME_MISSING"
+MODEL_NOT_AVAILABLE = "MODEL_NOT_AVAILABLE"
 _MODEL_CACHE: dict[str, Any] = {}
 
 
@@ -42,7 +43,7 @@ def identify_plant_from_multiple_images(image_bytes_list: list[bytes]) -> dict[s
 
     runtime_missing = [
         prediction for prediction in predictions
-        if prediction.get("reason") == MODEL_RUNTIME_MISSING
+        if prediction.get("reason") in {MODEL_RUNTIME_MISSING, MODEL_NOT_AVAILABLE}
     ]
 
     if runtime_missing:
@@ -95,13 +96,13 @@ def _format_prediction_result(
     prediction: dict[str, Any],
     config: dict[str, Any],
 ) -> dict[str, Any]:
-    if prediction.get("reason") == MODEL_RUNTIME_MISSING:
+    if prediction.get("reason") in {MODEL_RUNTIME_MISSING, MODEL_NOT_AVAILABLE}:
         return {
             "species": "Unknown",
             "scientific_name": None,
             "confidence": 0,
             "accepted": False,
-            "reason": MODEL_RUNTIME_MISSING,
+            "reason": prediction["reason"],
             "model": prediction["model"],
             "input_size": config["input_size"],
             "preprocessing": "LETTERBOX_224",
@@ -197,7 +198,12 @@ def _predict(
         }
 
     if model is None:
-        return _mock_prediction(image_bytes, config)
+        return {
+            "class_id": UNKNOWN_CLASS_ID,
+            "confidence": 0,
+            "model": config["models"][config["active_model"]]["display_name"],
+            "reason": MODEL_NOT_AVAILABLE,
+        }
 
     probabilities = model.predict(preprocessed, verbose=0)[0]
     class_index = int(np.argmax(probabilities))

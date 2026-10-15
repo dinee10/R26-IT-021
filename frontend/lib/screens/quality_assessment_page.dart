@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import '../theme/app_colors.dart';
 import 'chat/general_public_chat_page.dart';
+import 'disease_incidence_page.dart';
 
 class QualityAssessmentPage extends StatefulWidget {
   const QualityAssessmentPage({super.key});
@@ -66,10 +67,7 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
 
     for (final image in images) {
       selectedImages.add(
-        QualitySelectedImage(
-          file: image,
-          bytes: await image.readAsBytes(),
-        ),
+        QualitySelectedImage(file: image, bytes: await image.readAsBytes()),
       );
     }
 
@@ -110,7 +108,8 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
           break;
         }
       }
-      final validationResult = failedResult ??
+      final validationResult =
+          failedResult ??
           QualityValidationResult.combinedSuccess(validationResults);
 
       setState(() {
@@ -150,19 +149,23 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
       );
       final request = http.MultipartRequest('POST', uri)
         ..files.addAll(
-          _selectedImages.map((image) => http.MultipartFile.fromBytes(
-            'image',
-            image.bytes,
-            filename: image.file.name.isEmpty
-                ? 'quality.leaf-image.jpg'
-                : image.file.name,
-          )),
+          _selectedImages.map(
+            (image) => http.MultipartFile.fromBytes(
+              'image',
+              image.bytes,
+              filename: image.file.name.isEmpty
+                  ? 'quality.leaf-image.jpg'
+                  : image.file.name,
+            ),
+          ),
         );
       if (_manualInputs.hasValues) {
         request.fields['manual_inputs'] = jsonEncode(_manualInputs.toJson());
       }
 
-      final response = await request.send().timeout(const Duration(seconds: 30));
+      final response = await request.send().timeout(
+        const Duration(seconds: 30),
+      );
       final responseBody = await response.stream.bytesToString();
       final data = jsonDecode(responseBody) as Map<String, dynamic>;
 
@@ -204,19 +207,23 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
       final uri = Uri.parse('${_apiBaseUrl()}/api/quality/assess-condition');
       final request = http.MultipartRequest('POST', uri)
         ..files.addAll(
-          _selectedImages.map((image) => http.MultipartFile.fromBytes(
-            'image',
-            image.bytes,
-            filename: image.file.name.isEmpty
-                ? 'quality.leaf-image.jpg'
-                : image.file.name,
-          )),
+          _selectedImages.map(
+            (image) => http.MultipartFile.fromBytes(
+              'image',
+              image.bytes,
+              filename: image.file.name.isEmpty
+                  ? 'quality.leaf-image.jpg'
+                  : image.file.name,
+            ),
+          ),
         );
       if (_manualInputs.hasValues) {
         request.fields['manual_inputs'] = jsonEncode(_manualInputs.toJson());
       }
 
-      final response = await request.send().timeout(const Duration(seconds: 35));
+      final response = await request.send().timeout(
+        const Duration(seconds: 35),
+      );
       final responseBody = await response.stream.bytesToString();
       final data = jsonDecode(responseBody) as Map<String, dynamic>;
 
@@ -297,9 +304,9 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
       _assessingCondition = false;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _showMessage(String message) {
@@ -307,9 +314,9 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _showPlantError(String message) {
@@ -323,9 +330,9 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
       _assessingCondition = false;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _showConditionError(String message) {
@@ -339,9 +346,9 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
       );
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   String _apiBaseUrl() {
@@ -372,9 +379,7 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
             ),
             if (_validationResult?.valid == false) ...[
               const SizedBox(height: 18),
-              _ValidationPanel(
-                result: _validationResult,
-              ),
+              _ValidationPanel(result: _validationResult),
             ],
             if (_identifyingPlant || _plantResult?.accepted == false) ...[
               const SizedBox(height: 18),
@@ -391,6 +396,22 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
               assessing: _assessingCondition,
               enabled: _plantResult?.accepted == true,
             ),
+            if (_conditionResult?.accepted == true &&
+                _conditionResult?.condition?.status == 'diseased' &&
+                _selectedImages.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              FilledButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => DiseaseIncidencePage(
+                      initialImage: _selectedImages.first.file,
+                    ),
+                  ),
+                ),
+                icon: const Icon(Icons.filter_vintage_outlined),
+                label: const Text('Assess Condition Across Plant'),
+              ),
+            ],
           ],
         ),
       ),
@@ -419,7 +440,8 @@ class _PlantIdentificationPanel extends StatelessWidget {
           child: CircularProgressIndicator(strokeWidth: 2.4),
         ),
         title: 'Identifying plant',
-        subtitle: 'Preparing a 224 x 224 letterbox image for species prediction.',
+        subtitle:
+            'Preparing a 224 x 224 letterbox image for species prediction.',
       );
     }
 
@@ -558,7 +580,8 @@ class _ConditionAssessmentPanel extends StatelessWidget {
           color: AppColors.muted,
         ),
         title: 'Condition assessment ready',
-        subtitle: 'The disease model runs after plant identification is accepted.',
+        subtitle:
+            'The disease model runs after plant identification is accepted.',
       );
     }
 
@@ -569,6 +592,16 @@ class _ConditionAssessmentPanel extends StatelessWidget {
         icon: const Icon(Icons.info_outline_rounded, color: AppColors.danger),
         title: _reasonTitle(result!.reason),
         subtitle: _reasonHelp(result!.reason),
+      );
+    }
+
+    if (!result!.accepted || !condition.accepted) {
+      return _StatusPanel(
+        heading: plantName,
+        icon: const Icon(Icons.info_outline_rounded, color: AppColors.danger),
+        title: _reasonTitle(condition.reason ?? result!.reason),
+        subtitle:
+            '${_reasonHelp(condition.reason ?? result!.reason)} Model confidence: ${condition.confidencePercent}.',
       );
     }
 
@@ -868,10 +901,7 @@ class _EmptyImageState extends StatelessWidget {
         Text(
           'Take a photo or choose one from your device.',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: AppColors.muted,
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w700),
         ),
       ],
     );
@@ -938,17 +968,11 @@ class _ManualCharacteristicsPanel extends StatelessWidget {
       collapsedBackgroundColor: Colors.white,
       title: const Text(
         'Optional leaf characteristics',
-        style: TextStyle(
-          color: AppColors.text,
-          fontWeight: FontWeight.w900,
-        ),
+        style: TextStyle(color: AppColors.text, fontWeight: FontWeight.w900),
       ),
       subtitle: const Text(
         'Used only as maturity-stage support.',
-        style: TextStyle(
-          color: AppColors.muted,
-          fontWeight: FontWeight.w700,
-        ),
+        style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w700),
       ),
       children: [
         Row(
@@ -957,9 +981,8 @@ class _ManualCharacteristicsPanel extends StatelessWidget {
               child: _ManualNumberField(
                 label: 'Length cm',
                 enabled: enabled,
-                onChanged: (leafLengthCm) => onChanged(
-                  value.copyWith(leafLengthCm: leafLengthCm),
-                ),
+                onChanged: (leafLengthCm) =>
+                    onChanged(value.copyWith(leafLengthCm: leafLengthCm)),
               ),
             ),
             const SizedBox(width: 10),
@@ -967,19 +990,14 @@ class _ManualCharacteristicsPanel extends StatelessWidget {
               child: _ManualNumberField(
                 label: 'Width cm',
                 enabled: enabled,
-                onChanged: (leafWidthCm) => onChanged(
-                  value.copyWith(leafWidthCm: leafWidthCm),
-                ),
+                onChanged: (leafWidthCm) =>
+                    onChanged(value.copyWith(leafWidthCm: leafWidthCm)),
               ),
             ),
           ],
         ),
         const SizedBox(height: 10),
-        _ManualOptionGrid(
-          enabled: enabled,
-          value: value,
-          onChanged: onChanged,
-        ),
+        _ManualOptionGrid(enabled: enabled, value: value, onChanged: onChanged),
       ],
     );
   }
@@ -1034,25 +1052,24 @@ class _ManualOptionGrid extends StatelessWidget {
           value: value.leafTexture,
           enabled: enabled,
           items: const ['Unknown', 'Smooth', 'Slightly_Rough', 'Rough'],
-          onChanged: (leafTexture) => onChanged(
-            value.copyWith(leafTexture: leafTexture),
-          ),
+          onChanged: (leafTexture) =>
+              onChanged(value.copyWith(leafTexture: leafTexture)),
         ),
         _ManualDropdown(
           label: 'Edge',
           value: value.leafEdge,
           enabled: enabled,
           items: const ['Unknown', 'Smooth', 'Serrated', 'Irregular'],
-          onChanged: (leafEdge) => onChanged(value.copyWith(leafEdge: leafEdge)),
+          onChanged: (leafEdge) =>
+              onChanged(value.copyWith(leafEdge: leafEdge)),
         ),
         _ManualDropdown(
           label: 'Spots',
           value: value.surfaceSpots,
           enabled: enabled,
           items: const ['Unknown', 'None', 'Few', 'Many'],
-          onChanged: (surfaceSpots) => onChanged(
-            value.copyWith(surfaceSpots: surfaceSpots),
-          ),
+          onChanged: (surfaceSpots) =>
+              onChanged(value.copyWith(surfaceSpots: surfaceSpots)),
         ),
         _ManualDropdown(
           label: 'Holes',
@@ -1065,10 +1082,16 @@ class _ManualOptionGrid extends StatelessWidget {
           label: 'Discoloration',
           value: value.discoloration,
           enabled: enabled,
-          items: const ['Unknown', 'None', 'Yellow', 'Brown', 'Purple', 'Mixed'],
-          onChanged: (discoloration) => onChanged(
-            value.copyWith(discoloration: discoloration),
-          ),
+          items: const [
+            'Unknown',
+            'None',
+            'Yellow',
+            'Brown',
+            'Purple',
+            'Mixed',
+          ],
+          onChanged: (discoloration) =>
+              onChanged(value.copyWith(discoloration: discoloration)),
         ),
       ],
     );
@@ -1127,9 +1150,7 @@ class _ManualDropdown extends StatelessWidget {
 }
 
 class _ValidationPanel extends StatelessWidget {
-  const _ValidationPanel({
-    required this.result,
-  });
+  const _ValidationPanel({required this.result});
 
   final QualityValidationResult? result;
 
@@ -1269,10 +1290,7 @@ class _StatusPanel extends StatelessWidget {
 }
 
 class _ConditionResultDetails extends StatelessWidget {
-  const _ConditionResultDetails({
-    required this.result,
-    this.plantResult,
-  });
+  const _ConditionResultDetails({required this.result, this.plantResult});
 
   final QualityConditionResult result;
   final QualityPlantResult? plantResult;
@@ -1324,10 +1342,7 @@ class _ConditionResultDetails extends StatelessWidget {
         ],
         if (xai != null && xai.shouldDisplay) ...[
           const SizedBox(height: 14),
-          _XaiExplanationView(
-            xai: xai,
-            condition: condition,
-          ),
+          _XaiExplanationView(xai: xai, condition: condition),
         ],
       ],
     );
@@ -1360,11 +1375,7 @@ class _ConditionSummaryGrid extends StatelessWidget {
         if (!useColumns) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              chips[0],
-              const SizedBox(height: 10),
-              chips[1],
-            ],
+            children: [chips[0], const SizedBox(height: 10), chips[1]],
           );
         }
 
@@ -1384,10 +1395,7 @@ class _ConditionSummaryGrid extends StatelessWidget {
 }
 
 class _FlexibleMetricChip extends StatelessWidget {
-  const _FlexibleMetricChip({
-    required this.label,
-    required this.value,
-  });
+  const _FlexibleMetricChip({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -1434,10 +1442,7 @@ class _FlexibleMetricChip extends StatelessWidget {
 }
 
 class _XaiExplanationView extends StatefulWidget {
-  const _XaiExplanationView({
-    required this.xai,
-    this.condition,
-  });
+  const _XaiExplanationView({required this.xai, this.condition});
 
   final QualityXaiResult xai;
   final QualityConditionPrediction? condition;
@@ -1566,15 +1571,9 @@ class _XaiExplanationViewState extends State<_XaiExplanationView> {
 
     return [
       if (condition != null)
-        _TechnicalMetric(
-          label: 'Prediction',
-          value: condition.displayName,
-        ),
+        _TechnicalMetric(label: 'Prediction', value: condition.displayName),
       if (condition != null)
-        _TechnicalMetric(
-          label: 'Status',
-          value: condition.status,
-        ),
+        _TechnicalMetric(label: 'Status', value: condition.status),
       if (condition != null)
         _TechnicalMetric(
           label: 'Confidence',
@@ -1603,18 +1602,16 @@ class _XaiExplanationViewState extends State<_XaiExplanationView> {
       if (shap != null)
         _TechnicalMetric(
           label: 'Structured features',
-          value:
-              shap.available ? '${shap.features.length} used' : 'Unavailable',
+          value: shap.available
+              ? '${shap.features.length} used'
+              : 'Unavailable',
         ),
     ];
   }
 }
 
 class _TechnicalMetric {
-  const _TechnicalMetric({
-    required this.label,
-    required this.value,
-  });
+  const _TechnicalMetric({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -1841,9 +1838,7 @@ class _DiseaseInfoViewState extends State<_DiseaseInfoView> {
             ),
           ),
           const SizedBox(height: 12),
-          _MedicinalSuitabilityBar(
-            level: info.medicinalSuitabilityLevel,
-          ),
+          _MedicinalSuitabilityBar(level: info.medicinalSuitabilityLevel),
           const SizedBox(height: 12),
           _DiseaseInfoSection(
             title: 'Description',
@@ -1948,10 +1943,7 @@ class _DiseaseInfoViewState extends State<_DiseaseInfoView> {
   }
 
   void _openGeneralPublicLearnMore() {
-    final topic = [
-      widget.plantName,
-      widget.conditionName,
-    ]
+    final topic = [widget.plantName, widget.conditionName]
         .whereType<String>()
         .map((part) => part.trim())
         .where((part) => part.isNotEmpty)
@@ -1977,19 +1969,17 @@ class _DiseaseInfoViewState extends State<_DiseaseInfoView> {
         .map((item) => item.trim())
         .where((item) => item.isNotEmpty)
         .map((item) {
-      if (separator == '. ' && !item.endsWith('.')) {
-        return '$item.';
-      }
-      return item;
-    }).toList();
+          if (separator == '. ' && !item.endsWith('.')) {
+            return '$item.';
+          }
+          return item;
+        })
+        .toList();
   }
 }
 
 class _DiseaseInfoSection extends StatelessWidget {
-  const _DiseaseInfoSection({
-    required this.title,
-    required this.child,
-  });
+  const _DiseaseInfoSection({required this.title, required this.child});
 
   final String title;
   final Widget child;
@@ -2080,9 +2070,7 @@ class _DiseaseBulletList extends StatelessWidget {
 }
 
 class _MedicinalSuitabilityBar extends StatelessWidget {
-  const _MedicinalSuitabilityBar({
-    required this.level,
-  });
+  const _MedicinalSuitabilityBar({required this.level});
 
   final String level;
 
@@ -2203,10 +2191,7 @@ class _MetricGrid extends StatelessWidget {
 }
 
 class _MetricChip extends StatelessWidget {
-  const _MetricChip({
-    required this.label,
-    required this.value,
-  });
+  const _MetricChip({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -2320,10 +2305,7 @@ class QualityValidationResult {
 }
 
 class QualityImageResolution {
-  const QualityImageResolution({
-    required this.width,
-    required this.height,
-  });
+  const QualityImageResolution({required this.width, required this.height});
 
   factory QualityImageResolution.fromJson(Map<String, dynamic> json) {
     return QualityImageResolution(
@@ -2442,6 +2424,7 @@ class QualityConditionPrediction {
     required this.className,
     required this.displayName,
     required this.confidence,
+    required this.accepted,
     this.reason,
     this.model,
     this.mode,
@@ -2452,9 +2435,11 @@ class QualityConditionPrediction {
     return QualityConditionPrediction(
       status: (json['status'] as String?) ?? 'unavailable',
       className: (json['class'] as String?) ?? '',
-      displayName: (json['display_name'] as String?) ??
+      displayName:
+          (json['display_name'] as String?) ??
           ((json['class'] as String?) ?? '').replaceAll('_', ' '),
       confidence: (json['confidence'] as num?)?.toDouble() ?? 0,
+      accepted: json['accepted'] == true,
       reason: json['reason'] as String?,
       model: json['model'] as String?,
       mode: json['mode'] as String?,
@@ -2466,6 +2451,7 @@ class QualityConditionPrediction {
   final String className;
   final String displayName;
   final double confidence;
+  final bool accepted;
   final String? reason;
   final String? model;
   final String? mode;
@@ -2491,25 +2477,27 @@ class QualityDiseaseInfo {
   factory QualityDiseaseInfo.fromJson(Map<String, dynamic> json) {
     return QualityDiseaseInfo(
       found: json['found'] == true,
-      displayName: (json['display_name'] as String?) ??
+      displayName:
+          (json['display_name'] as String?) ??
           'Disease information unavailable',
       description: (json['description'] as String?) ?? '',
-      typicalSymptoms: (json['typical_symptoms'] as List<dynamic>?)
+      typicalSymptoms:
+          (json['typical_symptoms'] as List<dynamic>?)
               ?.map((symptom) => symptom.toString())
               .toList() ??
           [],
       healthyDifference: (json['healthy_difference'] as String?) ?? '',
       medicinalUseInstruction:
           (json['medicinal_use_instruction'] as String?) ??
-              (json['instructions'] as String?) ??
+          (json['instructions'] as String?) ??
           'Expert verification recommended.',
       treatmentInstruction: (json['treatment_instruction'] as String?) ?? '',
       medicinalSuitabilityLevel:
           (json['medicinal_suitability_level'] as String?) ??
-              'Expert_Verification_Recommended',
+          'Expert_Verification_Recommended',
       medicinalSuitabilityAssessment:
           (json['medicinal_suitability_assessment'] as String?) ??
-              'Expert verification recommended.',
+          'Expert verification recommended.',
       reference: (json['reference'] as String?) ?? '',
     );
   }
@@ -2651,7 +2639,8 @@ class QualityManualSupport {
     return QualityManualSupport(
       used: json['used'] == true,
       availableFeatures: (json['available_features'] as num?)?.toInt() ?? 0,
-      evidence: (json['evidence'] as List<dynamic>?)
+      evidence:
+          (json['evidence'] as List<dynamic>?)
               ?.map((item) => item.toString())
               .toList() ??
           [],
@@ -2664,9 +2653,7 @@ class QualityManualSupport {
 }
 
 class QualityMaturityInfo {
-  const QualityMaturityInfo({
-    required this.visualCharacteristics,
-  });
+  const QualityMaturityInfo({required this.visualCharacteristics});
 
   factory QualityMaturityInfo.fromJson(Map<String, dynamic> json) {
     return QualityMaturityInfo(
@@ -2688,7 +2675,8 @@ class QualityMedicinalSuitability {
   factory QualityMedicinalSuitability.fromJson(Map<String, dynamic> json) {
     return QualityMedicinalSuitability(
       level: (json['level'] as String?) ?? 'Expert_Verification_Recommended',
-      display: (json['display'] as String?) ??
+      display:
+          (json['display'] as String?) ??
           'Expert verification recommended before medicinal use',
       assessment: (json['assessment'] as String?) ?? '',
       evidenceStrength: (json['evidence_strength'] as String?) ?? '',
@@ -2702,11 +2690,7 @@ class QualityMedicinalSuitability {
 }
 
 class QualityXaiResult {
-  const QualityXaiResult({
-    required this.finalStage,
-    this.gradcam,
-    this.shap,
-  });
+  const QualityXaiResult({required this.finalStage, this.gradcam, this.shap});
 
   factory QualityXaiResult.fromJson(Map<String, dynamic> json) {
     final gradcamJson = json['gradcam'] as Map<String, dynamic>?;
@@ -2745,8 +2729,11 @@ class QualityGradCamExplanation {
   factory QualityGradCamExplanation.fromJson(Map<String, dynamic> json) {
     return QualityGradCamExplanation(
       available: json['available'] == true,
-      base64Image: _extractBase64Image((json['heatmap_image'] as String?) ?? ''),
-      message: (json['message'] as String?) ??
+      base64Image: _extractBase64Image(
+        (json['heatmap_image'] as String?) ?? '',
+      ),
+      message:
+          (json['message'] as String?) ??
           'The highlighted regions had the greatest influence on the AI prediction.',
       limitation: (json['limitation'] as String?) ?? '',
     );
@@ -2778,10 +2765,12 @@ class QualityStructuredExplanation {
   factory QualityStructuredExplanation.fromJson(Map<String, dynamic> json) {
     return QualityStructuredExplanation(
       available: json['available'] == true,
-      message: (json['message'] as String?) ??
+      message:
+          (json['message'] as String?) ??
           'Manual characteristics influenced the maturity decision.',
       limitation: (json['limitation'] as String?) ?? '',
-      features: (json['features'] as List<dynamic>?)
+      features:
+          (json['features'] as List<dynamic>?)
               ?.whereType<Map<String, dynamic>>()
               .map(QualityStructuredFeatureInfluence.fromJson)
               .toList() ??
@@ -2863,10 +2852,12 @@ class QualityManualInputs {
     String? holes,
     String? discoloration,
   }) {
-    final nextLeafLengthCm =
-        leafLengthCm == _manualUnset ? this.leafLengthCm : leafLengthCm as double?;
-    final nextLeafWidthCm =
-        leafWidthCm == _manualUnset ? this.leafWidthCm : leafWidthCm as double?;
+    final nextLeafLengthCm = leafLengthCm == _manualUnset
+        ? this.leafLengthCm
+        : leafLengthCm as double?;
+    final nextLeafWidthCm = leafWidthCm == _manualUnset
+        ? this.leafWidthCm
+        : leafWidthCm as double?;
 
     return QualityManualInputs(
       leafLengthCm: nextLeafLengthCm,
@@ -2879,11 +2870,7 @@ class QualityManualInputs {
     );
   }
 
-  static void _addKnown(
-    Map<String, dynamic> json,
-    String key,
-    String value,
-  ) {
+  static void _addKnown(Map<String, dynamic> json, String key, String value) {
     if (value.trim().toLowerCase() != 'unknown') {
       json[key] = value;
     }
@@ -2893,10 +2880,7 @@ class QualityManualInputs {
 const Object _manualUnset = Object();
 
 class QualitySelectedImage {
-  const QualitySelectedImage({
-    required this.file,
-    required this.bytes,
-  });
+  const QualitySelectedImage({required this.file, required this.bytes});
 
   final XFile file;
   final Uint8List bytes;
