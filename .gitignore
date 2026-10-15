@@ -1,3 +1,4 @@
+
 # Java crash diagnostic files
 hs_err_pid*.log
 replay_pid*.log
@@ -121,3 +122,30 @@ app.*.map.json
 frontend/linux/flutter/ephemeral/
 frontend/android/build/
 frontend/build/
+
+research_audit/
+
+# Flutter/Dart generated files
+frontend/.dart_tool/
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+frontend/.packages
+frontend/.pub-cache/
+frontend/.pub/
+frontend/build/
+frontend/coverage/
+
+# Flutter platform local/build files
+frontend/android/.gradle/
+frontend/android/build/
+frontend/android/local.properties
+frontend/android/app/debug/
+frontend/android/app/profile/
+frontend/android/app/release/
+frontend/ios/Flutter/.last_build_id
+frontend/ios/Flutter/Generated.xcconfig
+frontend/ios/Flutter/flutter_export_environment.sh
+frontend/ios/Flutter/ephemeral/
+frontend/linux/flutter/ephemeral/
+frontend/macos/Flutter/ephemeral/
+

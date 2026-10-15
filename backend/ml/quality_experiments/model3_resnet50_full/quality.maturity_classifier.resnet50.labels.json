@@ -1,0 +1,23 @@
+{
+  "betel": [
+    "Mature",
+    "Young"
+  ],
+  "centella_asiatica": [
+    "Mature",
+    "Young"
+  ],
+  "kalanchoe_pinnata": [
+    "Mature",
+    "Young"
+  ],
+  "murraya_koenigii": [
+    "Developing",
+    "Mature",
+    "Young"
+  ],
+  "neem": [
+    "Mature",
+    "Young"
+  ]
+}

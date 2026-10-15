@@ -1,0 +1,39 @@
+{
+  "input_size": {
+    "width": 224,
+    "height": 224
+  },
+  "confidence_threshold": 0.6,
+  "active_model": "efficientnetv2_b0",
+  "models": {
+    "efficientnetv2_b0": {
+      "display_name": "EfficientNetV2-B0",
+      "path": "ml/quality.plant_identifier.efficientnetv2_b0.keras"
+    },
+    "resnet50": {
+      "display_name": "ResNet50",
+      "path": "ml/quality.plant_identifier.resnet50.keras"
+    },
+    "mobilenetv3_large": {
+      "display_name": "MobileNetV3-Large",
+      "path": "ml/quality.plant_identifier.mobilenetv3_large.keras"
+    }
+  },
+  "classes": [
+    {
+      "id": "betel",
+      "label": "Betel",
+      "scientific_name": "Piper betle"
+    },
+    {
+      "id": "centella_asiatica",
+      "label": "Centella Asiatica",
+      "scientific_name": "Centella asiatica"
+    },
+    {
+      "id": "unknown",
+      "label": "Unknown",
+      "scientific_name": null
+    }
+  ]
+}

@@ -1,0 +1,753 @@
+{
+  "model_path": "ml\\quality_experiments\\model2_mobilenetv3_large_full\\quality.condition_classifier.mobilenetv3_large.keras",
+  "heads": {
+    "betel": [
+      "Healthy",
+      "Leaf_Rot",
+      "Leaf_Spot"
+    ],
+    "centella_asiatica": [
+      "Dried",
+      "Healthy",
+      "Phosphorus_deficiency",
+      "Redmite",
+      "WormCreep"
+    ],
+    "holy_basil": [
+      "Anthocyanin_Pigmentation",
+      "Downy_Mildew",
+      "Healthy",
+      "Web_Blight",
+      "Yellow_Spot"
+    ],
+    "kalanchoe_pinnata": [
+      "Healthy",
+      "Insect_Damage",
+      "Web_Blight",
+      "Yellow",
+      "Yellow_Blight"
+    ],
+    "murraya_koenigii": [
+      "Complex_Foliar_Damage",
+      "Fungus",
+      "Healthy",
+      "Insect_Damage"
+    ],
+    "neem": [
+      "Alternaria",
+      "Bacterial_infection",
+      "Defoliator",
+      "Dieback",
+      "Healthy",
+      "Irregular_yellowing",
+      "Leaf_Blight",
+      "Leaf_Miners",
+      "Leaf_Miners_Powdery_Mildew",
+      "Leaf_Rust",
+      "Powdery_Mildew",
+      "Spot",
+      "Web_Blight",
+      "Yellow"
+    ]
+  },
+  "species_reports": {
+    "betel": {
+      "classification_report": {
+        "Healthy": {
+          "precision": 0.9090909090909091,
+          "recall": 0.4444444444444444,
+          "f1-score": 0.5970149253731343,
+          "support": 45.0
+        },
+        "Leaf_Rot": {
+          "precision": 0.8787878787878788,
+          "recall": 0.7073170731707317,
+          "f1-score": 0.7837837837837838,
+          "support": 41.0
+        },
+        "Leaf_Spot": {
+          "precision": 0.762962962962963,
+          "recall": 0.9903846153846154,
+          "f1-score": 0.8619246861924686,
+          "support": 104.0
+        },
+        "accuracy": 0.8,
+        "macro avg": {
+          "precision": 0.8502805836139169,
+          "recall": 0.7140487109999305,
+          "f1-score": 0.7475744651164623,
+          "support": 190.0
+        },
+        "weighted avg": {
+          "precision": 0.8225660109870636,
+          "recall": 0.8,
+          "f1-score": 0.7823209165312786,
+          "support": 190.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          20,
+          3,
+          22
+        ],
+        [
+          2,
+          29,
+          10
+        ],
+        [
+          0,
+          1,
+          103
+        ]
+      ]
+    },
+    "centella_asiatica": {
+      "classification_report": {
+        "Dried": {
+          "precision": 0.9795918367346939,
+          "recall": 0.9795918367346939,
+          "f1-score": 0.9795918367346939,
+          "support": 49.0
+        },
+        "Healthy": {
+          "precision": 0.9827586206896551,
+          "recall": 0.9827586206896551,
+          "f1-score": 0.9827586206896551,
+          "support": 58.0
+        },
+        "Phosphorus_deficiency": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 15.0
+        },
+        "Redmite": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 29.0
+        },
+        "WormCreep": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 15.0
+        },
+        "accuracy": 0.9879518072289156,
+        "macro avg": {
+          "precision": 0.9924700914848698,
+          "recall": 0.9924700914848698,
+          "f1-score": 0.9924700914848698,
+          "support": 166.0
+        },
+        "weighted avg": {
+          "precision": 0.9879518072289156,
+          "recall": 0.9879518072289156,
+          "f1-score": 0.9879518072289156,
+          "support": 166.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          48,
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          57,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          15,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          29,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          15
+        ]
+      ]
+    },
+    "holy_basil": {
+      "classification_report": {
+        "Anthocyanin_Pigmentation": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 8.0
+        },
+        "Downy_Mildew": {
+          "precision": 0.8823529411764706,
+          "recall": 1.0,
+          "f1-score": 0.9375,
+          "support": 30.0
+        },
+        "Healthy": {
+          "precision": 1.0,
+          "recall": 0.9393939393939394,
+          "f1-score": 0.96875,
+          "support": 33.0
+        },
+        "Web_Blight": {
+          "precision": 1.0,
+          "recall": 0.875,
+          "f1-score": 0.9333333333333333,
+          "support": 32.0
+        },
+        "Yellow_Spot": {
+          "precision": 0.9117647058823529,
+          "recall": 0.96875,
+          "f1-score": 0.9393939393939394,
+          "support": 32.0
+        },
+        "accuracy": 0.9481481481481482,
+        "macro avg": {
+          "precision": 0.9588235294117646,
+          "recall": 0.9566287878787879,
+          "f1-score": 0.9557954545454546,
+          "support": 135.0
+        },
+        "weighted avg": {
+          "precision": 0.9529411764705883,
+          "recall": 0.9481481481481482,
+          "f1-score": 0.9483038720538721,
+          "support": 135.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          8,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          30,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          31,
+          0,
+          1
+        ],
+        [
+          0,
+          2,
+          0,
+          28,
+          2
+        ],
+        [
+          0,
+          1,
+          0,
+          0,
+          31
+        ]
+      ]
+    },
+    "kalanchoe_pinnata": {
+      "classification_report": {
+        "Healthy": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 32.0
+        },
+        "Insect_Damage": {
+          "precision": 0.9795918367346939,
+          "recall": 1.0,
+          "f1-score": 0.9896907216494846,
+          "support": 48.0
+        },
+        "Web_Blight": {
+          "precision": 1.0,
+          "recall": 0.9393939393939394,
+          "f1-score": 0.96875,
+          "support": 33.0
+        },
+        "Yellow": {
+          "precision": 0.9696969696969697,
+          "recall": 1.0,
+          "f1-score": 0.9846153846153847,
+          "support": 32.0
+        },
+        "Yellow_Blight": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 33.0
+        },
+        "accuracy": 0.9887640449438202,
+        "macro avg": {
+          "precision": 0.9898577612863327,
+          "recall": 0.9878787878787879,
+          "f1-score": 0.9886112212529738,
+          "support": 178.0
+        },
+        "weighted avg": {
+          "precision": 0.9890489392897097,
+          "recall": 0.9887640449438202,
+          "f1-score": 0.9886606570048739,
+          "support": 178.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          32,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          48,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          31,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          32,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          33
+        ]
+      ]
+    },
+    "murraya_koenigii": {
+      "classification_report": {
+        "Complex_Foliar_Damage": {
+          "precision": 1.0,
+          "recall": 0.8571428571428571,
+          "f1-score": 0.9230769230769231,
+          "support": 14.0
+        },
+        "Fungus": {
+          "precision": 1.0,
+          "recall": 0.9772727272727273,
+          "f1-score": 0.9885057471264368,
+          "support": 44.0
+        },
+        "Healthy": {
+          "precision": 0.8248175182481752,
+          "recall": 1.0,
+          "f1-score": 0.904,
+          "support": 113.0
+        },
+        "Insect_Damage": {
+          "precision": 1.0,
+          "recall": 0.4166666666666667,
+          "f1-score": 0.5882352941176471,
+          "support": 36.0
+        },
+        "accuracy": 0.8840579710144928,
+        "macro avg": {
+          "precision": 0.9562043795620438,
+          "recall": 0.8127705627705627,
+          "f1-score": 0.8509544910802518,
+          "support": 207.0
+        },
+        "weighted avg": {
+          "precision": 0.904368983391516,
+          "recall": 0.8840579710144928,
+          "f1-score": 0.8683371999269346,
+          "support": 207.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          12,
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          43,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          113,
+          0
+        ],
+        [
+          0,
+          0,
+          21,
+          15
+        ]
+      ]
+    },
+    "neem": {
+      "classification_report": {
+        "Alternaria": {
+          "precision": 0.875,
+          "recall": 0.7682926829268293,
+          "f1-score": 0.8181818181818182,
+          "support": 82.0
+        },
+        "Bacterial_infection": {
+          "precision": 0.9907407407407407,
+          "recall": 0.9727272727272728,
+          "f1-score": 0.981651376146789,
+          "support": 110.0
+        },
+        "Defoliator": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 106.0
+        },
+        "Dieback": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 123.0
+        },
+        "Healthy": {
+          "precision": 0.8774509803921569,
+          "recall": 0.9322916666666666,
+          "f1-score": 0.9040404040404041,
+          "support": 192.0
+        },
+        "Irregular_yellowing": {
+          "precision": 0.9788732394366197,
+          "recall": 0.9788732394366197,
+          "f1-score": 0.9788732394366197,
+          "support": 142.0
+        },
+        "Leaf_Blight": {
+          "precision": 0.7238095238095238,
+          "recall": 0.7307692307692307,
+          "f1-score": 0.7272727272727273,
+          "support": 104.0
+        },
+        "Leaf_Miners": {
+          "precision": 0.6567164179104478,
+          "recall": 0.7857142857142857,
+          "f1-score": 0.7154471544715447,
+          "support": 112.0
+        },
+        "Leaf_Miners_Powdery_Mildew": {
+          "precision": 0.9090909090909091,
+          "recall": 0.5454545454545454,
+          "f1-score": 0.6818181818181818,
+          "support": 55.0
+        },
+        "Leaf_Rust": {
+          "precision": 0.8297872340425532,
+          "recall": 0.9285714285714286,
+          "f1-score": 0.8764044943820225,
+          "support": 42.0
+        },
+        "Powdery_Mildew": {
+          "precision": 0.7333333333333333,
+          "recall": 0.6695652173913044,
+          "f1-score": 0.7,
+          "support": 115.0
+        },
+        "Spot": {
+          "precision": 0.9384615384615385,
+          "recall": 1.0,
+          "f1-score": 0.9682539682539683,
+          "support": 61.0
+        },
+        "Web_Blight": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 59.0
+        },
+        "Yellow": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 66.0
+        },
+        "accuracy": 0.8860482103725347,
+        "macro avg": {
+          "precision": 0.8938045655155588,
+          "recall": 0.8794471121184416,
+          "f1-score": 0.882281668857434,
+          "support": 1369.0
+        },
+        "weighted avg": {
+          "precision": 0.8893068298087734,
+          "recall": 0.8860482103725347,
+          "f1-score": 0.884797110158895,
+          "support": 1369.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          63,
+          0,
+          0,
+          0,
+          6,
+          0,
+          1,
+          10,
+          0,
+          1,
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          107,
+          0,
+          0,
+          0,
+          3,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          106,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          123,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          1,
+          0,
+          0,
+          179,
+          0,
+          3,
+          1,
+          0,
+          2,
+          0,
+          4,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          3,
+          139,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          3,
+          0,
+          76,
+          19,
+          1,
+          1,
+          4,
+          0,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0,
+          0,
+          3,
+          0,
+          7,
+          88,
+          0,
+          2,
+          9,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          1,
+          8,
+          30,
+          1,
+          14,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          39,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          9,
+          0,
+          16,
+          8,
+          2,
+          1,
+          77,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          61,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          59,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          66
+        ]
+      ]
+    }
+  }
+}

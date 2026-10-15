@@ -31,6 +31,26 @@
       "scientific_name": "Centella asiatica"
     },
     {
+      "id": "holy_basil",
+      "label": "Holy Basil",
+      "scientific_name": null
+    },
+    {
+      "id": "kalanchoe_pinnata",
+      "label": "Kalanchoe Pinnata",
+      "scientific_name": null
+    },
+    {
+      "id": "murraya_koenigii",
+      "label": "Murraya Koenigii",
+      "scientific_name": null
+    },
+    {
+      "id": "neem",
+      "label": "Neem",
+      "scientific_name": null
+    },
+    {
       "id": "unknown",
       "label": "Unknown",
       "scientific_name": null
