@@ -1948,7 +1948,7 @@ class _DiseaseInfoViewState extends State<_DiseaseInfoView> {
   }
 
   void _openGeneralPublicLearnMore() {
-    final message = [
+    final topic = [
       widget.plantName,
       widget.conditionName,
     ]
@@ -1957,9 +1957,11 @@ class _DiseaseInfoViewState extends State<_DiseaseInfoView> {
         .where((part) => part.isNotEmpty)
         .join(' ');
 
-    if (message.isEmpty) {
+    if (topic.isEmpty) {
       return;
     }
+
+    final message = 'More Information About $topic';
 
     Navigator.of(context).push(
       MaterialPageRoute<void>(
