@@ -781,6 +781,55 @@ def ask_question(user_question: str, session_id: str = "default", user_context: 
     is_sinhala = _is_sinhala(user_question)
     sinhala_terms = SINHALA_RANGE.findall(user_question)
 
+        # Handle simple greetings without searching the knowledge base.
+    greeting = re.sub(
+        r"[!?.,\s]+$",
+        "",
+        user_question.strip()
+    ).casefold()
+
+    english_greetings = {
+        "hi",
+        "hello",
+        "hey",
+        "hi there",
+        "hello there",
+        "good morning",
+        "good afternoon",
+        "good evening"
+    }
+
+    sinhala_greetings = {
+        "ආයුබෝවන්",
+        "හායි",
+        "හෙලෝ",
+        "සුබ උදෑසනක්",
+        "සුබ දවසක්",
+        "සුබ සන්ධ්‍යාවක්"
+    }
+
+    if greeting in english_greetings or greeting in sinhala_greetings:
+
+        if greeting in sinhala_greetings:
+            greeting_answer = (
+                "ආයුබෝවන්! මම ශ්‍රී ලංකාවේ ඖෂධීය ශාක පිළිබඳ "
+                "තොරතුරු ලබාදෙන සහායකයෙක්. "
+                "ඔබට දැනගැනීමට අවශ්‍ය ශාකය හෝ ප්‍රශ්නය සඳහන් කරන්න."
+            )
+        else:
+            greeting_answer = (
+                "Hello! I'm your Herbal Knowledge Assistant. "
+                "I can help you learn about Sri Lankan medicinal plants, "
+                "their uses. "
+                "What would you like to know?"
+            )
+
+        chat_history.append(HumanMessage(content=user_question))
+        chat_history.append(AIMessage(content=greeting_answer))
+        conversation_store[session_id] = chat_history[-6:]
+
+        return _result(greeting_answer, [], False)
+
     # 0. Safety gate FIRST: urgent cases never become ordinary RAG questions.
     if _is_urgent_exposure(user_question, chat_history):
         emergency_answer = _urgent_exposure_reply(is_sinhala)
