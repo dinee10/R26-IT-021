@@ -207,9 +207,41 @@ def ask():
         return jsonify({'error': 'Query is required.'}), 400
     if not isinstance(user_context, dict):
         return jsonify({'error': 'user_context must be an object.'}), 400
+        
+    # Receive recent conversation history from Flutter.
+    # This may include messages restored from Firestore.
+    raw_history = data.get('history', [])
+
+    if not isinstance(raw_history, list):
+        return jsonify({'error': 'history must be a list.'}), 400
+
+    recent_history = []
+
+    for message in raw_history[-6:]:
+        if not isinstance(message, dict):
+            return jsonify({'error': 'Invalid history message.'}), 400
+
+        role = message.get('role')
+        content = message.get('content')
+
+        if (
+            role not in ('user', 'assistant')
+            or not isinstance(content, str)
+            or not content.strip()
+            or len(content) > 10000
+        ):
+            return jsonify({'error': 'Invalid history content.'}), 400
+
+        recent_history.append({
+            'role': role,
+            'content': content.strip()
+        })
+
+    # Make validated history available to the bilingual RAG.
+    user_context['recent_history'] = recent_history
 
     try:
-        from conversation_rag import ask_question
+        from conversation_rag_bilingual_test import ask_question
         return jsonify(ask_question(query, session_id, user_context))
     except (ImportError, ModuleNotFoundError) as exc:
         return jsonify({'error': f'RAG dependencies are not installed: {exc}'}), 503
@@ -493,12 +525,13 @@ def expert_image(request_id, image_name):
     if not path:
         return jsonify({"error": "Image not found."}), 404
     return send_file(path, mimetype='image/jpeg')
+
 @bp.route('/clear', methods=['POST'])
 def clear():
     data = request.get_json()
     session_id = data.get('session_id', 'default')
     try:
-        from conversation_rag import clear_conversation
+        from conversation_rag_bilingual_test import clear_conversation
         clear_conversation(session_id)
         return jsonify({"message": "Conversation history cleared"})
     except ImportError as exc:
