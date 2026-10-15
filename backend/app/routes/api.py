@@ -89,6 +89,10 @@ quality_disease_lookup = _load_quality_service(
     "quality_disease_lookup",
     "quality.disease_lookup.py",
 )
+quality_disease_incidence = _load_quality_service(
+    "quality_disease_incidence",
+    "quality.disease_incidence.py",
+)
 quality_maturity_lookup = _load_quality_service(
     "quality_maturity_lookup",
     "quality.maturity_lookup.py",
@@ -207,9 +211,41 @@ def ask():
         return jsonify({'error': 'Query is required.'}), 400
     if not isinstance(user_context, dict):
         return jsonify({'error': 'user_context must be an object.'}), 400
+        
+    # Receive recent conversation history from Flutter.
+    # This may include messages restored from Firestore.
+    raw_history = data.get('history', [])
+
+    if not isinstance(raw_history, list):
+        return jsonify({'error': 'history must be a list.'}), 400
+
+    recent_history = []
+
+    for message in raw_history[-6:]:
+        if not isinstance(message, dict):
+            return jsonify({'error': 'Invalid history message.'}), 400
+
+        role = message.get('role')
+        content = message.get('content')
+
+        if (
+            role not in ('user', 'assistant')
+            or not isinstance(content, str)
+            or not content.strip()
+            or len(content) > 10000
+        ):
+            return jsonify({'error': 'Invalid history content.'}), 400
+
+        recent_history.append({
+            'role': role,
+            'content': content.strip()
+        })
+
+    # Make validated history available to the bilingual RAG.
+    user_context['recent_history'] = recent_history
 
     try:
-        from conversation_rag import ask_question
+        from conversation_rag_bilingual_test import ask_question
         return jsonify(ask_question(query, session_id, user_context))
     except (ImportError, ModuleNotFoundError) as exc:
         return jsonify({'error': f'RAG dependencies are not installed: {exc}'}), 503
@@ -347,6 +383,15 @@ def assess_quality_condition():
         return jsonify({"accepted": False, "reason": "TOO_MANY_IMAGES"}), 400
 
     image_bytes_list = [image_file.read() for image_file in image_files]
+    for image_bytes in image_bytes_list:
+        validation = quality_image_validator.validate_image_bytes(image_bytes)
+        if not validation.get("valid"):
+            status_code = 400 if validation.get("reason") == "INVALID_IMAGE" else 422
+            return jsonify({
+                "accepted": False,
+                "reason": validation.get("reason", "INVALID_IMAGE"),
+                "validation": validation,
+            }), status_code
     manual_inputs = _parse_manual_inputs(request.form.get("manual_inputs"))
     plant_result = quality_plant_identifier.identify_plant_from_multiple_images(
         image_bytes_list
@@ -370,6 +415,60 @@ def assess_quality_condition():
     return jsonify(result), status_code
 
 
+@bp.route('/quality/assess-disease-incidence', methods=['POST'])
+def assess_quality_disease_incidence():
+    initial_file = request.files.get('initial_image')
+    additional_files = request.files.getlist('sample_images')
+    if initial_file is not None:
+        image_files = [initial_file, *additional_files]
+    else:
+        image_files = request.files.getlist('image')
+
+    if not image_files:
+        return jsonify({"accepted": False, "reason": "NO_IMAGES"}), 400
+    if len(image_files) > 25:
+        return jsonify({"accepted": False, "reason": "TOO_MANY_IMAGES"}), 400
+
+    regions = _parse_regions(request.form.get('regions'))
+    samples = []
+    for index, image_file in enumerate(image_files):
+        samples.append({
+            "bytes": image_file.read(),
+            "filename": image_file.filename,
+            "region": regions[index] if index < len(regions) else None,
+        })
+
+    try:
+        result = quality_disease_incidence.assess_samples(
+            samples=samples,
+            validate_image=quality_image_validator.validate_image_bytes,
+            identify_plant=quality_plant_identifier.identify_plant_from_bytes,
+            classify_condition=quality_condition_classifier.assess_condition_image,
+            disease_lookup=quality_disease_lookup.get_disease_info,
+        )
+    except quality_disease_incidence.IncidenceDataError as exc:
+        return jsonify({"accepted": False, "reason": "KNOWLEDGE_BASE_UNAVAILABLE", "error": str(exc)}), 503
+    except (OSError, ValueError, csv.Error) as exc:
+        return jsonify({"accepted": False, "reason": "ASSESSMENT_ERROR", "error": str(exc)}), 500
+    except Exception as exc:
+        return jsonify({
+            "accepted": False,
+            "reason": "MODEL_INFERENCE_FAILED",
+            "error": str(exc),
+        }), 500
+
+    reason = result.get("reason")
+    if result.get("accepted"):
+        status_code = 200
+    elif reason in {"NO_IMAGES", "TOO_MANY_IMAGES", "INVALID_IMAGE"}:
+        status_code = 400
+    elif reason in {"MODEL_NOT_AVAILABLE", "MODEL_RUNTIME_MISSING"}:
+        status_code = 503
+    else:
+        status_code = 422
+    return jsonify(result), status_code
+
+
 def _parse_manual_inputs(raw_value):
     if not raw_value:
         return {}
@@ -380,6 +479,16 @@ def _parse_manual_inputs(raw_value):
         return {}
 
     return parsed if isinstance(parsed, dict) else {}
+
+
+def _parse_regions(raw_value):
+    if not raw_value:
+        return []
+    try:
+        parsed = json.loads(raw_value)
+    except (TypeError, ValueError):
+        return []
+    return [str(value).strip() or None for value in parsed] if isinstance(parsed, list) else []
 
 @bp.route('/predict', methods=['POST'])
 def predict():
@@ -493,12 +602,13 @@ def expert_image(request_id, image_name):
     if not path:
         return jsonify({"error": "Image not found."}), 404
     return send_file(path, mimetype='image/jpeg')
+
 @bp.route('/clear', methods=['POST'])
 def clear():
     data = request.get_json()
     session_id = data.get('session_id', 'default')
     try:
-        from conversation_rag import clear_conversation
+        from conversation_rag_bilingual_test import clear_conversation
         clear_conversation(session_id)
         return jsonify({"message": "Conversation history cleared"})
     except ImportError as exc:

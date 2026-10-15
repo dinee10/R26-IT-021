@@ -10,6 +10,7 @@ import numpy as np
 
 DEFAULT_CONFIG_PATH = Path(__file__).with_name("quality.condition_config.json")
 MODEL_RUNTIME_MISSING = "MODEL_RUNTIME_MISSING"
+MODEL_NOT_AVAILABLE = "MODEL_NOT_AVAILABLE"
 HEALTHY_CLASS_ID = "healthy"
 _MODEL_CACHE: dict[str, Any] = {}
 
@@ -77,7 +78,7 @@ def assess_condition_from_multiple_images(
 
     runtime_missing = [
         prediction for prediction in predictions
-        if prediction.get("reason") == MODEL_RUNTIME_MISSING
+        if prediction.get("reason") in {MODEL_RUNTIME_MISSING, MODEL_NOT_AVAILABLE}
     ]
     if runtime_missing:
         condition = _format_condition_result(runtime_missing[0], species_id, config)
@@ -109,7 +110,7 @@ def assess_condition_from_multiple_images(
     maturity = None
     medicinal_suitability = None
     xai = None
-    if condition.get("status") == "diseased":
+    if condition.get("accepted") and condition.get("status") == "diseased":
         disease_info = disease_lookup.get_disease_info(
             plant_response["species"],
             condition["class"],
@@ -122,7 +123,8 @@ def assess_condition_from_multiple_images(
             gradcam_service=gradcam_service,
         )
     elif (
-        condition.get("status") == "healthy"
+        condition.get("accepted")
+        and condition.get("status") == "healthy"
         and maturity_classifier is not None
         and maturity_lookup is not None
         and maturity_decision is not None
@@ -144,7 +146,7 @@ def assess_condition_from_multiple_images(
 
     condition.pop("_class_index", None)
 
-    return {
+    response = {
         "plant": plant_response,
         "condition": condition,
         "disease_info": disease_info,
@@ -153,6 +155,9 @@ def assess_condition_from_multiple_images(
         "xai": xai,
         "accepted": condition.get("accepted", False),
     }
+    if not condition.get("accepted") and condition.get("reason"):
+        response["reason"] = condition["reason"]
+    return response
 
 
 def preprocess_for_condition_model(
@@ -164,6 +169,36 @@ def preprocess_for_condition_model(
     rgb_image = cv2.cvtColor(letterboxed, cv2.COLOR_BGR2RGB)
     model_input = rgb_image.astype(np.float32)
     return np.expand_dims(model_input, axis=0)
+
+
+def assess_condition_image(
+    image_bytes: bytes,
+    plant_result: dict[str, Any],
+) -> dict[str, Any]:
+    """Run Model 2 once and preserve this leaf's independent prediction."""
+    config = _load_config()
+    species_id = _species_id_from_result(plant_result)
+    if not plant_result.get("accepted"):
+        return {
+            "status": "unavailable",
+            "class": None,
+            "confidence": 0,
+            "accepted": False,
+            "reason": plant_result.get("reason", "PLANT_NOT_ACCEPTED"),
+        }
+    if species_id not in config["heads"]:
+        return {
+            "status": "unavailable",
+            "class": None,
+            "confidence": 0,
+            "accepted": False,
+            "reason": "UNSUPPORTED_CONDITION_HEAD",
+        }
+    return _format_condition_result(
+        _predict_condition_image(image_bytes, species_id, config),
+        species_id,
+        config,
+    )
 
 
 def _predict_condition_image(
@@ -201,7 +236,12 @@ def _predict(
         }
 
     if model is None:
-        return _mock_prediction(image_bytes, species_id, config)
+        return {
+            "class_id": None,
+            "confidence": 0,
+            "model": config["models"][config["active_model"]]["display_name"],
+            "reason": MODEL_NOT_AVAILABLE,
+        }
 
     raw_prediction = model.predict(preprocessed, verbose=0)
     probabilities = _select_species_probabilities(raw_prediction, species_id, config)
@@ -221,13 +261,13 @@ def _format_condition_result(
     species_id: str,
     config: dict[str, Any],
 ) -> dict[str, Any]:
-    if prediction.get("reason") == MODEL_RUNTIME_MISSING:
+    if prediction.get("reason") in {MODEL_RUNTIME_MISSING, MODEL_NOT_AVAILABLE}:
         return {
             "status": "unavailable",
             "class": None,
             "confidence": 0,
             "accepted": False,
-            "reason": MODEL_RUNTIME_MISSING,
+            "reason": prediction["reason"],
             "model": prediction["model"],
             "preprocessing": "LETTERBOX_224",
         }

@@ -8,11 +8,21 @@ import '../services/conversation_store.dart';
 import '../../theme/app_colors.dart';
 import '../../services/plant_api.dart';
 import 'conversation_sidebar.dart';
+import 'persona_meta.dart';
 
-/// Conversation history is kept in-memory via [ConversationStore]
+/// Chat screen for one user type (page). Constructor is unchanged, so the four
+/// existing pages (General Public / Practitioner / Student / Researcher) keep working.
+///
+/// Inside a page:
+///  - Auto (default): answers as this page's user type. If a message asks for
+///    another style (e.g. a Student asks for the scientific evidence), the
+///    backend answers as that type for that answer only.
+///  - Chips: the user can pick up to [kMaxCategories] styles explicitly; the
+///    choice stays until they tap Auto.
+/// Conversation history is kept in-memory via [ConversationStore].
 class PersonaChatScaffold extends StatefulWidget {
   final String personaLabel; // shown in UI, e.g. "Practitioner"
-  final String userTypeKey; // sent to backend, e.g. "practitioner"
+  final String userTypeKey; // this page's home category, e.g. "practitioner"
   final Color accentColor;
   final IconData icon;
   final String greeting;
@@ -42,6 +52,9 @@ class _PersonaChatScaffoldState extends State<PersonaChatScaffold> {
 
   String? _conversationId;
 
+  /// User's explicit style choice from the chips. Empty = Auto.
+  final List<String> _selected = [];
+
   @override
   void initState() {
     super.initState();
@@ -66,9 +79,19 @@ class _PersonaChatScaffoldState extends State<PersonaChatScaffold> {
   }
 
   Future<void> _sendMessage(String query) async {
-    if (query.trim().isEmpty) return;
+  if (query.trim().isEmpty) return;
 
-    final userMessage = ChatMessage(text: query, isUser: true);
+  // Capture recent messages before adding the current question.
+  // These may have been restored from Firestore.
+  final recentHistory = _messages
+      .skip(_messages.length > 6 ? _messages.length - 6 : 0)
+      .map((message) => {
+            "role": message.isUser ? "user" : "assistant",
+            "content": message.text,
+          })
+      .toList();
+
+  final userMessage = ChatMessage(text: query, isUser: true);
     setState(() {
       _messages.add(userMessage);
       _isLoading = true;
@@ -101,18 +124,30 @@ class _PersonaChatScaffoldState extends State<PersonaChatScaffold> {
             body: jsonEncode({
               "query": query,
               "session_id": sessionId,
-              "user_context": {"user_type": widget.userTypeKey},
+              "history": recentHistory,
+              "user_context": {
+                // "auto" => backend may switch style per message;
+                // a list => explicit choice from the chips
+                "user_type": _selected.isEmpty ? "auto" : _selected,
+                // this page's own user type = the default style
+                "default_type": widget.userTypeKey,
+              },
             }),
           )
           .timeout(const Duration(seconds: 60));
 
-      late final ChatMessage botMessage;
+      ChatMessage botMessage;
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        final used = ((data['user_types'] as List?) ?? const [])
+            .map((e) => e.toString())
+            .where(isKnownPersona)
+            .toList();
         botMessage = ChatMessage(
           text: data['answer'] ?? "Sorry, I couldn't get a response.",
           isUser: false,
-          hasCaution: data['safety_context_available'] == true,
+          hasCaution: data['answer_has_caution'] == true,
+          personas: used,
         );
       } else {
         botMessage = ChatMessage(text: _serverError(response), isUser: false);
@@ -126,13 +161,12 @@ class _PersonaChatScaffoldState extends State<PersonaChatScaffold> {
         message: botMessage,
       );
     } catch (e) {
+      if (!mounted) return;
       setState(
         () => _messages.add(
           ChatMessage(
-            text:
-                'Cannot connect to ' +
-                PlantApi.baseUrl +
-                '. Check that the backend is running.',
+            text: 'Cannot connect to ${PlantApi.baseUrl}. '
+                'Check that the backend is running.',
             isUser: false,
           ),
         ),
@@ -172,6 +206,78 @@ class _PersonaChatScaffoldState extends State<PersonaChatScaffold> {
     });
   }
 
+  // ---------- new UI pieces ----------
+
+  Widget _styleChips() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            ChoiceChip(
+              avatar: const Icon(Icons.auto_awesome, size: 16),
+              label: const Text("Auto"),
+              selected: _selected.isEmpty,
+              selectedColor: widget.accentColor.withValues(alpha: 0.18),
+              onSelected: (_) => setState(() => _selected.clear()),
+            ),
+            for (final p in kPersonas) ...[
+              const SizedBox(width: 8),
+              FilterChip(
+                avatar: Icon(p.icon, size: 16, color: p.color),
+                label: Text(p.label),
+                selected: _selected.contains(p.key),
+                selectedColor: p.color.withValues(alpha: 0.18),
+                checkmarkColor: p.color,
+                onSelected: (_) =>
+                    setState(() => togglePersona(_selected, p.key)),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _styleStatus() {
+    final auto = _selected.isEmpty;
+    final names = _selected.map((k) => personaByKey(k).label).join(" + ");
+    return Container(
+      width: double.infinity,
+      color: widget.accentColor.withValues(alpha: 0.06),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: Row(
+        children: [
+          Icon(auto ? Icons.auto_awesome : Icons.tune,
+              size: 14, color: widget.accentColor),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              auto
+                  ? "Auto: answering as ${widget.personaLabel}. Ask for another "
+                      "style (e.g. \"explain the evidence\") and I'll switch for "
+                      "that answer."
+                  : "Your choice: $names. Tap Auto to go back to "
+                      "${widget.personaLabel}.",
+              style: const TextStyle(fontSize: 11, color: AppColors.text),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Shown only when the answer used a style other than this page's own.
+  String? _answeredAsLabel(ChatMessage msg) {
+    if (msg.isUser || msg.personas.isEmpty) return null;
+    if (msg.personas.length == 1 && msg.personas.first == widget.userTypeKey) {
+      return null;
+    }
+    return "Answered as ${msg.personas.map((k) => personaByKey(k).label).join(' + ')}";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -196,12 +302,24 @@ class _PersonaChatScaffoldState extends State<PersonaChatScaffold> {
         foregroundColor: Colors.white,
         centerTitle: false,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add_comment_outlined),
-            onPressed: _startNewConversation,
-            tooltip: "New Conversation",
-          ),
-        ],
+  // Open the conversation history sidebar
+  Builder(
+    builder: (context) => IconButton(
+      icon: const Icon(Icons.history),
+      tooltip: "Chat History",
+      onPressed: () {
+        Scaffold.of(context).openDrawer();
+      },
+    ),
+  ),
+
+  // Start a new conversation
+  IconButton(
+    icon: const Icon(Icons.add_comment_outlined),
+    onPressed: _startNewConversation,
+    tooltip: "New Conversation",
+  ),
+],
       ),
       drawer: ConversationSidebar(
         userType: widget.userTypeKey,
@@ -215,6 +333,8 @@ class _PersonaChatScaffoldState extends State<PersonaChatScaffold> {
         child: Column(
           children: [
             if (widget.infoBanner != null) widget.infoBanner!,
+            _styleChips(),
+            _styleStatus(),
             Expanded(
               child: _messages.isEmpty
                   ? Center(
@@ -246,6 +366,7 @@ class _PersonaChatScaffoldState extends State<PersonaChatScaffold> {
                       itemCount: _messages.length,
                       itemBuilder: (context, index) {
                         final msg = _messages[index];
+                        final answeredAs = _answeredAsLabel(msg);
                         return Align(
                           alignment: msg.isUser
                               ? Alignment.centerRight
@@ -269,6 +390,18 @@ class _PersonaChatScaffoldState extends State<PersonaChatScaffold> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                if (answeredAs != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 4),
+                                    child: Text(
+                                      answeredAs,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: AppColors.muted,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
                                 if (!msg.isUser && msg.hasCaution)
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 6),

@@ -50,6 +50,8 @@ ml/dataset/
 
 
 # Chroma / Vector DB
+chroma_db_bilingual_test/
+chroma_db_bilingual_refs_test/
 chroma_db_free/
 chroma_db/
 vectorstore/
