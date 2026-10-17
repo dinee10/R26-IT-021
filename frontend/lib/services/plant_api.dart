@@ -13,12 +13,18 @@ class PlantApi {
   static const _configuredUrl = String.fromEnvironment('API_BASE_URL');
 
   static String get baseUrl {
-    if (_configuredUrl.isNotEmpty) return _configuredUrl;
-    if (kIsWeb)
-      return 'http://${Uri.base.host.isEmpty ? '127.0.0.1' : Uri.base.host}:5000';
-    if (defaultTargetPlatform == TargetPlatform.android)
-      return 'http://10.0.2.2:5000';
-    return 'http://127.0.0.1:5000';
+    final rawUrl = _configuredUrl.isNotEmpty
+        ? _configuredUrl
+        : kIsWeb
+        ? 'http://${Uri.base.host.isEmpty ? '127.0.0.1' : Uri.base.host}:5000'
+        : defaultTargetPlatform == TargetPlatform.android
+        ? 'http://10.0.2.2:5000'
+        : 'http://127.0.0.1:5000';
+
+    // Accept either https://host or https://host/api from build scripts.
+    return rawUrl
+        .replaceFirst(RegExp(r'/api/?$'), '')
+        .replaceFirst(RegExp(r'/$'), '');
   }
 
   Future<PlantPrediction> predict(List<XFile> images, String modelType) async {

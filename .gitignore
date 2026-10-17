@@ -149,3 +149,4 @@ frontend/ios/Flutter/ephemeral/
 frontend/linux/flutter/ephemeral/
 frontend/macos/Flutter/ephemeral/
 
+.gradle-demo/

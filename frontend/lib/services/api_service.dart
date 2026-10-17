@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import 'plant_api.dart';
+
 class PlantRecommendation {
   const PlantRecommendation({
     required this.name,
@@ -50,7 +52,10 @@ class PlantRecommendation {
 }
 
 class RecommendationResult {
-  const RecommendationResult({required this.bestPlant, required this.recommendations});
+  const RecommendationResult({
+    required this.bestPlant,
+    required this.recommendations,
+  });
 
   final PlantRecommendation bestPlant;
   final List<PlantRecommendation> recommendations;
@@ -59,19 +64,12 @@ class RecommendationResult {
 class ApiService {
   ApiService({http.Client? client}) : _client = client ?? http.Client();
 
-  static const _baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://127.0.0.1:5000/api',
-  );
-
   final http.Client _client;
 
-  Future<RecommendationResult> recommend(
-    Map<String, dynamic> input,
-  ) async {
+  Future<RecommendationResult> recommend(Map<String, dynamic> input) async {
     final response = await _client
         .post(
-          Uri.parse('$_baseUrl/recommend'),
+          Uri.parse('${PlantApi.baseUrl}/api/recommend'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode(input),
         )
@@ -84,10 +82,17 @@ class ApiService {
 
     final items = body['recommendations'] as List<dynamic>;
     final recommendations = items
-        .map((item) => PlantRecommendation.fromJson(item as Map<String, dynamic>))
+        .map(
+          (item) => PlantRecommendation.fromJson(item as Map<String, dynamic>),
+        )
         .toList();
-    final bestPlant = PlantRecommendation.fromJson(body['bestPlant'] as Map<String, dynamic>);
-    return RecommendationResult(bestPlant: bestPlant, recommendations: recommendations);
+    final bestPlant = PlantRecommendation.fromJson(
+      body['bestPlant'] as Map<String, dynamic>,
+    );
+    return RecommendationResult(
+      bestPlant: bestPlant,
+      recommendations: recommendations,
+    );
   }
 }
 

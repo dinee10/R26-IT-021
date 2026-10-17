@@ -51,7 +51,8 @@ ml/dataset/
 
 # Chroma / Vector DB
 chroma_db_bilingual_test/
-chroma_db_bilingual_refs_test/
+# This small production vector store is committed so cloud demos do not need to
+# regenerate paid OpenAI embeddings on every ephemeral deployment.
 chroma_db_free/
 chroma_db/
 vectorstore/
