@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import 'ai_assistant_page.dart';
-import 'coming_soon_page.dart';
 import 'home_page.dart';
 import 'live_organ_detector_page.dart';
 import 'profile_page.dart';
@@ -22,7 +21,6 @@ class _HomeShellState extends State<HomeShell> {
       const HomePage(),
       const LiveOrganDetectorPage(),
       const AiAssistantPage(),
-      const ComingSoonPage(title: 'History', icon: Icons.history_rounded),
       const ProfilePage(),
     ];
 
@@ -51,11 +49,6 @@ class _HomeShellState extends State<HomeShell> {
             icon: Icon(Icons.chat_bubble_outline),
             selectedIcon: Icon(Icons.chat_bubble_rounded),
             label: 'Chat',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.history_rounded),
-            selectedIcon: Icon(Icons.history_rounded),
-            label: 'History',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline_rounded),

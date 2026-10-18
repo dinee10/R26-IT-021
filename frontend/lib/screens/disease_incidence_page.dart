@@ -1,6 +1,5 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../models/disease_incidence_assessment.dart';
@@ -386,11 +385,43 @@ class _ConditionCard extends StatelessWidget {
                               ? reference.id
                               : reference.title,
                         ),
-                        subtitle: SelectableText(
-                          [
-                            reference.publisher,
-                            reference.url,
-                          ].where((value) => value.isNotEmpty).join('\n'),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (reference.publisher.isNotEmpty)
+                              Text(reference.publisher),
+                            if (reference.url.isNotEmpty)
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: SelectableText(reference.url),
+                                  ),
+                                  IconButton(
+                                    tooltip: 'Copy reference link',
+                                    visualDensity: VisualDensity.compact,
+                                    onPressed: () {
+                                      Clipboard.setData(
+                                        ClipboardData(text: reference.url),
+                                      );
+                                      final messenger = ScaffoldMessenger.of(
+                                        context,
+                                      );
+                                      messenger
+                                        ..hideCurrentSnackBar()
+                                        ..showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Reference link copied',
+                                            ),
+                                          ),
+                                        );
+                                    },
+                                    icon: const Icon(Icons.copy_rounded),
+                                  ),
+                                ],
+                              ),
+                          ],
                         ),
                       ),
                     )
@@ -406,7 +437,18 @@ class _ConditionCard extends StatelessWidget {
       ? const SizedBox.shrink()
       : Padding(
           padding: const EdgeInsets.only(top: 10),
-          child: Text('$label: $text', style: const TextStyle(height: 1.35)),
+          child: Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: '$label: ',
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                TextSpan(text: text),
+              ],
+            ),
+            style: const TextStyle(height: 1.35),
+          ),
         );
 }
 
