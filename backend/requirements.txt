@@ -30,3 +30,9 @@ rapidfuzz
 # Test runner used by the documented verification command.
 pytest>=8.0,<9.0
  
+
+
+# Soil-image classification
+tensorflow==2.20.0
+Pillow>=11.0,<13.0
+ 

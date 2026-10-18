@@ -1,0 +1,12 @@
+[
+  "temperature_c",
+  "rainfall_mm",
+  "humidity_pct",
+  "soil_ph",
+  "budget_lkr",
+  "soil_type",
+  "growing_space",
+  "irrigation_method",
+  "growing_season",
+  "growing_duration"
+]

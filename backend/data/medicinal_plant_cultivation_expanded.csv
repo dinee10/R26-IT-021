@@ -1,0 +1,201 @@
+temperature_c,rainfall_mm,humidity_pct,soil_ph,budget_lkr,soil_type,growing_space,irrigation_method,growing_season,growing_duration,plant_name,source_plant
+23.0,68.0,49.0,6.3,1380,Loamy,Under 1 perch,Rain only,January,Short,Tulsi,Tulsi
+27.5,110.0,62.5,6.75,1537,Silty,1-5 perches,Hand watering,February,Medium,Tulsi,Tulsi
+32.0,152.0,76.0,7.2,1695,Loamy,6-10 perches,Drip irrigation,March,Short,Tulsi,Tulsi
+35.0,180.0,85.0,7.5,1800,Silty,Under 1 perch,Sprinkler,April,Medium,Tulsi,Tulsi
+23.0,140.0,67.0,5.7,7360,Loamy,6-10 perches,Rain only,May,Medium,Turmeric,Turmeric
+27.5,200.0,77.5,6.0,8200,Silty,11-20 perches,Hand watering,June,Long,Turmeric,Turmeric
+32.0,260.0,88.0,6.3,9040,Loamy,21-50 perches,Drip irrigation,July,Medium,Turmeric,Turmeric
+35.0,300.0,95.0,6.5,9600,Silty,51-100 perches,Sprinkler,August,Long,Turmeric,Turmeric
+22.4,28.0,39.0,6.7,1840,Sandy,Under 1 perch,Hand watering,January,Short,Aloe vera,Aloe vera
+29.0,55.0,52.5,7.0,2050,Loamy,1-5 perches,Drip irrigation,February,Medium,Aloe vera,Aloe vera
+35.6,82.0,66.0,7.3,2260,Sandy,6-10 perches,Hose,March,Long,Aloe vera,Aloe vera
+40.0,100.0,75.0,7.5,2400,Loamy,Under 1 perch,Hand watering,April,Short,Aloe vera,Aloe vera
+23.0,46.0,38.0,7.2,5520,Sandy,6-10 perches,Rain only,September,Medium,Ashwagandha,Ashwagandha
+27.5,85.0,50.0,7.5,6150,Loamy,11-20 perches,Hand watering,October,Long,Ashwagandha,Ashwagandha
+32.0,124.0,62.0,7.8,6780,Sandy,21-50 perches,Drip irrigation,November,Medium,Ashwagandha,Ashwagandha
+35.0,150.0,70.0,8.0,7200,Loamy,51-100 perches,Hose,December,Long,Ashwagandha,Ashwagandha
+24.0,82.0,40.0,6.4,2760,Sandy,21-50 perches,Rain only,January,Long,Neem,Neem
+30.0,145.0,55.0,7.0,3075,Loamy,51-100 perches,Hand watering,February,Long,Neem,Neem
+36.0,208.0,70.0,7.6,3390,Silty,101-500 perches,Drip irrigation,March,Long,Neem,Neem
+40.0,250.0,80.0,8.0,3600,Sandy,1/4 acre,Hose,April,Long,Neem,Neem
+22.4,140.0,67.0,5.7,6440,Loamy,1-5 perches,Rain only,March,Medium,Ginger,Ginger
+26.0,200.0,77.5,6.0,7175,Silty,6-10 perches,Hand watering,April,Medium,Ginger,Ginger
+29.6,260.0,88.0,6.3,7910,Loamy,11-20 perches,Drip irrigation,May,Medium,Ginger,Ginger
+32.0,300.0,95.0,6.5,8400,Silty,21-50 perches,Sprinkler,June,Medium,Ginger,Ginger
+23.0,98.0,49.0,5.5,2300,Loamy,1-5 perches,Rain only,January,Short,Lemongrass,Lemongrass
+27.5,155.0,62.5,6.25,2562,Sandy,6-10 perches,Hand watering,February,Medium,Lemongrass,Lemongrass
+32.0,212.0,76.0,7.0,2825,Loamy,11-20 perches,Drip irrigation,March,Short,Lemongrass,Lemongrass
+35.0,250.0,85.0,7.5,3000,Sandy,21-50 perches,Sprinkler,April,Medium,Lemongrass,Lemongrass
+18.0,98.0,59.0,6.2,1380,Loamy,Under 1 perch,Hand watering,September,Short,Mint,Mint
+22.5,155.0,72.5,6.5,1537,Silty,1-5 perches,Drip irrigation,October,Medium,Mint,Mint
+27.0,212.0,86.0,6.8,1695,Loamy,6-10 perches,Sprinkler,November,Short,Mint,Mint
+30.0,250.0,95.0,7.0,1800,Silty,Under 1 perch,Hose,December,Medium,Mint,Mint
+23.0,140.0,67.0,5.3,9200,Loamy,21-50 perches,Rain only,May,Long,Cinnamon,Cinnamon
+27.5,200.0,77.5,5.75,10250,Silty,51-100 perches,Hand watering,June,Long,Cinnamon,Cinnamon
+32.0,260.0,88.0,6.2,11300,Loamy,101-500 perches,Drip irrigation,July,Long,Cinnamon,Cinnamon
+35.0,300.0,95.0,6.5,12000,Silty,1/4 acre,Hose,August,Long,Cinnamon,Cinnamon
+22.4,150.0,72.0,5.7,1840,Silty,Under 1 perch,Rain only,June,Short,Gotu kola,Gotu kola
+26.0,225.0,82.5,6.0,2050,Loamy,1-5 perches,Hand watering,July,Medium,Gotu kola,Gotu kola
+29.6,300.0,93.0,6.3,2260,Silty,6-10 perches,Drip irrigation,August,Short,Gotu kola,Gotu kola
+32.0,350.0,100.0,6.5,2400,Loamy,11-20 perches,Sprinkler,September,Medium,Gotu kola,Gotu kola
+23.0,114.0,54.0,5.9,920,Sandy,Under 1 perch,Rain only,January,Short,Belathana,Belathana
+27.5,165.0,67.5,6.5,1025,Loamy,1-5 perches,Hand watering,February,Medium,Belathana,Belathana
+32.0,216.0,81.0,7.1,1130,Sandy,6-10 perches,Drip irrigation,March,Short,Belathana,Belathana
+35.0,250.0,90.0,7.5,1200,Loamy,11-20 perches,Sprinkler,April,Medium,Belathana,Belathana
+24.6,68.0,49.0,6.3,1380,Sandy,Under 1 perch,Rain only,January,Short,Polpala,Polpala
+28.5,110.0,62.5,6.75,1537,Loamy,1-5 perches,Hand watering,February,Medium,Polpala,Polpala
+32.4,152.0,76.0,7.2,1695,Sandy,6-10 perches,Drip irrigation,March,Short,Polpala,Polpala
+35.0,180.0,85.0,7.5,1800,Loamy,11-20 perches,Sprinkler,April,Medium,Polpala,Polpala
+23.0,150.0,72.0,5.8,1380,Silty,Under 1 perch,Rain only,January,Short,Kikiridiya,Kikiridiya
+27.5,225.0,82.5,6.25,1537,Loamy,1-5 perches,Hand watering,February,Medium,Kikiridiya,Kikiridiya
+32.0,300.0,93.0,6.7,1695,Silty,6-10 perches,Drip irrigation,March,Short,Kikiridiya,Kikiridiya
+35.0,350.0,100.0,7.0,1800,Loamy,Under 1 perch,Sprinkler,April,Medium,Kikiridiya,Kikiridiya
+24.0,190.0,76.0,5.7,13800,Loamy,51-100 perches,Rain only,May,Long,Nutmeg,Nutmeg
+27.0,250.0,85.0,6.0,15375,Silty,101-500 perches,Hand watering,June,Long,Nutmeg,Nutmeg
+30.0,310.0,94.0,6.3,16950,Loamy,1/4 acre,Drip irrigation,July,Long,Nutmeg,Nutmeg
+32.0,350.0,100.0,6.5,18000,Silty,1/2 acre,Hose,August,Long,Nutmeg,Nutmeg
+23.0,80.0,49.0,5.9,1840,Sandy,1-5 perches,Rain only,January,Medium,Castor,Castor
+27.5,125.0,62.5,6.5,2050,Loamy,6-10 perches,Hand watering,February,Medium,Castor,Castor
+32.0,170.0,76.0,7.1,2260,Sandy,11-20 perches,Drip irrigation,March,Medium,Castor,Castor
+35.0,200.0,85.0,7.5,2400,Loamy,21-50 perches,Hose,April,Medium,Castor,Castor
+23.0,114.0,63.0,6.3,2300,Loamy,1-5 perches,Rain only,May,Medium,Adhatoda,Adhatoda
+27.5,165.0,75.0,6.75,2562,Silty,6-10 perches,Hand watering,June,Long,Adhatoda,Adhatoda
+32.0,216.0,87.0,7.2,2825,Loamy,11-20 perches,Drip irrigation,July,Medium,Adhatoda,Adhatoda
+35.0,250.0,95.0,7.5,3000,Silty,1-5 perches,Hose,August,Long,Adhatoda,Adhatoda
+23.0,88.0,53.0,6.3,2760,Loamy,6-10 perches,Rain only,May,Medium,Nika,Nika
+27.5,130.0,65.0,6.75,3075,Sandy,11-20 perches,Hand watering,June,Long,Nika,Nika
+32.0,172.0,77.0,7.2,3390,Loamy,21-50 perches,Drip irrigation,July,Medium,Nika,Nika
+35.0,200.0,85.0,7.5,3600,Sandy,6-10 perches,Hose,August,Long,Nika,Nika
+17.6,48.0,47.0,6.3,1380,Loamy,Under 1 perch,Rain only,January,Short,Asamodagam,Asamodagam
+21.5,75.0,57.5,6.75,1537,Sandy,1-5 perches,Hand watering,February,Medium,Asamodagam,Asamodagam
+25.4,102.0,68.0,7.2,1695,Loamy,6-10 perches,Drip irrigation,March,Short,Asamodagam,Asamodagam
+28.0,120.0,75.0,7.5,1800,Sandy,Under 1 perch,Hose,April,Medium,Asamodagam,Asamodagam
+24.6,88.0,53.0,6.3,4600,Sandy,6-10 perches,Rain only,May,Long,Iramusu,Iramusu
+28.5,130.0,65.0,6.75,5125,Loamy,11-20 perches,Hand watering,June,Long,Iramusu,Iramusu
+32.4,172.0,77.0,7.2,5650,Sandy,21-50 perches,Drip irrigation,July,Long,Iramusu,Iramusu
+35.0,200.0,85.0,7.5,6000,Loamy,6-10 perches,Hose,August,Long,Iramusu,Iramusu
+25.2,54.0,43.0,6.4,2760,Sandy,6-10 perches,Rain only,January,Medium,Ranawara,Ranawara
+30.0,90.0,55.0,7.0,3075,Loamy,11-20 perches,Hand watering,February,Long,Ranawara,Ranawara
+34.8,126.0,67.0,7.6,3390,Sandy,21-50 perches,Drip irrigation,March,Medium,Ranawara,Ranawara
+38.0,150.0,75.0,8.0,3600,Loamy,6-10 perches,Hose,April,Long,Ranawara,Ranawara
+22.4,124.0,68.0,6.3,1104,Loamy,Under 1 perch,Rain only,January,Short,Mukunuwenna,Mukunuwenna
+26.0,190.0,80.0,6.75,1230,Silty,1-5 perches,Hand watering,February,Short,Mukunuwenna,Mukunuwenna
+29.6,256.0,92.0,7.2,1356,Loamy,6-10 perches,Drip irrigation,March,Short,Mukunuwenna,Mukunuwenna
+32.0,300.0,100.0,7.5,1440,Silty,Under 1 perch,Sprinkler,April,Short,Mukunuwenna,Mukunuwenna
+23.0,88.0,53.0,6.3,4600,Sandy,6-10 perches,Rain only,May,Long,Hathawariya,Hathawariya
+27.5,130.0,65.0,6.75,5125,Loamy,11-20 perches,Hand watering,June,Long,Hathawariya,Hathawariya
+32.0,172.0,77.0,7.2,5650,Sandy,21-50 perches,Drip irrigation,July,Long,Hathawariya,Hathawariya
+35.0,200.0,85.0,7.5,6000,Loamy,6-10 perches,Hose,August,Long,Hathawariya,Hathawariya
+24.0,190.0,76.0,5.7,6440,Loamy,11-20 perches,Rain only,May,Long,Venivel,Venivel
+27.0,250.0,85.0,6.0,7175,Silty,21-50 perches,Hand watering,June,Long,Venivel,Venivel
+30.0,310.0,94.0,6.3,7910,Loamy,51-100 perches,Drip irrigation,July,Long,Venivel,Venivel
+32.0,350.0,100.0,6.5,8400,Silty,11-20 perches,Hose,August,Long,Venivel,Venivel
+24.6,88.0,53.0,5.9,3680,Loamy,11-20 perches,Rain only,May,Long,Sudu Kukurumaan,Sudu Kukurumaan
+28.5,130.0,65.0,6.5,4100,Sandy,21-50 perches,Hand watering,June,Long,Sudu Kukurumaan,Sudu Kukurumaan
+32.4,172.0,77.0,7.1,4520,Loamy,51-100 perches,Drip irrigation,July,Long,Sudu Kukurumaan,Sudu Kukurumaan
+35.0,200.0,85.0,7.5,4800,Sandy,11-20 perches,Hose,August,Long,Sudu Kukurumaan,Sudu Kukurumaan
+23.0,64.0,48.0,6.3,1840,Sandy,1-5 perches,Rain only,January,Medium,Katuwelbatu,Katuwelbatu
+27.5,100.0,60.0,6.75,2050,Loamy,6-10 perches,Hand watering,February,Medium,Katuwelbatu,Katuwelbatu
+32.0,136.0,72.0,7.2,2260,Sandy,11-20 perches,Drip irrigation,March,Medium,Katuwelbatu,Katuwelbatu
+35.0,160.0,80.0,7.5,2400,Loamy,1-5 perches,Hose,April,Medium,Katuwelbatu,Katuwelbatu
+23.6,80.0,49.0,5.9,5520,Loamy,21-50 perches,Rain only,May,Long,Beli,Beli
+29.0,125.0,62.5,6.5,6150,Sandy,51-100 perches,Hand watering,June,Long,Beli,Beli
+34.4,170.0,76.0,7.1,6780,Loamy,101-500 perches,Drip irrigation,July,Long,Beli,Beli
+38.0,200.0,85.0,7.5,7200,Sandy,1/4 acre,Hose,August,Long,Beli,Beli
+23.0,76.0,49.0,6.3,2300,Loamy,1-5 perches,Rain only,January,Medium,Karapincha,Karapincha
+27.5,115.0,62.5,6.75,2562,Sandy,6-10 perches,Hand watering,February,Long,Karapincha,Karapincha
+32.0,154.0,76.0,7.2,2825,Loamy,11-20 perches,Drip irrigation,March,Medium,Karapincha,Karapincha
+35.0,180.0,85.0,7.5,3000,Sandy,1-5 perches,Hose,April,Long,Karapincha,Karapincha
+22.4,140.0,67.0,5.8,6440,Sandy,11-20 perches,Rain only,May,Long,Kothalahimbutu,Kothalahimbutu
+26.0,200.0,77.5,6.25,7175,Loamy,21-50 perches,Hand watering,June,Long,Kothalahimbutu,Kothalahimbutu
+29.6,260.0,88.0,6.7,7910,Sandy,51-100 perches,Drip irrigation,July,Long,Kothalahimbutu,Kothalahimbutu
+32.0,300.0,95.0,7.0,8400,Loamy,11-20 perches,Hose,August,Long,Kothalahimbutu,Kothalahimbutu
+22.4,140.0,72.0,5.8,3680,Loamy,6-10 perches,Rain only,May,Medium,Heenbovitiya,Heenbovitiya
+26.0,200.0,82.5,6.25,4100,Silty,11-20 perches,Hand watering,June,Long,Heenbovitiya,Heenbovitiya
+29.6,260.0,93.0,6.7,4520,Loamy,21-50 perches,Drip irrigation,July,Medium,Heenbovitiya,Heenbovitiya
+32.0,300.0,100.0,7.0,4800,Silty,6-10 perches,Hose,August,Long,Heenbovitiya,Heenbovitiya
+17.6,36.0,47.0,6.3,1104,Loamy,Under 1 perch,Rain only,January,Short,Kothamalli,Kothamalli
+21.5,60.0,57.5,6.75,1230,Sandy,1-5 perches,Hand watering,February,Short,Kothamalli,Kothamalli
+25.4,84.0,68.0,7.2,1356,Loamy,6-10 perches,Drip irrigation,March,Short,Kothamalli,Kothamalli
+28.0,100.0,75.0,7.5,1440,Sandy,Under 1 perch,Hose,April,Short,Kothamalli,Kothamalli
+24.6,140.0,67.0,5.7,6440,Loamy,21-50 perches,Rain only,May,Long,Soursop,Soursop
+28.5,200.0,77.5,6.0,7175,Sandy,51-100 perches,Hand watering,June,Long,Soursop,Soursop
+32.4,260.0,88.0,6.3,7910,Loamy,101-500 perches,Drip irrigation,July,Long,Soursop,Soursop
+35.0,300.0,95.0,6.5,8400,Sandy,1/4 acre,Hose,August,Long,Soursop,Soursop
+25.2,46.0,39.0,6.4,2300,Sandy,6-10 perches,Rain only,January,Medium,Moringa,Moringa
+30.0,85.0,52.5,7.0,2562,Loamy,11-20 perches,Hand watering,February,Long,Moringa,Moringa
+34.8,124.0,66.0,7.6,2825,Sandy,21-50 perches,Drip irrigation,March,Medium,Moringa,Moringa
+38.0,150.0,75.0,8.0,3000,Loamy,6-10 perches,Hose,April,Long,Moringa,Moringa
+23.0,68.0,49.0,6.3,1380,Loamy,Under 1 perch,Rain only,January,Short,Bael Basil,Bael Basil
+27.5,110.0,62.5,6.75,1537,Sandy,1-5 perches,Hand watering,February,Medium,Bael Basil,Bael Basil
+32.0,152.0,76.0,7.2,1695,Loamy,6-10 perches,Drip irrigation,March,Short,Bael Basil,Bael Basil
+35.0,180.0,85.0,7.5,1800,Sandy,Under 1 perch,Hose,April,Medium,Bael Basil,Bael Basil
+23.0,80.0,53.0,6.3,1380,Loamy,Under 1 perch,Rain only,January,Short,Butterfly Pea,Butterfly Pea
+27.5,125.0,65.0,6.75,1537,Sandy,1-5 perches,Hand watering,February,Medium,Butterfly Pea,Butterfly Pea
+32.0,170.0,77.0,7.2,1695,Loamy,6-10 perches,Drip irrigation,March,Short,Butterfly Pea,Butterfly Pea
+35.0,200.0,85.0,7.5,1800,Sandy,Under 1 perch,Hose,April,Medium,Butterfly Pea,Butterfly Pea
+23.0,54.0,43.0,6.4,9200,Sandy,21-50 perches,Rain only,May,Long,Sandalwood,Sandalwood
+27.5,90.0,55.0,7.0,10250,Loamy,51-100 perches,Hand watering,June,Long,Sandalwood,Sandalwood
+32.0,126.0,67.0,7.6,11300,Sandy,101-500 perches,Drip irrigation,July,Long,Sandalwood,Sandalwood
+35.0,150.0,75.0,8.0,12000,Loamy,1/4 acre,Hose,August,Long,Sandalwood,Sandalwood
+23.0,150.0,72.0,5.8,1656,Silty,Under 1 perch,Rain only,June,Short,Brahmi,Brahmi
+27.5,225.0,82.5,6.25,1845,Loamy,1-5 perches,Hand watering,July,Medium,Brahmi,Brahmi
+32.0,300.0,93.0,6.7,2034,Silty,6-10 perches,Drip irrigation,August,Short,Brahmi,Brahmi
+35.0,350.0,100.0,7.0,2160,Loamy,Under 1 perch,Sprinkler,September,Medium,Brahmi,Brahmi
+23.0,114.0,63.0,6.3,2300,Loamy,1-5 perches,Rain only,May,Medium,Vasaka,Vasaka
+27.5,165.0,75.0,6.75,2562,Silty,6-10 perches,Hand watering,June,Long,Vasaka,Vasaka
+32.0,216.0,87.0,7.2,2825,Loamy,11-20 perches,Drip irrigation,July,Medium,Vasaka,Vasaka
+35.0,250.0,95.0,7.5,3000,Silty,1-5 perches,Hose,August,Long,Vasaka,Vasaka
+24.6,80.0,53.0,6.3,1104,Loamy,Under 1 perch,Rain only,January,Short,Kuppameniya,Kuppameniya
+28.5,125.0,65.0,6.75,1230,Sandy,1-5 perches,Hand watering,February,Medium,Kuppameniya,Kuppameniya
+32.4,170.0,77.0,7.2,1356,Loamy,6-10 perches,Drip irrigation,March,Short,Kuppameniya,Kuppameniya
+35.0,200.0,85.0,7.5,1440,Sandy,Under 1 perch,Hose,April,Medium,Kuppameniya,Kuppameniya
+24.6,88.0,58.0,6.3,1840,Loamy,1-5 perches,Rain only,January,Short,Kekiri,Kekiri
+28.5,130.0,70.0,6.75,2050,Sandy,6-10 perches,Hand watering,February,Short,Kekiri,Kekiri
+32.4,172.0,82.0,7.2,2260,Loamy,11-20 perches,Drip irrigation,March,Short,Kekiri,Kekiri
+35.0,200.0,90.0,7.5,2400,Sandy,1-5 perches,Hose,April,Short,Kekiri,Kekiri
+17.6,36.0,46.0,6.3,1380,Loamy,Under 1 perch,Rain only,January,Short,Black Cumin,Black Cumin
+21.5,60.0,55.0,6.75,1537,Sandy,1-5 perches,Hand watering,February,Medium,Black Cumin,Black Cumin
+25.4,84.0,64.0,7.2,1695,Loamy,6-10 perches,Drip irrigation,March,Short,Black Cumin,Black Cumin
+28.0,100.0,70.0,7.5,1800,Sandy,Under 1 perch,Hose,April,Medium,Black Cumin,Black Cumin
+18.0,40.0,47.0,6.3,1104,Loamy,Under 1 perch,Rain only,January,Short,Fenugreek,Fenugreek
+22.5,70.0,57.5,6.75,1230,Sandy,1-5 perches,Hand watering,February,Short,Fenugreek,Fenugreek
+27.0,100.0,68.0,7.2,1356,Loamy,6-10 perches,Drip irrigation,March,Short,Fenugreek,Fenugreek
+30.0,120.0,75.0,7.5,1440,Sandy,Under 1 perch,Hose,April,Short,Fenugreek,Fenugreek
+24.0,190.0,72.0,5.7,7360,Loamy,6-10 perches,Rain only,May,Long,Pepper,Pepper
+27.0,250.0,82.5,6.0,8200,Silty,11-20 perches,Hand watering,June,Long,Pepper,Pepper
+30.0,310.0,93.0,6.3,9040,Loamy,21-50 perches,Drip irrigation,July,Long,Pepper,Pepper
+32.0,350.0,100.0,6.5,9600,Silty,6-10 perches,Hose,August,Long,Pepper,Pepper
+20.4,190.0,76.0,5.7,9200,Loamy,11-20 perches,Rain only,May,Long,Cardamom,Cardamom
+24.0,250.0,85.0,6.0,10250,Silty,21-50 perches,Hand watering,June,Long,Cardamom,Cardamom
+27.6,310.0,94.0,6.3,11300,Loamy,51-100 perches,Drip irrigation,July,Long,Cardamom,Cardamom
+30.0,350.0,100.0,6.5,12000,Silty,11-20 perches,Hose,August,Long,Cardamom,Cardamom
+22.4,140.0,67.0,5.7,5520,Loamy,1-5 perches,Rain only,March,Medium,Galangal,Galangal
+26.0,200.0,77.5,6.0,6150,Silty,6-10 perches,Hand watering,April,Medium,Galangal,Galangal
+29.6,260.0,88.0,6.3,6780,Loamy,11-20 perches,Drip irrigation,May,Medium,Galangal,Galangal
+32.0,300.0,95.0,6.5,7200,Silty,1-5 perches,Sprinkler,June,Medium,Galangal,Galangal
+15.2,40.0,47.0,6.3,2760,Loamy,Under 1 perch,Rain only,January,Medium,Garlic,Garlic
+20.0,70.0,57.5,6.75,3075,Sandy,1-5 perches,Hand watering,February,Medium,Garlic,Garlic
+24.8,100.0,68.0,7.2,3390,Loamy,6-10 perches,Drip irrigation,March,Medium,Garlic,Garlic
+28.0,120.0,75.0,7.5,3600,Sandy,Under 1 perch,Hose,April,Medium,Garlic,Garlic
+18.0,40.0,47.0,6.3,2760,Loamy,Under 1 perch,Rain only,January,Medium,Onion,Onion
+22.5,70.0,57.5,6.75,3075,Sandy,1-5 perches,Hand watering,February,Medium,Onion,Onion
+27.0,100.0,68.0,7.2,3390,Loamy,6-10 perches,Drip irrigation,March,Medium,Onion,Onion
+30.0,120.0,75.0,7.5,3600,Sandy,Under 1 perch,Hose,April,Medium,Onion,Onion
+24.6,80.0,53.0,5.9,1840,Loamy,1-5 perches,Rain only,January,Medium,Roselle,Roselle
+28.5,125.0,65.0,6.5,2050,Sandy,6-10 perches,Hand watering,February,Medium,Roselle,Roselle
+32.4,170.0,77.0,7.1,2260,Loamy,11-20 perches,Drip irrigation,March,Medium,Roselle,Roselle
+35.0,200.0,85.0,7.5,2400,Sandy,1-5 perches,Hose,April,Medium,Roselle,Roselle
+23.0,80.0,53.0,6.3,1380,Loamy,Under 1 perch,Rain only,May,Short,King of Bitters,King of Bitters
+27.5,125.0,65.0,6.75,1537,Sandy,1-5 perches,Hand watering,June,Medium,King of Bitters,King of Bitters
+32.0,170.0,77.0,7.2,1695,Loamy,6-10 perches,Drip irrigation,July,Short,King of Bitters,King of Bitters
+35.0,200.0,85.0,7.5,1800,Sandy,Under 1 perch,Hose,August,Medium,King of Bitters,King of Bitters
+23.6,124.0,59.0,5.9,5520,Loamy,21-50 perches,Rain only,May,Long,Java Plum,Java Plum
+29.0,190.0,72.5,6.5,6150,Silty,51-100 perches,Hand watering,June,Long,Java Plum,Java Plum
+34.4,256.0,86.0,7.1,6780,Loamy,101-500 perches,Drip irrigation,July,Long,Java Plum,Java Plum
+38.0,300.0,95.0,7.5,7200,Silty,1/4 acre,Hose,August,Long,Java Plum,Java Plum
+23.6,60.0,44.0,6.4,5520,Loamy,21-50 perches,Rain only,May,Long,Indian Gooseberry,Indian Gooseberry
+29.0,105.0,57.5,7.0,6150,Sandy,51-100 perches,Hand watering,June,Long,Indian Gooseberry,Indian Gooseberry
+34.4,150.0,71.0,7.6,6780,Loamy,101-500 perches,Drip irrigation,July,Long,Indian Gooseberry,Indian Gooseberry
+38.0,180.0,80.0,8.0,7200,Sandy,1/4 acre,Hose,August,Long,Indian Gooseberry,Indian Gooseberry
