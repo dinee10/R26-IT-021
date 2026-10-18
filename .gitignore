@@ -32,6 +32,12 @@ replay_pid*.log
 .swiftpm/
 migrate_working_dir/
 
+# Local temporary build and tooling caches
+/.gradle-demo/
+/.tmp-build/
+/.tmp-pip/
+/backend/tools/cloudflared.exe
+
 # IntelliJ related
 *.iml
 *.ipr
