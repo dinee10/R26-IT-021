@@ -113,7 +113,7 @@ class ConversationSidebar extends StatelessWidget {
                       final isActive = convo.id == activeConversationId;
                       return ListTile(
                         selected: isActive,
-                        selectedTileColor: accentColor.withOpacity(0.08),
+                        selectedTileColor: accentColor.withValues(alpha: 0.08),
                         leading: Icon(Icons.chat_bubble_outline,
                             color: isActive ? accentColor : AppColors.muted, size: 20),
                         title: Text(

@@ -22,4 +22,8 @@ datasets
  
 # Fuzzy matching for plant name entity linking
 rapidfuzz
+
+# Soil-image classification
+tensorflow==2.20.0
+Pillow>=11.0,<13.0
  

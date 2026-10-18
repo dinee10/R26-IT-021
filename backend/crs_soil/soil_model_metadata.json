@@ -1,0 +1,50 @@
+{
+  "model_type": "MobileNetV2 transfer learning",
+  "input_shape": [
+    224,
+    224,
+    3
+  ],
+  "classes": [
+    "Alluvial soil",
+    "Black Soil",
+    "Clay soil",
+    "Red soil"
+  ],
+  "dataset_source": "User-provided archive; no source or license metadata was included.",
+  "training_dir": "backend/dataset/soil/train",
+  "validation_dir": "backend/dataset/soil/validation",
+  "test_dir": "backend/dataset/soil/test",
+  "epochs": 15,
+  "test_metrics": {
+    "accuracy": 0.90625,
+    "loss": 0.31500619649887085
+  },
+  "image_counts": {
+    "train": {
+      "Alluvial soil": 197,
+      "Black Soil": 86,
+      "Clay soil": 84,
+      "Red soil": 112
+    },
+    "validation": {
+      "Alluvial soil": 42,
+      "Black Soil": 18,
+      "Clay soil": 15,
+      "Red soil": 22
+    },
+    "test": {
+      "Alluvial soil": 42,
+      "Black Soil": 18,
+      "Clay soil": 15,
+      "Red soil": 21
+    }
+  },
+  "unknown_image_rejection": {
+    "method": "nearest training-image feature cosine distance",
+    "distance_threshold": 0.41,
+    "minimum_confidence": 0.35,
+    "feature_bank": "backend/crs_soil/soil_feature_bank.npz",
+    "training_note": "Synthetic non-soil illustrations are not used for training."
+  }
+}

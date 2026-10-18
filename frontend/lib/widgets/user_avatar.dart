@@ -30,7 +30,7 @@ class UserAvatar extends StatelessWidget {
                 : Image.network(
                     photoUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) {
+                    errorBuilder: (_, _, _) {
                       return _InitialsText(initials: initials, radius: radius);
                     },
                   ),
