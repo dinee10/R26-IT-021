@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import '../services/api_config.dart';
 import '../theme/app_colors.dart';
 import 'chat/general_public_chat_page.dart';
 import 'disease_incidence_page.dart';
@@ -352,13 +352,7 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  String _apiBaseUrl() {
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:5000';
-    }
-
-    return 'http://127.0.0.1:5000';
-  }
+  String _apiBaseUrl() => ApiConfig.origin;
 
   @override
   Widget build(BuildContext context) {

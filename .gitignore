@@ -14,7 +14,18 @@ replay_pid*.log
 
 # Sensitive environment files
 **/.env
-**/.env.local
+**/.env.*
+!**/.env.example
+!**/.env.*.example
+
+# Local deployment state and credentials
+**/.vercel/
+**/.firebase/
+**/.cloudflared/
+/backend/deploy/cloudflare/config.yml
+/backend/deploy/cloudflare/config.yaml
+/backend/deploy/cloudflare/*.json
+firebase-debug.log*
 
 
 
@@ -77,6 +88,12 @@ app.*.map.json
 **/android/**/GeneratedPluginRegistrant.java
 **/android/key.properties
 *.jks
+*.keystore
+*.p12
+*.pfx
+
+# Runtime verification requests may contain user-uploaded images and local DB data
+/backend/data/verifications/
 
 # iOS/XCode related
 **/ios/**/*.mode1v3

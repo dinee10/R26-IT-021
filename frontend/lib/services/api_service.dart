@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
+import 'api_config.dart';
+
 class PlantRecommendation {
   const PlantRecommendation({
     required this.name,
@@ -60,10 +62,7 @@ class RecommendationResult {
 class ApiService {
   ApiService({http.Client? client}) : _client = client ?? http.Client();
 
-  static const _baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://127.0.0.1:5000/api',
-  );
+  static String get _baseUrl => ApiConfig.apiBaseUrl;
 
   final http.Client _client;
 
