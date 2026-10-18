@@ -2,10 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import '../services/api_config.dart';
 import '../theme/app_colors.dart';
 import 'chat/general_public_chat_page.dart';
 import 'disease_incidence_page.dart';
@@ -351,13 +352,7 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  String _apiBaseUrl() {
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:5000';
-    }
-
-    return 'http://127.0.0.1:5000';
-  }
+  String _apiBaseUrl() => ApiConfig.origin;
 
   @override
   Widget build(BuildContext context) {
@@ -1914,6 +1909,7 @@ class _DiseaseInfoViewState extends State<_DiseaseInfoView> {
               _DiseaseInfoSection(
                 title: 'Reference',
                 child: _DiseaseBulletList(
+                  copyable: true,
                   items: info.reference
                       .split('|')
                       .map((reference) => reference.trim())
@@ -2022,9 +2018,10 @@ class _DiseaseParagraph extends StatelessWidget {
 }
 
 class _DiseaseBulletList extends StatelessWidget {
-  const _DiseaseBulletList({required this.items});
+  const _DiseaseBulletList({required this.items, this.copyable = false});
 
   final List<String> items;
+  final bool copyable;
 
   @override
   Widget build(BuildContext context) {
@@ -2052,13 +2049,46 @@ class _DiseaseBulletList extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(
-                      item,
-                      style: const TextStyle(
-                        color: AppColors.muted,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    child: copyable
+                        ? Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: SelectableText(
+                                  item,
+                                  style: const TextStyle(
+                                    color: AppColors.muted,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                tooltip: 'Copy reference link',
+                                visualDensity: VisualDensity.compact,
+                                onPressed: () {
+                                  Clipboard.setData(ClipboardData(text: item));
+                                  final messenger = ScaffoldMessenger.of(
+                                    context,
+                                  );
+                                  messenger
+                                    ..hideCurrentSnackBar()
+                                    ..showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Reference link copied'),
+                                      ),
+                                    );
+                                },
+                                icon: const Icon(Icons.copy_rounded),
+                              ),
+                            ],
+                          )
+                        : Text(
+                            item,
+                            style: const TextStyle(
+                              color: AppColors.muted,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                   ),
                 ],
               ),

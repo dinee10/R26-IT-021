@@ -1,0 +1,16 @@
+# Copy this file to the Cloudflare service account's .cloudflared directory.
+# Replace every value inside angle brackets before running the tunnel.
+tunnel: <TUNNEL-UUID>
+credentials-file: C:\Windows\System32\config\systemprofile\.cloudflared\<TUNNEL-UUID>.json
+
+# This network has previously blocked QUIC/UDP 7844 while allowing HTTP/2.
+protocol: http2
+loglevel: info
+logfile: C:\Cloudflared\cloudflared.log
+
+ingress:
+  - hostname: <API-SUBDOMAIN.EXAMPLE.COM>
+    service: http://127.0.0.1:5000
+    originRequest:
+      connectTimeout: 30s
+  - service: http_status:404

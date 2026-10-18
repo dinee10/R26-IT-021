@@ -1,6 +1,9 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+
+import 'api_config.dart';
 
 class PlantRecommendation {
   const PlantRecommendation({
@@ -9,7 +12,6 @@ class PlantRecommendation {
     required this.reason,
     this.whySuitable,
     this.soilRequirement,
-    this.sunlightRequirement,
     this.wateringRequirement,
     this.plantingMethod,
     this.fertilizerCare,
@@ -19,11 +21,10 @@ class PlantRecommendation {
   });
 
   final String name;
-  final int score;
+  final double score;
   final String reason;
   final String? whySuitable;
   final String? soilRequirement;
-  final String? sunlightRequirement;
   final String? wateringRequirement;
   final String? plantingMethod;
   final String? fertilizerCare;
@@ -34,11 +35,10 @@ class PlantRecommendation {
   factory PlantRecommendation.fromJson(Map<String, dynamic> json) {
     return PlantRecommendation(
       name: json['name'] as String,
-      score: (json['score'] as num).toInt(),
+      score: (json['score'] as num).toDouble(),
       reason: json['reason'] as String,
       whySuitable: json['whySuitable'] as String?,
       soilRequirement: json['soilRequirement'] as String?,
-      sunlightRequirement: json['sunlightRequirement'] as String?,
       wateringRequirement: json['wateringRequirement'] as String?,
       plantingMethod: json['plantingMethod'] as String?,
       fertilizerCare: json['fertilizerCare'] as String?,
@@ -50,7 +50,10 @@ class PlantRecommendation {
 }
 
 class RecommendationResult {
-  const RecommendationResult({required this.bestPlant, required this.recommendations});
+  const RecommendationResult({
+    required this.bestPlant,
+    required this.recommendations,
+  });
 
   final PlantRecommendation bestPlant;
   final List<PlantRecommendation> recommendations;
@@ -59,16 +62,11 @@ class RecommendationResult {
 class ApiService {
   ApiService({http.Client? client}) : _client = client ?? http.Client();
 
-  static const _baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://127.0.0.1:5000/api',
-  );
+  static String get _baseUrl => ApiConfig.apiBaseUrl;
 
   final http.Client _client;
 
-  Future<RecommendationResult> recommend(
-    Map<String, dynamic> input,
-  ) async {
+  Future<RecommendationResult> recommend(Map<String, dynamic> input) async {
     final response = await _client
         .post(
           Uri.parse('$_baseUrl/recommend'),
@@ -84,10 +82,47 @@ class ApiService {
 
     final items = body['recommendations'] as List<dynamic>;
     final recommendations = items
-        .map((item) => PlantRecommendation.fromJson(item as Map<String, dynamic>))
+        .map(
+          (item) => PlantRecommendation.fromJson(item as Map<String, dynamic>),
+        )
         .toList();
-    final bestPlant = PlantRecommendation.fromJson(body['bestPlant'] as Map<String, dynamic>);
-    return RecommendationResult(bestPlant: bestPlant, recommendations: recommendations);
+    final bestPlant = PlantRecommendation.fromJson(
+      body['bestPlant'] as Map<String, dynamic>,
+    );
+    return RecommendationResult(
+      bestPlant: bestPlant,
+      recommendations: recommendations,
+    );
+  }
+
+  Future<Map<String, dynamic>> predictSoil(XFile imageFile) async {
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$_baseUrl/predict-soil'),
+    );
+    request.files.add(
+      http.MultipartFile.fromBytes(
+        'image',
+        await imageFile.readAsBytes(),
+        filename: imageFile.name,
+      ),
+    );
+
+    final streamed = await _client
+        .send(request)
+        .timeout(const Duration(seconds: 60));
+    final responseBody = await streamed.stream.bytesToString();
+    final body = jsonDecode(responseBody) as Map<String, dynamic>;
+
+    if (streamed.statusCode != 200 || body['success'] != true) {
+      final errorMessage =
+          (body['message'] as String?) ??
+          (body['error'] as String?) ??
+          'Soil classification failed.';
+      throw ApiException(errorMessage);
+    }
+
+    return body;
   }
 }
 

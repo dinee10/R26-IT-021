@@ -26,9 +26,20 @@ CORS(
     app,
     resources={r"/api/*": {"origins": allowed_origins}},
     supports_credentials=False,
-    allow_headers=["Content-Type"],
+    allow_headers=["Content-Type", "X-Expert-Key"],
     methods=["GET", "POST", "OPTIONS"],
 )
+
+
+@app.after_request
+def add_api_security_headers(response):
+    """Apply safe defaults to dynamic API responses."""
+    if response.headers.get("Content-Type", "").startswith("application/json"):
+        response.headers.setdefault("Cache-Control", "no-store")
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    return response
+
 
 # Register blueprint
 app.register_blueprint(api, url_prefix='/api')

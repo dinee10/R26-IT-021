@@ -1,25 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import '../models/plant_prediction.dart';
 import '../models/disease_incidence_assessment.dart';
+import 'api_config.dart';
 
 class PlantApi {
   PlantApi({http.Client? client}) : _client = client ?? http.Client();
   final http.Client _client;
   static const _timeout = Duration(seconds: 60);
-  static const _configuredUrl = String.fromEnvironment('API_BASE_URL');
-
-  static String get baseUrl {
-    if (_configuredUrl.isNotEmpty) return _configuredUrl;
-    if (kIsWeb)
-      return 'http://${Uri.base.host.isEmpty ? '127.0.0.1' : Uri.base.host}:5000';
-    if (defaultTargetPlatform == TargetPlatform.android)
-      return 'http://10.0.2.2:5000';
-    return 'http://127.0.0.1:5000';
-  }
+  static String get baseUrl => ApiConfig.origin;
 
   Future<PlantPrediction> predict(List<XFile> images, String modelType) async {
     final request =
