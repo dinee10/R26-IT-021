@@ -1,8 +1,14 @@
 $ErrorActionPreference = "Stop"
 
-$cloudflared = Get-Command cloudflared -ErrorAction SilentlyContinue
-if (-not $cloudflared) {
-    throw "cloudflared is not installed. Install it, then run this script again."
+$portableCloudflared = Join-Path $PSScriptRoot "tools\cloudflared.exe"
+if (Test-Path -LiteralPath $portableCloudflared) {
+    $cloudflaredExe = $portableCloudflared
+} else {
+    $cloudflared = Get-Command cloudflared -ErrorAction SilentlyContinue
+    if (-not $cloudflared) {
+        throw "cloudflared was not found. Put cloudflared.exe in backend\tools or install it system-wide."
+    }
+    $cloudflaredExe = $cloudflared.Source
 }
 
 try {
@@ -13,4 +19,4 @@ try {
 }
 
 Write-Host "Starting a temporary public tunnel. Copy the HTTPS URL shown below."
-& $cloudflared.Source tunnel --url http://127.0.0.1:5000
+& $cloudflaredExe tunnel --url http://127.0.0.1:5000

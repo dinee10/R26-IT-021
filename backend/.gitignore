@@ -57,6 +57,9 @@ chroma_db_free/
 chroma_db/
 vectorstore/
 
+# Local Cloudflare Quick Tunnel executable
+tools/cloudflared.exe
+
 # OS
 .DS_Store
 Thumbs.db
