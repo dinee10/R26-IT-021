@@ -1,0 +1,264 @@
+{
+  "Belleric Myrobalan": {
+    "common_name": "Belleric myrobalan (Bibhitaki)", "scientific_name": "Terminalia bellirica",
+    "traditional_uses": ["The dried fruit is used in Ayurveda, including as one component of Triphala.", "Traditional systems describe digestive and respiratory uses, but this does not establish clinical effectiveness."],
+    "preparation_notes": ["Do not infer a dose or preparation from image identification.", "Use only authenticated, contaminant-tested products under qualified professional guidance."],
+    "safety_warning": "Evidence for interactions, pregnancy, and long-term medicinal use is limited. Avoid self-treatment with concentrated extracts.",
+    "medical_disclaimer": "Traditional-use information is educational and is not medical advice or proof of effectiveness."
+  },
+  "Black Pepper": {
+    "common_name": "Black pepper", "scientific_name": "Piper nigrum",
+    "traditional_uses": ["Widely used as a culinary spice.", "Traditionally included in digestive preparations and mixtures intended to improve absorption."],
+    "preparation_notes": ["Normal culinary quantities are the lowest-risk form of use.", "Do not use concentrated piperine products without checking medicine interactions."],
+    "safety_warning": "Concentrated piperine may change medicine absorption or metabolism and can irritate the digestive tract.",
+    "medical_disclaimer": "This information is educational and does not recommend medicinal dosing."
+  },
+  "Chebulic Myrobalan": {
+    "common_name": "Chebulic myrobalan (Haritaki)", "scientific_name": "Terminalia chebula",
+    "traditional_uses": ["The fruit is used in Ayurveda and is one component of Triphala.", "Traditional practice includes digestive uses, although clinical evidence varies."],
+    "preparation_notes": ["Use authenticated preparations rather than unidentified gathered fruit.", "Preparation and dose should be determined by a qualified professional."],
+    "safety_warning": "May cause gastrointestinal effects and may be unsuitable with some medicines, during pregnancy, or before surgery.",
+    "medical_disclaimer": "Traditional use is not evidence that a preparation is safe or effective for a disease."
+  },
+  "Clove": {
+    "common_name": "Clove", "scientific_name": "Syzygium aromaticum",
+    "traditional_uses": ["Used as a culinary spice and in traditional oral-care preparations.", "Clove oil has a history of short-term topical dental use."],
+    "preparation_notes": ["Prefer food-level use; essential oil should never be swallowed or applied undiluted.", "Dental pain requires professional assessment rather than repeated home treatment."],
+    "safety_warning": "Clove oil can burn tissue and can be toxic if swallowed, especially for children. It may increase bleeding risk.",
+    "medical_disclaimer": "This information does not replace dental or medical care."
+  },
+  "Flax Seed": {
+    "common_name": "Flaxseed", "scientific_name": "Linum usitatissimum",
+    "traditional_uses": ["Used as food and traditionally for bowel regularity.", "Ground seed is used as a dietary source of fibre and alpha-linolenic acid."],
+    "preparation_notes": ["Use food-grade seed with adequate fluid and follow labelled food guidance.", "Avoid consuming raw or unripe seed in large amounts."],
+    "safety_warning": "May cause bloating or diarrhoea and affect medicine absorption. Seek advice during pregnancy or with anticoagulant or diabetes medicines.",
+    "medical_disclaimer": "This app does not prescribe treatment.",
+    "sources": ["https://www.nccih.nih.gov/health/flaxseed-and-flaxseed-oil"]
+  },
+  "Garlic": {
+    "common_name": "Garlic", "scientific_name": "Allium sativum",
+    "traditional_uses": ["Widely used as food and traditionally for cardiovascular and respiratory wellness.", "Clinical research has studied supplements, but effects depend on the preparation."],
+    "preparation_notes": ["Food-level culinary use is preferable to homemade concentrated remedies.", "Discuss supplements with a clinician and disclose them before surgery."],
+    "safety_warning": "Supplements can increase bleeding risk and interact with medicines. Raw topical garlic can cause serious skin burns.",
+    "medical_disclaimer": "This information is not treatment advice.",
+    "sources": ["https://www.nccih.nih.gov/health/garlic"]
+  },
+  "Gooseberry": {
+    "common_name": "Indian gooseberry (Amla)", "scientific_name": "Phyllanthus emblica",
+    "traditional_uses": ["The fruit is used as food and in Ayurvedic preparations.", "Traditional use includes digestive and general-wellness preparations."],
+    "preparation_notes": ["Use correctly identified, food-grade ripe fruit or regulated products.", "Do not extrapolate food use to concentrated medicinal doses."],
+    "safety_warning": "Concentrated products may affect blood glucose, bleeding, or medicines; pregnancy safety data are limited.",
+    "medical_disclaimer": "This is educational traditional-use information, not a recommendation to treat disease."
+  },
+  "Psoralea Fruit": {
+    "common_name": "Babchi fruit", "scientific_name": "Cullen corylifolium (syn. Psoralea corylifolia)",
+    "traditional_uses": ["Used in some traditional skin preparations.", "Its psoralens have strong biological and light-sensitizing effects."],
+    "preparation_notes": ["Do not prepare or apply this fruit at home.", "Psoralen-related treatment requires professional diagnosis, controlled dosing, and protection."],
+    "safety_warning": "High risk: can cause severe photosensitivity, burns, eye injury, liver injury, and medicine interactions.",
+    "medical_disclaimer": "Identification is not authorization for use; seek specialist guidance."
+  },
+  "Star Anise": {
+    "common_name": "Chinese star anise", "scientific_name": "Illicium verum",
+    "traditional_uses": ["Used as a culinary spice and in traditional digestive preparations.", "It must be distinguished from toxic Japanese star anise and related species."],
+    "preparation_notes": ["Use only packaged food-grade spice from a traceable supplier.", "Do not make medicinal tea for infants or use wild-collected fruits."],
+    "safety_warning": "Toxic look-alike contamination can cause seizures. Image identification alone is insufficient for consumption.",
+    "medical_disclaimer": "This app cannot certify that a specimen is safe to eat."
+  },
+  "Turmeric": {
+    "common_name": "Turmeric", "scientific_name": "Curcuma longa",
+    "traditional_uses": ["Used as food, colouring, and in traditional digestive and skin preparations.", "Curcumin research does not establish it as a replacement for medical treatment."],
+    "preparation_notes": ["Culinary use is different from high-dose extracts.", "Use regulated products and consult a clinician before supplement use."],
+    "safety_warning": "Concentrates may cause digestive effects, interact with medicines, worsen gallbladder problems, or contribute to liver injury.",
+    "medical_disclaimer": "This app does not recommend a dose or treatment.",
+    "sources": ["https://www.nccih.nih.gov/health/turmeric"]
+  },
+  "Adathoda": {
+    "common_name": "Adhatoda (Vasaka)", "scientific_name": "Justicia adhatoda",
+    "traditional_uses": ["Leaves are traditionally used in South Asian respiratory preparations.", "Traditional use does not establish effectiveness for acute breathing problems."],
+    "preparation_notes": ["Do not calculate a preparation or dose from image identification.", "Breathing difficulty requires urgent clinical assessment."],
+    "safety_warning": "Avoid medicinal use during pregnancy and without professional review because active alkaloids and interactions are possible.",
+    "medical_disclaimer": "This information is historical and educational, not respiratory treatment advice."
+  },
+  "Crown Flower": {
+    "common_name": "Crown flower", "scientific_name": "Calotropis gigantea",
+    "traditional_uses": ["Referenced in traditional external preparations in parts of South Asia.", "The plant also has cultural and ornamental uses."],
+    "preparation_notes": ["Do not prepare this plant for home medicinal use.", "Avoid the milky latex; wash exposed skin and eyes promptly with water."],
+    "safety_warning": "Poisonous: latex can injure skin and eyes, and ingestion can affect the heart and cause severe poisoning.",
+    "medical_disclaimer": "Seek urgent poison or medical advice after exposure; identification is not a use recommendation."
+  },
+  "Datura": {
+    "common_name": "Datura", "scientific_name": "Datura species",
+    "traditional_uses": ["Historically referenced in highly controlled traditional preparations.", "Historical use does not make household use safe."],
+    "preparation_notes": ["Do not ingest, brew, smoke, or apply any part of Datura.", "Keep seeds and plants inaccessible to children and animals."],
+    "safety_warning": "Highly poisonous: can cause delirium, dangerous heart rate, overheating, seizures, coma, and death.",
+    "medical_disclaimer": "No home preparation is provided. Suspected exposure is an emergency."
+  },
+  "Hibiscus": {
+    "common_name": "Hibiscus", "scientific_name": "Hibiscus species (exact species unverified)",
+    "traditional_uses": ["Some Hibiscus species are used in beverages, foods, hair care, and traditional preparations.", "Uses cannot be transferred safely between species by appearance."],
+    "preparation_notes": ["Verify the exact species before food or herbal use.", "Use food-grade material rather than pesticide-treated ornamental flowers."],
+    "safety_warning": "May affect blood pressure or glucose and interact with medicines. Pregnancy use needs clinical advice.",
+    "medical_disclaimer": "The dataset label is not species-specific and does not certify edibility."
+  },
+  "Honey Suckle": {
+    "common_name": "Honeysuckle", "scientific_name": "Lonicera species (exact species unverified)",
+    "traditional_uses": ["Certain Lonicera flower buds are used in East Asian traditional preparations.", "Different species have different safety profiles."],
+    "preparation_notes": ["Do not prepare from a common-name image identification.", "Require botanical verification and a regulated source."],
+    "safety_warning": "Some berries and plant parts can be toxic; safety cannot be generalized across species.",
+    "medical_disclaimer": "Exact species verification is required before any use."
+  },
+  "Rose": {
+    "common_name": "Rose", "scientific_name": "Rosa species (exact species unverified)",
+    "traditional_uses": ["Food-grade petals and rose water are used in foods, fragrances, and traditional skin preparations.", "Ornamental roses are not automatically food-grade."],
+    "preparation_notes": ["Use only pesticide-free, food-grade material.", "Do not ingest essential oil or apply concentrates to damaged skin."],
+    "safety_warning": "Possible allergy or irritation; ornamental flowers may contain pesticide residues.",
+    "medical_disclaimer": "This common-name identification does not certify edibility."
+  },
+  "Yellow Daisy": {
+    "common_name": "Yellow daisy", "scientific_name": "Species not verified",
+    "traditional_uses": ["No medicinal use is provided because this name refers to many unrelated species.", "Visual similarity is insufficient for safe botanical identification."],
+    "preparation_notes": ["Do not ingest or prepare this flower from the dataset label.", "Obtain a botanical species identification first."],
+    "safety_warning": "Unknown species may cause allergy, dermatitis, toxicity, or interactions.",
+    "medical_disclaimer": "Verify and relabel the scientific species before adding medicinal information."
+  },
+  "shankupushpam": {
+    "common_name": "Butterfly pea (Shankhpushpi)", "scientific_name": "Clitoria ternatea",
+    "traditional_uses": ["Flowers are used as food colouring and a beverage ingredient in parts of Asia.", "The plant is referenced in traditional cognitive and general-wellness preparations."],
+    "preparation_notes": ["Use correctly identified, pesticide-free, food-grade flowers.", "Traditional medicinal dosing requires qualified guidance."],
+    "safety_warning": "May cause digestive effects or allergy; pregnancy and medicine-interaction evidence is limited.",
+    "medical_disclaimer": "Food tradition and preliminary research do not prove treatment effectiveness."
+  },
+  "Allium cepa (Onion)": {
+    "common_name": "Onion", "scientific_name": "Allium cepa",
+    "traditional_uses": ["Widely consumed as food and used in traditional respiratory and skin preparations."],
+    "preparation_notes": ["Prefer normal culinary use; do not apply raw onion to damaged skin."],
+    "safety_warning": "Can irritate skin and digestion, cause allergy, and may affect bleeding or blood glucose in concentrated forms.",
+    "medical_disclaimer": "Food use does not establish a medicinal treatment."
+  },
+  "Artocarpus heterophyllus (Jackfruit)": {
+    "common_name": "Jackfruit", "scientific_name": "Artocarpus heterophyllus",
+    "traditional_uses": ["Ripe fruit and cooked unripe fruit are foods; several plant parts appear in regional traditional practice."],
+    "preparation_notes": ["Use edible fruit as food and do not prepare leaves, latex, bark, or extracts without expert verification."],
+    "safety_warning": "Possible latex or birch-pollen cross-allergy; concentrated preparations may affect blood glucose.",
+    "medical_disclaimer": "This record does not recommend non-food plant parts."
+  },
+  "Bacopa monnieri (Bhrami)": {
+    "common_name": "Brahmi", "scientific_name": "Bacopa monnieri",
+    "traditional_uses": ["Traditionally used in Ayurveda for memory and cognitive wellness."],
+    "preparation_notes": ["Use authenticated products because several different plants share the name Brahmi; dosing needs professional review."],
+    "safety_warning": "May cause digestive effects and interact with thyroid, sedative, or other medicines; pregnancy safety is uncertain.",
+    "medical_disclaimer": "Traditional cognitive use is not proof of treatment effectiveness."
+  },
+  "Bambusa vulgaris (Bamboo)": {
+    "common_name": "Common bamboo", "scientific_name": "Bambusa vulgaris",
+    "traditional_uses": ["Bamboo shoots and other parts have food, material, and regional traditional uses."],
+    "preparation_notes": ["Do not eat raw shoots; edible shoots require species verification and proper processing to reduce cyanogenic compounds."],
+    "safety_warning": "Raw or incorrectly processed shoots may release cyanide. Leaves and ornamental material are not certified food ingredients.",
+    "medical_disclaimer": "Image identification cannot establish safe edibility or processing."
+  },
+  "Basella alba (Malabar Spinach)": {
+    "common_name": "Malabar spinach", "scientific_name": "Basella alba",
+    "traditional_uses": ["Commonly cooked as a leafy vegetable and used in food-based traditional preparations."],
+    "preparation_notes": ["Wash and cook food-grade leaves; avoid material collected from polluted or pesticide-treated sites."],
+    "safety_warning": "Frequent medicinal use may be unsuitable for people on restricted oxalate diets or with kidney-stone risk.",
+    "medical_disclaimer": "This is food and identification information, not dietary treatment advice."
+  },
+  "Brassica Juncea (Indian Mustard)": {
+    "common_name": "Indian mustard", "scientific_name": "Brassica juncea",
+    "traditional_uses": ["Leaves and seeds are used as foods; mustard oil and poultices appear in traditional practice."],
+    "preparation_notes": ["Use regulated food products; do not apply strong homemade mustard poultices because they can burn skin."],
+    "safety_warning": "Can cause allergy and skin burns; concentrated or unregulated oil is not appropriate for infants or medicinal ingestion.",
+    "medical_disclaimer": "Culinary use does not validate topical or medicinal remedies."
+  },
+  "Brassica oleracea (Kohlrabi)": {
+    "common_name": "Kohlrabi", "scientific_name": "Brassica oleracea Gongylodes Group",
+    "traditional_uses": ["Consumed as a vegetable; leaves and swollen stems are used in food preparations."],
+    "preparation_notes": ["Wash and prepare as food rather than as a concentrated remedy."],
+    "safety_warning": "Large dietary changes may matter for thyroid disease or anticoagulant therapy; obtain individualized advice.",
+    "medical_disclaimer": "Nutritional information is not medical treatment guidance."
+  },
+  "Calotropis gigantea (Crown flower_Ekka)": {
+    "common_name": "Crown flower", "scientific_name": "Calotropis gigantea",
+    "traditional_uses": ["Historically referenced in controlled external preparations and cultural practices."],
+    "preparation_notes": ["Do not prepare at home and avoid contact with milky latex."],
+    "safety_warning": "Poisonous: latex damages eyes and skin; ingestion can cause dangerous cardiac poisoning.",
+    "medical_disclaimer": "Suspected exposure requires urgent medical or poison advice."
+  },
+  "Capsicum annuum (Chilly)": {
+    "common_name": "Chilli pepper", "scientific_name": "Capsicum annuum",
+    "traditional_uses": ["Used as food; capsaicin preparations have traditional and regulated topical pain uses."],
+    "preparation_notes": ["Use culinary amounts or regulated topical products; wash hands and avoid eyes, broken skin, and inhalation."],
+    "safety_warning": "Can cause severe burning, breathing irritation, or gastrointestinal symptoms. Keep concentrated products from children.",
+    "medical_disclaimer": "Do not make concentrated topical remedies from identified leaves or fruit."
+  },
+  "Cardiospermum halicacabum (Balloon Vine)": {
+    "common_name": "Balloon vine", "scientific_name": "Cardiospermum halicacabum",
+    "traditional_uses": ["Used in some South Asian traditional external and joint-comfort preparations."],
+    "preparation_notes": ["Require botanical confirmation and qualified guidance; do not apply homemade preparations to inflamed or broken skin."],
+    "safety_warning": "Reliable dosing, interaction, pregnancy, and long-term safety information is limited.",
+    "medical_disclaimer": "Traditional use is not evidence of safety or clinical effectiveness."
+  },
+  "Carica papaya (Papaya)": {
+    "common_name": "Papaya", "scientific_name": "Carica papaya",
+    "traditional_uses": ["Ripe fruit is eaten as food; latex, leaves, and unripe fruit have varied traditional uses."],
+    "preparation_notes": ["Prefer ripe fruit as food; do not make leaf juice or latex remedies without clinical supervision."],
+    "safety_warning": "Latex can cause allergy and tissue irritation; unripe fruit and medicinal preparations may be unsafe in pregnancy and can interact with medicines.",
+    "medical_disclaimer": "The app does not recommend papaya leaf preparations for treating illness."
+  },
+  "Carissa Carandas (Karanda)": {
+    "common_name": "Karanda", "scientific_name": "Carissa carandas",
+    "traditional_uses": ["Ripe fruit is used in foods, preserves, and regional traditional preparations."],
+    "preparation_notes": ["Use correctly identified ripe, food-grade fruit; avoid milky latex and non-food plant parts."],
+    "safety_warning": "Unripe material and latex may irritate; evidence for concentrated medicinal products and interactions is limited.",
+    "medical_disclaimer": "Food tradition does not establish medicinal dosing."
+  },
+  "Catharanthus roseus (Catharanthus)": {
+    "common_name": "Madagascar periwinkle", "scientific_name": "Catharanthus roseus",
+    "traditional_uses": ["Historically used in folk medicine and is the source plant for important prescription anticancer compounds."],
+    "preparation_notes": ["Do not ingest or prepare any part as a home remedy; pharmaceutical compounds require controlled manufacturing and oncology supervision."],
+    "safety_warning": "Potentially poisonous and can affect blood cells, nerves, pregnancy, and many medicines. Keep away from children and animals.",
+    "medical_disclaimer": "A medicinal source plant is not a safe homemade cancer treatment."
+  },
+  "Chamaecostus cuspidatus (Insulin)": {
+    "common_name": "Insulin plant", "scientific_name": "Chamaecostus cuspidatus",
+    "traditional_uses": ["Leaves are promoted in some traditional practices for blood-glucose support."],
+    "preparation_notes": ["Do not replace diabetes medicine or monitoring with leaf preparations; discuss use with a diabetes clinician."],
+    "safety_warning": "May contribute to low blood glucose or interact with diabetes treatment; product quality and dosing are not standardized.",
+    "medical_disclaimer": "This plant is not insulin and does not replace evidence-based diabetes care."
+  },
+  "Cinnamomum camphora (Camphor)": {
+    "common_name": "Camphor tree", "scientific_name": "Cinnamomum camphora",
+    "traditional_uses": ["Camphor has historical aromatic and external uses in regulated products."],
+    "preparation_notes": ["Do not distil, ingest, or make concentrated preparations from leaves; use only regulated products exactly as labelled."],
+    "safety_warning": "Camphor is poisonous if swallowed and can cause seizures; concentrated vapour or skin exposure is especially unsafe for children.",
+    "medical_disclaimer": "Suspected ingestion requires urgent poison-control or emergency advice."
+  },
+  "Citrus limon (Lemon)": {
+    "common_name": "Lemon", "scientific_name": "Citrus limon",
+    "traditional_uses": ["Fruit and juice are foods and are used in traditional beverages and household preparations."],
+    "preparation_notes": ["Use food-grade fruit; dilute acidic juice and do not apply essential oil or juice to damaged skin."],
+    "safety_warning": "Acid can damage teeth or irritate skin, and peel oil may increase sunlight sensitivity or allergy.",
+    "medical_disclaimer": "Lemon preparations do not replace treatment for infection or other disease."
+  },
+  "Citrus medica (herelikai)": {
+    "common_name": "Citron", "scientific_name": "Citrus medica",
+    "traditional_uses": ["Fruit and peel are used in foods, preserves, fragrance, and regional digestive preparations."],
+    "preparation_notes": ["Use food-grade fruit and avoid concentrated peel oil on skin."],
+    "safety_warning": "Citrus acids and oils may irritate, affect teeth, trigger allergy, or increase sunlight sensitivity.",
+    "medical_disclaimer": "Traditional digestive use is not a disease-treatment recommendation."
+  },
+  "Coffea arabica (Coffee)": {
+    "common_name": "Arabica coffee", "scientific_name": "Coffea arabica",
+    "traditional_uses": ["Roasted seeds are consumed as a caffeinated beverage; leaves are used in some regional drinks."],
+    "preparation_notes": ["Use regulated food products and account for total daily caffeine; do not prepare unidentified raw plant parts medicinally."],
+    "safety_warning": "Caffeine can worsen anxiety, sleep, palpitations, reflux, or blood pressure and requires caution in pregnancy and with medicines.",
+    "medical_disclaimer": "This app does not recommend caffeine for treating fatigue or disease."
+  },
+  "Coleus amboinicus (Mexican mint_Doddpathre)": {
+    "common_name": "Indian borage", "scientific_name": "Coleus amboinicus (syn. Plectranthus amboinicus)",
+    "traditional_uses": ["Aromatic leaves are used as seasoning and in regional respiratory and digestive preparations."],
+    "preparation_notes": ["Use correctly identified, food-grade leaves in modest culinary quantities; medicinal preparations need qualified guidance."],
+    "safety_warning": "Concentrated extracts and essential oils may irritate or interact with medicines; pregnancy and child safety data are limited.",
+    "medical_disclaimer": "Traditional use does not replace assessment for breathing or digestive symptoms."
+  }
+}

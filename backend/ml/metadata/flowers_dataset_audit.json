@@ -1,0 +1,91 @@
+{
+  "dataset": "E:\\project\\R26-IT-021\\backend\\ml\\dataset\\flowers_dataset",
+  "total_classes": 8,
+  "total_images": 171,
+  "minimum_recommended_images_per_class": 50,
+  "classes": [
+    {
+      "class_name": "Adathoda",
+      "image_count": 16,
+      "needs_more_images": true,
+      "small_images": [
+        "Adathoda\\images (1).jfif"
+      ]
+    },
+    {
+      "class_name": "Crown Flower",
+      "image_count": 21,
+      "needs_more_images": true,
+      "small_images": []
+    },
+    {
+      "class_name": "Datura",
+      "image_count": 25,
+      "needs_more_images": true,
+      "small_images": []
+    },
+    {
+      "class_name": "Hibiscus",
+      "image_count": 20,
+      "needs_more_images": true,
+      "small_images": [
+        "Hibiscus\\images.jpg"
+      ]
+    },
+    {
+      "class_name": "Honey Suckle",
+      "image_count": 22,
+      "needs_more_images": true,
+      "small_images": []
+    },
+    {
+      "class_name": "Rose",
+      "image_count": 31,
+      "needs_more_images": true,
+      "small_images": []
+    },
+    {
+      "class_name": "shankupushpam",
+      "image_count": 18,
+      "needs_more_images": true,
+      "small_images": []
+    },
+    {
+      "class_name": "Yellow Daisy",
+      "image_count": 18,
+      "needs_more_images": true,
+      "small_images": []
+    }
+  ],
+  "duplicates": [
+    [
+      "Adathoda\\46b37011-5d95-495b-a5f5-f6ac512b1f1a.jfif",
+      "Adathoda\\adathoda101.jpg"
+    ],
+    [
+      "Datura\\ummam121 (1).jpg",
+      "Datura\\ummam121.jpg"
+    ],
+    [
+      "Datura\\ummam125 (1).jpg",
+      "Datura\\ummam125.jpg"
+    ],
+    [
+      "Datura\\ummam126 (1).jpg",
+      "Datura\\ummam126.jpg"
+    ],
+    [
+      "Honey Suckle\\IMG_E3347 (1).JPG",
+      "Honey Suckle\\IMG_E3347.JPG"
+    ],
+    [
+      "shankupushpam\\shankupushpam75 (1).jpg",
+      "shankupushpam\\shankupushpam75.jpg"
+    ],
+    [
+      "Yellow Daisy\\yd117 (1).jpg",
+      "Yellow Daisy\\yd117.jpg"
+    ]
+  ],
+  "invalid_images": []
+}

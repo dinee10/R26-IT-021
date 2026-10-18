@@ -1,0 +1,61 @@
+{
+  "input_size": {
+    "width": 224,
+    "height": 224
+  },
+  "active_model": "efficientnetv2_b0",
+  "maturity_high_confidence_threshold": 0.8,
+  "maturity_low_confidence_threshold": 0.45,
+  "minimum_manual_evidence_features": 1,
+  "manual_support_agreement_threshold": 0.67,
+  "manual_support_conflict_threshold": 0.67,
+  "manual_feature_weights": {
+    "leaf_length_cm": 1.0,
+    "leaf_width_cm": 1.0,
+    "leaf_texture": 1.0,
+    "leaf_edge": 1.0,
+    "discoloration": 1.0,
+    "surface_spots": 1.0,
+    "holes": 1.0
+  },
+  "models": {
+    "efficientnetv2_b0": {
+      "display_name": "EfficientNetV2-B0 Maturity Model",
+      "path": "ml/quality.maturity_classifier.efficientnetv2_b0.keras"
+    },
+    "mobilenetv3_large": {
+      "display_name": "MobileNetV3-Large Maturity Model",
+      "path": "ml/quality.maturity_classifier.mobilenetv3_large.keras"
+    },
+    "resnet50": {
+      "display_name": "ResNet50 Maturity Model",
+      "path": "ml/quality.maturity_classifier.resnet50.keras"
+    }
+  },
+  "heads": {
+    "betel": {
+      "enabled": true,
+      "classes": ["Young", "Mature"]
+    },
+    "centella_asiatica": {
+      "enabled": true,
+      "classes": ["Young", "Mature"]
+    },
+    "holy_basil": {
+      "enabled": false,
+      "classes": []
+    },
+    "kalanchoe_pinnata": {
+      "enabled": true,
+      "classes": ["Young", "Mature"]
+    },
+    "murraya_koenigii": {
+      "enabled": true,
+      "classes": ["Young", "Developing", "Mature"]
+    },
+    "neem": {
+      "enabled": true,
+      "classes": ["Young", "Mature"]
+    }
+  }
+}

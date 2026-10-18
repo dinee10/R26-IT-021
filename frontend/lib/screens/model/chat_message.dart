@@ -4,10 +4,13 @@ class ChatMessage {
   final bool hasCaution;
   final DateTime timestamp;
 
+  final List<String> personas;
+
   ChatMessage({
     required this.text,
     required this.isUser,
     this.hasCaution = false,
+    this.personas = const [],
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
 
@@ -16,9 +19,7 @@ class ChatMessage {
       "text": text,
       "isUser": isUser,
       "hasCaution": hasCaution,
-      // Stored as millis rather than a Firestore Timestamp because this map
-      // lives inside an array field (arrayUnion doesn't play well with
-      // FieldValue.serverTimestamp() inside array elements).
+      "personas": personas,
       "timestamp": timestamp.millisecondsSinceEpoch,
     };
   }
@@ -28,6 +29,7 @@ class ChatMessage {
       text: map["text"] ?? "",
       isUser: map["isUser"] ?? false,
       hasCaution: map["hasCaution"] ?? false,
+      personas: List<String>.from(map["personas"] ?? const []),
       timestamp: map["timestamp"] != null
           ? DateTime.fromMillisecondsSinceEpoch(map["timestamp"])
           : DateTime.now(),

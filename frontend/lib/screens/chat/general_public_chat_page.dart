@@ -4,7 +4,9 @@ import '../../theme/app_colors.dart';
 import '../widgets/persona_chat_scaffold.dart';
 
 class GeneralPublicChatPage extends StatelessWidget {
-  const GeneralPublicChatPage({super.key});
+  const GeneralPublicChatPage({super.key, this.initialMessage});
+
+  final String? initialMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -14,6 +16,7 @@ class GeneralPublicChatPage extends StatelessWidget {
       accentColor: AppColors.primary,
       icon: Icons.eco_outlined,
       greeting: "Ask about medicinal plants\nI'll keep it simple and easy to follow!",
+      initialMessage: initialMessage,
       infoBanner: Container(
         width: double.infinity,
         color: AppColors.primary.withValues(alpha: 0.08),

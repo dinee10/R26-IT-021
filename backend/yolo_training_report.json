@@ -1,0 +1,20 @@
+{
+  "model": "YOLO11n",
+  "classes": ["leaf", "seed", "flower"],
+  "training_images": 591,
+  "validation_images": 147,
+  "best_epoch": 2,
+  "image_size": 416,
+  "device": "cpu",
+  "precision": 0.583,
+  "recall": 0.687,
+  "map50": 0.6421,
+  "map50_95": 0.4074,
+  "class_map50": {
+    "leaf": 0.4239,
+    "seed": 0.7696,
+    "flower": 0.7327
+  },
+  "annotation_method": "Bootstrap full-frame boxes generated from classification datasets",
+  "production_note": "Replace bootstrap labels with manually drawn object boxes before production deployment."
+}

@@ -6,10 +6,12 @@ Medicinal Usage: Turmeric is commonly used to treat skin diseases, fungal infect
 Plant Part Used: The rhizome (underground stem or root) 
 Preparation: For skin diseases, turmeric and neem (Azadirachta indica) leaves are boiled together and water extract is used to wash the infected areas. For the fungal infections of the skin, ground raw turmeric and Aththora (Cassia alanta) past is applied. A mixture of ground turmeric along with undupiyaliya (Desmondium triflorum) is applied for pimples. Also, turmeric’s anti-inflammatory, antiseptic and expectorant properties give the ability to fight against cold and chest ailments speedily 
 Precautions/Limitations: May cause skin irritation in sensitive individuals; not a substitute for medical treatment of deep, infected, or non-healing wounds; high internal doses may interact with blood-thinning medication, so caution is advised for people on anticoagulants.
-Scientific Evidence Level: Traditional use with some supporting preliminary studies (anti-inflammatory/antiseptic properties).
+Scientific Evidence Level: Traditional use with preliminary-to-moderate clinical evidence for some skin conditions (psoriasis, itching, scarring); other traditional uses not clinically verified.
+Evidence by Use: Skin conditions (psoriasis, pruritus, scarring): randomized trials of turmeric/curcumin products show benefit, but trials are small and use standardized products, not the traditional boiled turmeric-neem wash. Fungal skin infection and acne: very limited trial evidence. Cold and chest ailments: traditional use only.
+Evidence References: [1] Vaughn AR, Branum A, Sivamani RK. Effects of turmeric (Curcuma longa) on skin health: a systematic review of the clinical evidence. Phytother Res. 2016;30(8):1243-1264. PMID 27213821. | [2] Patel P, Wang JY, Mineroff J, Jagdeo J. Evaluation of curcumin for dermatologic conditions: a systematic review. Arch Dermatol Res. 2023;316(1):37. PMID 38085369.
 
 
-Name (English): Aloe vera
+Name (English): Aloe vera / Komarika
 Name (Sinhala): කෝමාරිකා / Aloe vera
 Scientific Name: Aloe barbadensis miller
 Family Name: Asphodelaceae
@@ -17,7 +19,9 @@ Medicinal Usage: Applying Aloe gel on dehydrated skin is commonly practiced. Raw
 Plant Part Used: Leaves/ inner gel are used
 Preparation: The fresh gel of the leaves has cathartic and cooling ability and use for various eye diseases. To reduce swellings and promoting granulation in ulcers, the dried Aloe juice along with lime is applied as a remedy. It is mixed with milk and given for dysentery and pains in the kidney. Aloe vera gel also applied as a remedy for preventing hair loss and cure baldness, to avoid dryness in the skin as a natural moisturizer.
 Precautions/Limitations: The yellow latex near the leaf skin can cause strong laxative effects and abdominal cramping if taken internally in excess; not recommended for pregnant or breastfeeding women without medical advice; prolonged internal use should be avoided.
-Scientific Evidence Level: Preliminary clinical studies support wound-healing and anti-inflammatory effects; internal/gastritis use is mainly traditional.
+Scientific Evidence Level: Clinical evidence supports faster healing of second-degree burns (low to very low quality evidence); other uses, including gastritis, are mainly traditional.
+Evidence by Use: Second-degree burn healing: meta-analysis of randomized trials found healing about 3.8 days faster than comparator topical treatments, without higher infection risk; evidence quality rated low to very low. Other skin wounds: supportive but mixed. Gastritis, cough, constipation, asthma, hair loss: traditional use only.
+Evidence References: [1] Huang YN, Chen KC, Wang JH, Lin YK. Effects of Aloe vera on burn injuries: a systematic review and meta-analysis of randomized controlled trials. J Burn Care Res. 2024;45(6):1536. doi:10.1093/jbcr/irae061. | [2] The effect of Aloe vera clinical trials on prevention and healing of skin wound: a systematic review. Iran J Med Sci. PMC6330525.
 
 
 Name (English): Eleusine indica 
@@ -109,7 +113,9 @@ Medicinal Usage: There are two types of kohomba, Nimikha (kohomba) and Maha Nimi
 Plant Part Used:
 Preparation: The oil obtained from the seeds of the kohomba tree is yellow in color. It is bitter and acrid. It has an unpleasant odor. kohomba oil is produced in large quantities in India. It is used as a medicine, insecticide, lamp oil, etc. kohomba oil is mixed with other oils and fats to make soap. kohomba oil is applied to animals such as cattle to get rid of insects such as fleas that live on their bodies and to prevent flies from nesting in the wounds of these animals. kohomba oil is added to many oils and ointments used to treat ulcers, rashes, eczema, and skin rashes.
 Precautions/Limitations: Neem oil and seed extracts are toxic if ingested in large amounts, especially by infants and young children; not recommended during pregnancy; may cause allergic skin reactions in some individuals; intended for external/topical use rather than internal consumption.
-Scientific Evidence Level: Traditional use with laboratory-level evidence for antibacterial/antifungal properties; toxicity risk at high internal doses is documented.
+Scientific Evidence Level: Traditional use with laboratory-level evidence for antibacterial/antifungal activity; clinical efficacy for skin disease not established; toxicity risk at high doses.
+Evidence by Use: Antibacterial and antifungal activity: shown in laboratory studies (e.g. disc diffusion tests); human clinical efficacy and in vivo safety still need study. Skin diseases, ulcers, leprosy, blood disorders: traditional use.
+Evidence References: [1] Mohideen M, Zainal Abidin NSI, Idris MIH, Kamaruzaman NA. An overview of antibacterial and antifungal effects of Azadirachta indica crude extract: a narrative review. Biomed Pharmacol J. 2022;15(1):505-514. | [2] The antimicrobial potential of the neem tree Azadirachta indica. Front Pharmacol. 2022;13:891535. doi:10.3389/fphar.2022.891535. 
 
 
 Name (English): Ginger
@@ -121,7 +127,9 @@ When used medicinally, ginger root is dried according to accepted methods and th
 Plant Part Used: Ginger root, leaves,
 Preparation: For loss of appetite and lack of appetite, a little raw ginger should be taken with salt or sea salt before eating. For colds, mouth ulcers and constipation, ginger, black pepper, and tippili powder should be taken with ginger juice and gargled and the mouth should be rinsed to remove phlegm. For headaches, raw ginger is grated and applied to the nose. For dysentery, raw ginger and iriveriya are boiled and given to drink. For chronic asthma and flatulence, a decoction of dried ginger is used. For urination, a decoction of dried ginger is given. For phlegm, irritation, and constipation, drinking ginger juice mixed with honey is beneficial.
 Precautions/Limitations: High doses may cause heartburn or interact with blood-thinning medication; caution is advised for individuals with gallstones or bleeding disorders; consult a doctor before regular medicinal use during pregnancy.
-Scientific Evidence Level: Well-supported by both traditional use and clinical studies for digestive and anti-nausea effects.
+Scientific Evidence Level: Supported by clinical studies for nausea (pregnancy, post-operative); chemotherapy-induced nausea results are mixed; other traditional uses are not clinically verified.
+Evidence by Use: Nausea in pregnancy: meta-analyses show reduced nausea, with no significant effect on vomiting frequency. Post-operative nausea and vomiting: meta-analyses show lower incidence than placebo. Chemotherapy-induced nausea: mixed trial results. Indigestion, cough, asthma, gout and other listed uses: traditional use.
+Evidence References: [1] Viljoen E, Visser J, Koen N, Musekiwa A. A systematic review and meta-analysis of the effect and safety of ginger in the treatment of pregnancy-associated nausea and vomiting. Nutr J. 2014;13:20. PMID 24642205. | [2] Efficacy of ginger in preventing postoperative nausea and vomiting: a systematic review and meta-analysis. J Nurs Scholarsh. 2021;53(6):671-679. doi:10.1111/jnu.12691. | [3] Marx W, Teleni L, McCarthy AL, Vitetta L, McKavanagh D, Thomson D, Isenring E. Ginger (Zingiber officinale) and chemotherapy-induced nausea and vomiting: a systematic literature review. Nutr Rev. 2013;71(4):245-254. | [4] Paudel KR, Orent J, Penela OG. Pharmacological properties of ginger (Zingiber officinale): what do meta-analyses say? A systematic review. Front Pharmacol. 2025;16:1619655. doi:10.3389/fphar.2025.1619655.
 
 
 Name (English): Asamodagam
@@ -143,7 +151,9 @@ Medicinal Usage: Gotukola is widely used to improve memory, treat skin diseases,
 Plant Part Used: Whole plant (leaves, stems)
 Preparation: Fresh Gotukola leaves are eaten as a sambol (mixed with grated coconut, chili, lime, and salt). A decoction made by boiling the leaves in water is given to improve memory and treat skin diseases. Gotukola is also used in the preparation of herbal porridge (kola kenda) for overall health.
 Precautions/Limitations: Prolonged high-dose use may cause headache, stomach upset, or increased skin sensitivity to sunlight; large amounts should be avoided during pregnancy without medical advice.
-Scientific Evidence Level: Reasonably well-supported by clinical studies for wound-healing and cognitive/anti-anxiety effects.
+Scientific Evidence Level: Preliminary clinical evidence for wound healing (few small trials); cognitive benefit not confirmed by meta-analysis of randomized trials; anti-anxiety evidence is mainly preclinical.
+Evidence by Use: Wound healing: a systematic review found 4 clinical trials with signs of improved healing; more trials needed. Memory and cognition: a meta-analysis of randomized trials reported no significant difference from placebo on cognitive outcomes. Anxiety and stress: evidence mainly from animal studies. Skin diseases, hypertension, nervous disorders: traditional use.
+Evidence References: [1] Arribas-Lopez E, Zand Fard N, Ojo O, Snowden M, Kochhar T. A systematic review of the effect of Centella asiatica on wound healing. Int J Environ Res Public Health. 2022;19(6):3266. doi:10.3390/ijerph19063266. | [2] Puttarak P, Dilokthornsakul P, Saokaew S, et al. Effects of Centella asiatica (L.) Urb. on cognitive function and mood related outcomes: a systematic review and meta-analysis. Sci Rep. 2017;7:10646. doi:10.1038/s41598-017-09823-9. | [3] Sun B, Wu L, Wu Y, Zhang C, Qin L, Hayashi M, Kudo M, Gao M, Liu T. Therapeutic potential of Centella asiatica and its triterpenes: a review. Front Pharmacol. 2020;11:568032. doi:10.3389/fphar.2020.568032.
 
 
 Name (English): Iramusu
@@ -165,7 +175,9 @@ Medicinal Usage: Ranawara is primarily used for diabetes, urinary tract infectio
 Plant Part Used: Flowers, leaves, bark
 Preparation: A decoction of dried flowers (Ranawara tea) is taken early morning to control blood sugar and reduce body heat. The leaves are ground into a paste and applied externally for skin allergies. The bark decoction is used for diarrhea and dysentery.
 Precautions/Limitations: May lower blood sugar levels; people on diabetes medication should monitor blood sugar closely and consult a doctor before regular use to avoid hypoglycemia.
-Scientific Evidence Level: Preliminary clinical studies support anti-diabetic and antioxidant properties.
+Scientific Evidence Level: Traditional use; antidiabetic and antioxidant activity shown mainly in animal and laboratory studies; human clinical evidence is lacking.
+Evidence by Use: Diabetes: blood-sugar lowering shown in animal and laboratory studies; reviews state that comprehensive human clinical studies are still required. Urinary tract infection, skin allergies, rheumatism, conjunctivitis, sore throat: traditional use.
+Evidence References: [1] Nille GC, Mishra SK, Chaudhary AK, Reddy KRC. Ethnopharmacological, phytochemical, pharmacological, and toxicological review on Senna auriculata (L.) Roxb.: a special insight to antidiabetic property. Front Pharmacol. 2021;12:647887. doi:10.3389/fphar.2021.647887. (Senna auriculata = Cassia auriculata) | [2] Tietel Z, Ananth DA, Sivasudha T, Klipcan L. Cassia auriculata L.: a mini review of phytochemical compounds and their antidiabetic mechanisms. AIMS Agric Food. 2024;9(1):374-392. doi:10.3934/agrfood.2024022.
 
 
 Name (English): Mukunuwenna
@@ -187,18 +199,22 @@ Medicinal Usage: Hathawariya is a well-known female reproductive tonic. It is us
 Plant Part Used: Roots
 Preparation: The dried roots are ground into powder and taken with warm milk or water. A herbal jam (s chyavanaprasha) contains Hathawariya. For nursing mothers, root decoction is given twice daily to enhance breast milk.
 Precautions/Limitations: Has estrogen-like effects, so it should be used cautiously by individuals with hormone-sensitive conditions; pregnant or breastfeeding women should consult a doctor before regular use.
-Scientific Evidence Level: Preliminary clinical studies support galactagogue (milk production) and anti-ulcer effects.
+Scientific Evidence Level: Preliminary clinical evidence for milk production (few small randomized trials); other uses, including anti-ulcer, are traditional or preclinical.
+Evidence by Use: Increasing breast milk: two small randomized placebo-controlled trials in lactating mothers (main outcome: prolactin level); one reported a more than three-fold prolactin rise versus control. Evidence base is small. Menstrual disorders, infertility, anti-ulcer: traditional use.
+Evidence References: [1] Gupta M, Shaw B. A double-blind randomized clinical trial for evaluation of galactogogue activity of Asparagus racemosus Willd. Iran J Pharm Res. 2011;10(1):167-172. | [2] Sharma S, Ramji S, Kumari S, Bapna JS. Randomized controlled trial of Asparagus racemosus (Shatavari) as a lactogogue in lactational inadequacy. Indian Pediatr. 1996;33:675-677. | [3] Systematic review of the efficacy of herbal galactogogues. J Hum Lact. 2013. doi:10.1177/0890334413477243
 
 
 Name (English): Venivel / Calumba
-Name (Sinhala): වෙනිවැල් / Venivel
+Name (Sinhala): වෙනිවැල් / 
 Scientific Name: Coscinium fenestratum
 Family Name: Menispermaceae
 Medicinal Usage: Venivel is a very bitter herb used for diabetes, fever, jaundice, and skin diseases. It has strong anti-diabetic, anti-inflammatory, and anti-malarial properties. It is also used to treat peptic ulcers, dysentery, and as a general bitter tonic for appetite.
 Plant Part Used: Stem (wood)
 Preparation: A small piece of the stem is boiled in water until the water turns yellow. This decoction is taken in small doses (2–3 teaspoons) twice daily for diabetes and fever. Externally, the paste is applied to wounds and skin infections.
 Precautions/Limitations: May cause digestive discomfort in high doses due to its bitterness; people on diabetes medication should monitor blood sugar due to its blood-sugar-lowering effect; not a substitute for confirmed antimalarial treatment.
-Scientific Evidence Level: Preliminary studies support anti-diabetic and antimicrobial properties; this species is also endangered/protected, which limits sustainable sourcing.
+Scientific Evidence Level: Traditional use; antidiabetic, antimicrobial and wound-healing activity shown in animal and laboratory studies only; the plant is endangered, so use is restricted.
+Evidence by Use: Diabetes, bacterial infections, wound healing: reported in animal and in vitro studies; human trials of the whole plant were not found. Its constituent berberine has separate human data, which should not be attributed to the plant itself. Fever, jaundice, skin diseases, peptic ulcers, dysentery: traditional use.
+Evidence References: [1] Danapur V, Haleshi C, Sringeswara AN. Endangered medicinal plant Coscinium fenestratum (Gaertn.) Colebr. - a review. Pharmacogn J. 2020;12(5):1077-1085. doi:10.5530/pj.2020.12.152. | [2] Shirwaikar A, Rajendran K, Punitha ISR. Antidiabetic activity of alcoholic stem extract of Coscinium fenestratum in streptozotocin-nicotinamide induced type 2 diabetic rats. J Ethnopharmacol. 2005;97(2):369-374. | [3] Goveas SW, Abraham A. Evaluation of antimicrobial and antioxidant activity of stem and leaf extracts of Coscinium fenestratum. 
 
 
 Name (English): Sudu Kukurumaan

@@ -1,7 +1,93 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+
+# Training image datasets are local and too large for git.
+ml/dataset/
+
+
+# Chroma / Vector DB
+chroma_db_bilingual_test/
+chroma_db_bilingual_refs_test/
+chroma_db_free/
+chroma_db/
+vectorstore/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated YOLO bootstrap data and intermediate training outputs
+yolo11n.pt
+yolo_dataset/data.yaml
+yolo_dataset/images/
+yolo_dataset/labels/
+ml/exports/yolo_organ/*
+!ml/exports/yolo_organ/best.pt
+
+# Generated YOLO bootstrap data and intermediate training outputs
+yolo11n.pt
+yolo_dataset/data.yaml
+yolo_dataset/images/
+yolo_dataset/labels/
+ml/exports/yolo_organ/*
+!ml/exports/yolo_organ/best.pt
+
+
+
+# Quality assessment datasets
+quality-raw-dataset/
+quality-plant-identification-dataset/
+quality-condition-raw-dataset/
+quality-condition-dataset/
+quality-condition-training-dataset/
+quality-maturity-raw-dataset/
+quality-maturity-dataset/
+quality-maturity-training-dataset/
+
 
 # Virtual Environment
 venv/
@@ -13,53 +99,3 @@ ENV/
 .env
 .env.local
 .env.production
-
-# Python
-*.pyc
-*.pyo
-*.pyd
-.Python
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# IDE / Editor
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Logs
-*.log
-logs/
-*.log.*
-
-# Chroma / Vector DB
-chroma_db_free/
-chroma_db/
-vectorstore/
-
-# OS
-.DS_Store
-Thumbs.db
-

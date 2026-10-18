@@ -1,0 +1,134 @@
+{
+  "model_path": "ml\\quality_experiments\\model1_mobilenetv3_large_full_rerun\\quality.plant_identifier.mobilenetv3_large.keras",
+  "classes": [
+    "betel",
+    "centella_asiatica",
+    "holy_basil",
+    "kalanchoe_pinnata",
+    "murraya_koenigii",
+    "neem",
+    "unknown"
+  ],
+  "classification_report": {
+    "betel": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 204.0
+    },
+    "centella_asiatica": {
+      "precision": 0.9630872483221476,
+      "recall": 0.9896551724137931,
+      "f1-score": 0.9761904761904762,
+      "support": 290.0
+    },
+    "holy_basil": {
+      "precision": 1.0,
+      "recall": 0.9711538461538461,
+      "f1-score": 0.9853658536585366,
+      "support": 104.0
+    },
+    "kalanchoe_pinnata": {
+      "precision": 0.9844961240310077,
+      "recall": 0.9694656488549618,
+      "f1-score": 0.9769230769230769,
+      "support": 131.0
+    },
+    "murraya_koenigii": {
+      "precision": 0.9338842975206612,
+      "recall": 0.9826086956521739,
+      "f1-score": 0.9576271186440678,
+      "support": 115.0
+    },
+    "neem": {
+      "precision": 0.9874476987447699,
+      "recall": 0.9915966386554622,
+      "f1-score": 0.989517819706499,
+      "support": 238.0
+    },
+    "unknown": {
+      "precision": 0.9817813765182186,
+      "recall": 0.9623015873015873,
+      "f1-score": 0.9719438877755511,
+      "support": 504.0
+    },
+    "accuracy": 0.9791929382093316,
+    "macro avg": {
+      "precision": 0.9786709635909722,
+      "recall": 0.9809687984331177,
+      "f1-score": 0.979652604699744,
+      "support": 1586.0
+    },
+    "weighted avg": {
+      "precision": 0.9795027456133657,
+      "recall": 0.9791929382093316,
+      "f1-score": 0.9792196022230399,
+      "support": 1586.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      204,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      287,
+      0,
+      0,
+      0,
+      0,
+      3
+    ],
+    [
+      0,
+      1,
+      101,
+      0,
+      1,
+      0,
+      1
+    ],
+    [
+      0,
+      2,
+      0,
+      127,
+      0,
+      0,
+      2
+    ],
+    [
+      0,
+      0,
+      0,
+      1,
+      113,
+      0,
+      1
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      236,
+      2
+    ],
+    [
+      0,
+      8,
+      0,
+      1,
+      7,
+      3,
+      485
+    ]
+  ]
+}

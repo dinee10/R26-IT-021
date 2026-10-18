@@ -1,0 +1,100 @@
+{
+  "Aloe_barbadensis_miller": {
+    "common_name": "Aloe vera",
+    "scientific_name": "Aloe barbadensis miller",
+    "traditional_uses": [
+      "Often used topically to soothe minor skin irritation.",
+      "Used in some cosmetic and skin-care products."
+    ],
+    "preparation_notes": [
+      "Usually applied externally as fresh gel after proper plant identification.",
+      "Use clean handling and avoid applying homemade preparations to deep or infected wounds."
+    ],
+    "safety_warning": "Avoid using on deep wounds. Do not ingest without professional medical advice.",
+    "medical_disclaimer": "This information is educational and does not diagnose, treat, cure, or prevent disease."
+  },
+  "Azadirachta_indica": {
+    "common_name": "Neem",
+    "scientific_name": "Azadirachta indica",
+    "traditional_uses": [
+      "Traditionally used for skin and oral-care preparations.",
+      "Leaves are used in some traditional pest-repellent preparations."
+    ],
+    "preparation_notes": [
+      "Traditional preparations vary by region and should be verified with a qualified herbal expert.",
+      "Avoid concentrated extracts unless guided by a professional."
+    ],
+    "safety_warning": "Neem oil and concentrated extracts can be unsafe if misused, especially for children and pregnant users.",
+    "medical_disclaimer": "This information is educational and is not a substitute for medical advice."
+  },
+  "Alpinia Galanga (Rasna)": {
+    "common_name": "Rasna",
+    "scientific_name": "Alpinia galanga",
+    "traditional_uses": [
+      "Traditionally used in some herbal systems for digestive and respiratory wellness.",
+      "Rhizomes are commonly referenced in traditional preparations."
+    ],
+    "preparation_notes": [
+      "Traditional preparations often use the rhizome rather than leaves.",
+      "Use only verified plant material and professional guidance before preparation."
+    ],
+    "safety_warning": "Avoid medicinal use during pregnancy, chronic illness, or medication use without professional advice.",
+    "medical_disclaimer": "This app provides educational plant information only and is not medical advice."
+  },
+  "Amaranthus Viridis (Arive-Dantu)": {
+    "common_name": "Green amaranth",
+    "scientific_name": "Amaranthus viridis",
+    "traditional_uses": [
+      "Traditionally used as a leafy green vegetable in several regions.",
+      "Used in food-based preparations rather than concentrated herbal dosing."
+    ],
+    "preparation_notes": [
+      "Leaves are commonly cooked as greens after proper washing.",
+      "Avoid plants collected from polluted areas because leafy greens can accumulate contaminants."
+    ],
+    "safety_warning": "People with kidney stone risk or special diets should ask a clinician before frequent medicinal use.",
+    "medical_disclaimer": "This information is educational and is not a substitute for medical or dietary advice."
+  },
+  "Andrographis paniculata (Nelavembu)": {
+    "common_name": "Nelavembu",
+    "scientific_name": "Andrographis paniculata",
+    "traditional_uses": [
+      "Traditionally used in bitter herbal preparations.",
+      "Commonly referenced in traditional wellness practices for seasonal illness support."
+    ],
+    "preparation_notes": [
+      "Preparations and dose vary widely by tradition and should not be guessed from identification alone.",
+      "Use qualified guidance before preparing concentrated extracts or decoctions."
+    ],
+    "safety_warning": "May interact with medicines and may be unsuitable during pregnancy, breastfeeding, or autoimmune conditions.",
+    "medical_disclaimer": "This app does not diagnose or treat illness and is not a replacement for medical care."
+  },
+  "Annona squamosa (Seethapala)": {
+    "common_name": "Sugar apple",
+    "scientific_name": "Annona squamosa",
+    "traditional_uses": [
+      "Traditionally referenced for several plant parts in regional herbal knowledge.",
+      "The fruit is commonly consumed as food when ripe."
+    ],
+    "preparation_notes": [
+      "Different plant parts have different safety profiles; do not prepare leaves, seeds, or bark casually.",
+      "Seeds should not be eaten or crushed for home remedies."
+    ],
+    "safety_warning": "Seeds and some concentrated plant preparations can be unsafe. Keep away from children and avoid self-medication.",
+    "medical_disclaimer": "This app is for educational plant identification only and is not medical advice."
+  },
+  "Ocimum_tenuiflorum": {
+    "common_name": "Tulsi",
+    "scientific_name": "Ocimum tenuiflorum",
+    "traditional_uses": [
+      "Traditionally used in herbal teas.",
+      "Commonly used for general wellness in traditional medicine."
+    ],
+    "preparation_notes": [
+      "Common traditional use includes mild herbal tea preparations.",
+      "Avoid medicinal dosing without advice from a qualified clinician."
+    ],
+    "safety_warning": "Can interact with medicines. Ask a clinician before medicinal use.",
+    "medical_disclaimer": "This app provides educational plant information only and not medical treatment guidance."
+  }
+}

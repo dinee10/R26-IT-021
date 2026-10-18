@@ -23,7 +23,7 @@ class WelcomePage extends StatelessWidget {
                   height: 88,
                 ),
                 const SizedBox(height: 18),
-                const Text(
+                Text(
                   'AyurPlant',
                   style: TextStyle(
                     color: AppColors.text,
@@ -32,7 +32,7 @@ class WelcomePage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'SRI LANKAN MEDICINAL PLANTS',
                   style: TextStyle(
                     color: AppColors.primary,
@@ -41,7 +41,7 @@ class WelcomePage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 28),
-                const Text(
+                Text(
                   'Identify - Learn - Heal',
                   style: TextStyle(
                     color: AppColors.muted,
@@ -63,7 +63,7 @@ class WelcomePage extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
+                    Text(
                       'Already have an account? ',
                       style: TextStyle(
                         color: AppColors.muted,
@@ -76,15 +76,15 @@ class WelcomePage extends StatelessWidget {
                           builder: (_) => const LoginPage(),
                         ),
                       ),
-                      child: const Text('Log in'),
+                      child: Text('Log in'),
                     ),
                   ],
                 ),
                 const Spacer(),
-                const Text(
+                Text(
                   'THE DIGITAL HERBARIUM OF SRI LANKA',
                   style: TextStyle(
-                    color: Color(0xFFC5CDC6),
+                    color: AppColors.muted,
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                   ),
