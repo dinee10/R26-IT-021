@@ -34,6 +34,7 @@ migrate_working_dir/
 
 # Local temporary build and tooling caches
 /.gradle-demo/
+/.gradle-user-home/
 /.tmp-build/
 /.tmp-pip/
 /backend/tools/cloudflared.exe

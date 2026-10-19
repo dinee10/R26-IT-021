@@ -107,6 +107,12 @@ def _load_model(model_type="plant"):
     return _models[model_type], _labels_by_type[model_type], _benefits
 
 
+def preload_model(model_type="plant"):
+    """Load and retain one prediction model in this server process."""
+    _load_model(model_type)
+    return True
+
+
 def _image_to_arrays(uploaded_file):
     import numpy as np
     from PIL import Image, ImageOps, UnidentifiedImageError

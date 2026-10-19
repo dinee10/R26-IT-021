@@ -25,6 +25,13 @@ def _positive_int(name: str, default: int) -> int:
     return value
 
 
+def _enabled(name: str, default: bool = True) -> bool:
+    raw_value = os.getenv(name)
+    if raw_value is None:
+        return default
+    return raw_value.strip().lower() in {"1", "true", "yes", "on"}
+
+
 def main() -> None:
     # Use an explicit path so startup works from the repository root, Task
     # Scheduler, or a Windows service with a different working directory.
@@ -33,6 +40,7 @@ def main() -> None:
     from waitress import serve
 
     from app.main import app
+    from app.routes.api import preload_backend_models
 
     host = os.getenv("BACKEND_HOST", "127.0.0.1").strip()
     port = _positive_int("BACKEND_PORT", 5000)
@@ -42,6 +50,14 @@ def main() -> None:
     print("Starting AyurPlant backend with Waitress")
     print(f"Origin: http://{host}:{port}")
     print(f"Threads: {threads}")
+
+    if _enabled("PRELOAD_ML_MODELS"):
+        print("Preloading ML models (this only happens once at startup)...")
+        preload_results = preload_backend_models(
+            include_all=_enabled("PRELOAD_ALL_ML_MODELS", default=False)
+        )
+        for model_name, result in preload_results.items():
+            print(f"  {model_name}: {result}")
 
     serve(
         app,

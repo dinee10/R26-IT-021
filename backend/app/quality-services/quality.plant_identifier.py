@@ -7,6 +7,8 @@ from typing import Any
 import cv2
 import numpy as np
 
+from app.services.keras_compat import load_model_compatibly
+
 
 DEFAULT_CONFIG_PATH = Path(__file__).with_name(
     "quality.plant_identification_config.json"
@@ -232,13 +234,17 @@ def _load_model(config: dict[str, Any]) -> Any:
         return _MODEL_CACHE[cache_key]
 
     try:
-        from tensorflow import keras
+        model = load_model_compatibly(model_path)
     except ImportError:
         return MODEL_RUNTIME_MISSING
-
-    model = keras.models.load_model(model_path, compile=False)
     _MODEL_CACHE[cache_key] = model
     return model
+
+
+def preload_model() -> bool:
+    """Load and retain the active plant-identification model."""
+    model = _load_model(_load_config())
+    return model is not None and not isinstance(model, str)
 
 
 def _mock_prediction(image_bytes: bytes, config: dict[str, Any]) -> dict[str, Any]:

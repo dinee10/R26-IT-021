@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
+import 'api_config.dart';
+
 class PlantRecommendation {
   const PlantRecommendation({
     required this.name,
@@ -60,17 +62,12 @@ class RecommendationResult {
 class ApiService {
   ApiService({http.Client? client}) : _client = client ?? http.Client();
 
-  static const _baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://127.0.0.1:5000/api',
-  );
-
   final http.Client _client;
 
   Future<RecommendationResult> recommend(Map<String, dynamic> input) async {
     final response = await _client
         .post(
-          Uri.parse('$_baseUrl/recommend'),
+          ApiConfig.endpoint('recommend'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode(input),
         )
@@ -99,7 +96,7 @@ class ApiService {
   Future<Map<String, dynamic>> predictSoil(XFile imageFile) async {
     final request = http.MultipartRequest(
       'POST',
-      Uri.parse('$_baseUrl/predict-soil'),
+      ApiConfig.endpoint('predict-soil'),
     );
     request.files.add(
       http.MultipartFile.fromBytes(

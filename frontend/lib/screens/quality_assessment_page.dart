@@ -1,15 +1,56 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
-
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:http/http.dart' as http;
+import 'package:image/image.dart' as image_lib;
 import 'package:image_picker/image_picker.dart';
 import '../theme/app_colors.dart';
+import '../services/api_config.dart';
 import 'chat/general_public_chat_page.dart';
 import 'disease_incidence_page.dart';
+
+const int _qualityUploadMaxDimension = 1600;
+const int _qualityUploadJpegQuality = 82;
+
+Uint8List _prepareQualityImage(Uint8List sourceBytes) {
+  final decoded = image_lib.decodeImage(sourceBytes);
+  if (decoded == null) {
+    throw const FormatException('Unsupported image format');
+  }
+
+  var prepared = image_lib.bakeOrientation(decoded);
+  if (prepared.width > _qualityUploadMaxDimension ||
+      prepared.height > _qualityUploadMaxDimension) {
+    prepared = prepared.width >= prepared.height
+        ? image_lib.copyResize(
+            prepared,
+            width: _qualityUploadMaxDimension,
+            interpolation: image_lib.Interpolation.linear,
+          )
+        : image_lib.copyResize(
+            prepared,
+            height: _qualityUploadMaxDimension,
+            interpolation: image_lib.Interpolation.linear,
+          );
+  }
+
+  return Uint8List.fromList(
+    image_lib.encodeJpg(prepared, quality: _qualityUploadJpegQuality),
+  );
+}
+
+enum _QualityProgressStage {
+  idle,
+  preparing,
+  uploading,
+  validating,
+  identifying,
+  assessing,
+  complete,
+}
 
 class QualityAssessmentPage extends StatefulWidget {
   const QualityAssessmentPage({super.key});
@@ -22,18 +63,23 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
   static const int _maxImages = 3;
   final ImagePicker _picker = ImagePicker();
   final List<QualitySelectedImage> _selectedImages = [];
-  QualityManualInputs _manualInputs = const QualityManualInputs();
   QualityValidationResult? _validationResult;
   QualityPlantResult? _plantResult;
   QualityConditionResult? _conditionResult;
   bool _validating = false;
   bool _identifyingPlant = false;
   bool _assessingCondition = false;
+  bool _preparingImages = false;
+  bool _uploadingImages = false;
+  String? _qualityUploadId;
+  _QualityProgressStage _progressStage = _QualityProgressStage.idle;
 
   Future<void> _pickImage(ImageSource source) async {
     final image = await _picker.pickImage(
       source: source,
-      imageQuality: 95,
+      imageQuality: 90,
+      maxWidth: 2400,
+      maxHeight: 2400,
       preferredCameraDevice: CameraDevice.rear,
     );
 
@@ -52,7 +98,9 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
     }
 
     final images = await _picker.pickMultiImage(
-      imageQuality: 95,
+      imageQuality: 90,
+      maxWidth: 2400,
+      maxHeight: 2400,
       limit: remainingSlots,
     );
 
@@ -66,10 +114,42 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
   Future<void> _addImages(List<XFile> images) async {
     final selectedImages = <QualitySelectedImage>[];
 
-    for (final image in images) {
-      selectedImages.add(
-        QualitySelectedImage(file: image, bytes: await image.readAsBytes()),
-      );
+    setState(() {
+      _preparingImages = true;
+      _progressStage = _QualityProgressStage.preparing;
+    });
+
+    try {
+      for (var index = 0; index < images.length; index++) {
+        final sourceBytes = await images[index].readAsBytes();
+        final jpegBytes = await compute(_prepareQualityImage, sourceBytes);
+        selectedImages.add(
+          QualitySelectedImage(
+            file: XFile.fromData(
+              jpegBytes,
+              mimeType: 'image/jpeg',
+              name:
+                  'quality-leaf-${DateTime.now().microsecondsSinceEpoch}-$index.jpg',
+            ),
+            bytes: jpegBytes,
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _preparingImages = false;
+          _progressStage = _QualityProgressStage.idle;
+        });
+        _showMessage(
+          'This photo format could not be read. Please choose another image.',
+        );
+      }
+      return;
+    }
+
+    if (!mounted) {
+      return;
     }
 
     setState(() {
@@ -77,41 +157,83 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
       _validationResult = null;
       _plantResult = null;
       _conditionResult = null;
-      _validating = true;
+      _preparingImages = false;
+      _uploadingImages = true;
+      _validating = false;
       _identifyingPlant = false;
       _assessingCondition = false;
+      _progressStage = _QualityProgressStage.uploading;
     });
 
-    await _validateImages();
+    await _uploadImages();
   }
 
-  Future<void> _validateImages() async {
+  Future<void> _uploadImages() async {
     try {
-      final validationResults = <QualityValidationResult>[];
-
-      for (final image in _selectedImages) {
-        final data = await _postSingleImage(
-          endpoint: '/api/quality/validate-image',
-          image: image,
-          timeout: const Duration(seconds: 25),
-        );
-        validationResults.add(QualityValidationResult.fromJson(data));
+      final request =
+          http.MultipartRequest('POST', ApiConfig.endpoint('quality/uploads'))
+            ..files.addAll(
+              _selectedImages.map(
+                (image) => http.MultipartFile.fromBytes(
+                  'image',
+                  image.bytes,
+                  filename: image.file.name.isEmpty
+                      ? 'quality.leaf-image.jpg'
+                      : image.file.name,
+                ),
+              ),
+            );
+      final response = await request.send().timeout(
+        const Duration(seconds: 45),
+      );
+      final responseBody = await response.stream.bytesToString();
+      final data = jsonDecode(responseBody) as Map<String, dynamic>;
+      final uploadId = data['upload_id'] as String?;
+      if (uploadId == null || uploadId.isEmpty) {
+        throw const FormatException('Upload ID missing');
       }
 
       if (!mounted) {
         return;
       }
-
-      QualityValidationResult? failedResult;
-      for (final result in validationResults) {
-        if (!result.valid) {
-          failedResult = result;
-          break;
-        }
+      setState(() {
+        _qualityUploadId = uploadId;
+        _uploadingImages = false;
+        _validating = true;
+        _progressStage = _QualityProgressStage.validating;
+      });
+      await _validateImages();
+    } on TimeoutException {
+      await _discardUpload();
+      _showUploadError('Image upload timed out. Please try again.');
+    } on http.ClientException {
+      await _discardUpload();
+      _showUploadError('Could not reach the upload service.');
+    } catch (_) {
+      await _discardUpload();
+      _showUploadError('Could not upload this image.');
+    } finally {
+      if (mounted) {
+        setState(() => _uploadingImages = false);
       }
-      final validationResult =
-          failedResult ??
-          QualityValidationResult.combinedSuccess(validationResults);
+    }
+  }
+
+  Future<void> _validateImages() async {
+    if (mounted) {
+      setState(() => _progressStage = _QualityProgressStage.validating);
+    }
+    try {
+      final data = await _postUploadStage(
+        'validate',
+        timeout: const Duration(seconds: 25),
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      final validationResult = QualityValidationResult.fromJson(data);
 
       setState(() {
         _validationResult = validationResult;
@@ -120,12 +242,18 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
 
       if (validationResult.valid) {
         await _identifyPlant();
+      } else if (mounted) {
+        _qualityUploadId = null;
+        setState(() => _progressStage = _QualityProgressStage.idle);
       }
     } on TimeoutException {
+      await _discardUpload();
       _showValidationError('Image validation timed out. Please try again.');
     } on http.ClientException {
+      await _discardUpload();
       _showValidationError('Could not reach the validation service.');
     } catch (_) {
+      await _discardUpload();
       _showValidationError('Could not validate this image.');
     } finally {
       if (mounted) {
@@ -142,33 +270,14 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
     setState(() {
       _plantResult = null;
       _identifyingPlant = true;
+      _progressStage = _QualityProgressStage.identifying;
     });
 
     try {
-      final uri = Uri.parse(
-        '${_apiBaseUrl()}/api/quality/identify-plant-multiple',
+      final data = await _postUploadStage(
+        'identify',
+        timeout: const Duration(seconds: 45),
       );
-      final request = http.MultipartRequest('POST', uri)
-        ..files.addAll(
-          _selectedImages.map(
-            (image) => http.MultipartFile.fromBytes(
-              'image',
-              image.bytes,
-              filename: image.file.name.isEmpty
-                  ? 'quality.leaf-image.jpg'
-                  : image.file.name,
-            ),
-          ),
-        );
-      if (_manualInputs.hasValues) {
-        request.fields['manual_inputs'] = jsonEncode(_manualInputs.toJson());
-      }
-
-      final response = await request.send().timeout(
-        const Duration(seconds: 30),
-      );
-      final responseBody = await response.stream.bytesToString();
-      final data = jsonDecode(responseBody) as Map<String, dynamic>;
 
       if (!mounted) {
         return;
@@ -180,12 +289,18 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
 
       if (_plantResult?.accepted == true) {
         await _assessCondition();
+      } else if (mounted) {
+        _qualityUploadId = null;
+        setState(() => _progressStage = _QualityProgressStage.idle);
       }
     } on TimeoutException {
+      await _discardUpload();
       _showPlantError('Plant identification timed out. Please try again.');
     } on http.ClientException {
+      await _discardUpload();
       _showPlantError('Could not reach the plant identification service.');
     } catch (_) {
+      await _discardUpload();
       _showPlantError('Could not identify this plant image.');
     } finally {
       if (mounted) {
@@ -202,44 +317,35 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
     setState(() {
       _conditionResult = null;
       _assessingCondition = true;
+      _progressStage = _QualityProgressStage.assessing;
     });
 
     try {
-      final uri = Uri.parse('${_apiBaseUrl()}/api/quality/assess-condition');
-      final request = http.MultipartRequest('POST', uri)
-        ..files.addAll(
-          _selectedImages.map(
-            (image) => http.MultipartFile.fromBytes(
-              'image',
-              image.bytes,
-              filename: image.file.name.isEmpty
-                  ? 'quality.leaf-image.jpg'
-                  : image.file.name,
-            ),
-          ),
-        );
-      if (_manualInputs.hasValues) {
-        request.fields['manual_inputs'] = jsonEncode(_manualInputs.toJson());
-      }
-
-      final response = await request.send().timeout(
-        const Duration(seconds: 35),
+      final data = await _postUploadStage(
+        'assess',
+        timeout: const Duration(seconds: 60),
       );
-      final responseBody = await response.stream.bytesToString();
-      final data = jsonDecode(responseBody) as Map<String, dynamic>;
+      _qualityUploadId = null;
 
       if (!mounted) {
         return;
       }
 
+      final conditionResult = QualityConditionResult.fromJson(data);
       setState(() {
-        _conditionResult = QualityConditionResult.fromJson(data);
+        _conditionResult = conditionResult;
+        _progressStage = conditionResult.accepted
+            ? _QualityProgressStage.complete
+            : _QualityProgressStage.idle;
       });
     } on TimeoutException {
+      await _discardUpload();
       _showConditionError('Condition assessment timed out. Please try again.');
     } on http.ClientException {
+      await _discardUpload();
       _showConditionError('Could not reach the condition assessment service.');
     } catch (_) {
+      await _discardUpload();
       _showConditionError('Could not assess this leaf condition.');
     } finally {
       if (mounted) {
@@ -248,26 +354,33 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
     }
   }
 
-  Future<Map<String, dynamic>> _postSingleImage({
-    required String endpoint,
-    required QualitySelectedImage image,
+  Future<Map<String, dynamic>> _postUploadStage(
+    String stage, {
     required Duration timeout,
   }) async {
-    final uri = Uri.parse('${_apiBaseUrl()}$endpoint');
-    final request = http.MultipartRequest('POST', uri)
-      ..files.add(
-        http.MultipartFile.fromBytes(
-          'image',
-          image.bytes,
-          filename: image.file.name.isEmpty
-              ? 'quality.leaf-image.jpg'
-              : image.file.name,
-        ),
-      );
+    final uploadId = _qualityUploadId;
+    if (uploadId == null) {
+      throw StateError('No active quality upload');
+    }
+    final response = await http
+        .post(ApiConfig.endpoint('quality/uploads/$uploadId/$stage'))
+        .timeout(timeout);
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
 
-    final response = await request.send().timeout(timeout);
-    final responseBody = await response.stream.bytesToString();
-    return jsonDecode(responseBody) as Map<String, dynamic>;
+  Future<void> _discardUpload() async {
+    final uploadId = _qualityUploadId;
+    _qualityUploadId = null;
+    if (uploadId == null) {
+      return;
+    }
+    try {
+      await http
+          .delete(ApiConfig.endpoint('quality/uploads/$uploadId'))
+          .timeout(const Duration(seconds: 8));
+    } catch (_) {
+      // The backend also expires abandoned uploads automatically.
+    }
   }
 
   void _removeImage(int index) {
@@ -280,14 +393,36 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
       _validationResult = null;
       _plantResult = null;
       _conditionResult = null;
-      _validating = _selectedImages.isNotEmpty;
+      _uploadingImages = _selectedImages.isNotEmpty;
+      _validating = false;
       _identifyingPlant = false;
       _assessingCondition = false;
+      _progressStage = _selectedImages.isEmpty
+          ? _QualityProgressStage.idle
+          : _QualityProgressStage.uploading;
     });
 
     if (_selectedImages.isNotEmpty) {
-      _validateImages();
+      _uploadImages();
     }
+  }
+
+  void _showUploadError(String message) {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _uploadingImages = false;
+      _validationResult = QualityValidationResult.failure(
+        reason: 'UPLOAD_FAILED',
+      );
+      _plantResult = null;
+      _conditionResult = null;
+      _progressStage = _QualityProgressStage.idle;
+    });
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _showValidationError(String message) {
@@ -303,6 +438,7 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
       _identifyingPlant = false;
       _conditionResult = null;
       _assessingCondition = false;
+      _progressStage = _QualityProgressStage.idle;
     });
 
     ScaffoldMessenger.of(
@@ -329,6 +465,7 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
       _plantResult = QualityPlantResult.failure(reason: 'MODEL_NOT_AVAILABLE');
       _conditionResult = null;
       _assessingCondition = false;
+      _progressStage = _QualityProgressStage.idle;
     });
 
     ScaffoldMessenger.of(
@@ -345,19 +482,12 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
       _conditionResult = QualityConditionResult.failure(
         reason: 'MODEL_NOT_AVAILABLE',
       );
+      _progressStage = _QualityProgressStage.idle;
     });
 
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  String _apiBaseUrl() {
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:5000';
-    }
-
-    return 'http://127.0.0.1:5000';
   }
 
   @override
@@ -372,12 +502,21 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
             const SizedBox(height: 22),
             _ImagePickerPanel(
               selectedImages: _selectedImages,
-              busy: _validating || _identifyingPlant || _assessingCondition,
+              busy:
+                  _preparingImages ||
+                  _uploadingImages ||
+                  _validating ||
+                  _identifyingPlant ||
+                  _assessingCondition,
               maxImages: _maxImages,
               onCameraPressed: () => _pickImage(ImageSource.camera),
               onGalleryPressed: _pickDeviceImages,
               onRemoveImage: _removeImage,
             ),
+            if (_progressStage != _QualityProgressStage.idle) ...[
+              const SizedBox(height: 18),
+              _QualityProgressPanel(stage: _progressStage),
+            ],
             if (_validationResult?.valid == false) ...[
               const SizedBox(height: 18),
               _ValidationPanel(result: _validationResult),
@@ -415,6 +554,141 @@ class _QualityAssessmentPageState extends State<QualityAssessmentPage> {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _QualityProgressPanel extends StatelessWidget {
+  const _QualityProgressPanel({required this.stage});
+
+  final _QualityProgressStage stage;
+
+  static const _labels = <String>[
+    'Optimize',
+    'Upload',
+    'Validate',
+    'Identify',
+    'Assess',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final (title, subtitle, progress, activeStep) = switch (stage) {
+      _QualityProgressStage.preparing => (
+        'Optimizing image',
+        'Converting to a smaller, compatible JPEG.',
+        0.1,
+        0,
+      ),
+      _QualityProgressStage.uploading => (
+        'Uploading image',
+        'Sending the optimized image to the secure temporary workspace.',
+        0.25,
+        1,
+      ),
+      _QualityProgressStage.validating => (
+        'Validating image',
+        'Checking image format, clarity, and leaf visibility.',
+        0.45,
+        2,
+      ),
+      _QualityProgressStage.identifying => (
+        'Identifying plant',
+        'Comparing the leaf with the supported plant species.',
+        0.68,
+        3,
+      ),
+      _QualityProgressStage.assessing => (
+        'Assessing condition',
+        'Checking the accepted leaf for health and condition.',
+        0.88,
+        4,
+      ),
+      _QualityProgressStage.complete => (
+        'Assessment complete',
+        'All processing stages finished.',
+        1.0,
+        5,
+      ),
+      _ => ('', '', 0.0, 0),
+    };
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              if (stage == _QualityProgressStage.complete)
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: AppColors.primary,
+                  size: 22,
+                )
+              else
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2.4),
+                ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppColors.text,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            subtitle,
+            style: const TextStyle(
+              color: AppColors.muted,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: LinearProgressIndicator(
+              minHeight: 7,
+              value: progress,
+              backgroundColor: const Color(0xFFE8F5EC),
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: List.generate(_labels.length, (index) {
+              final completed = index < activeStep;
+              final active = index == activeStep && activeStep < _labels.length;
+              return Expanded(
+                child: Text(
+                  _labels[index],
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: completed || active
+                        ? AppColors.primary
+                        : AppColors.muted,
+                    fontSize: 11,
+                    fontWeight: active ? FontWeight.w900 : FontWeight.w700,
+                  ),
+                ),
+              );
+            }),
+          ),
+        ],
       ),
     );
   }
@@ -502,6 +776,10 @@ class _PlantIdentificationPanel extends StatelessWidget {
         return 'Plant model is unavailable';
       case 'MODEL_RUNTIME_MISSING':
         return 'Plant model runtime is missing';
+      case 'MODEL_LOAD_FAILED':
+        return 'Plant model could not start';
+      case 'UPLOAD_EXPIRED':
+        return 'Temporary upload expired';
       default:
         return 'Plant identification stopped';
     }
@@ -523,6 +801,10 @@ class _PlantIdentificationPanel extends StatelessWidget {
         return 'Train or configure the EfficientNetV2-B0 model before real use.';
       case 'MODEL_RUNTIME_MISSING':
         return 'Install TensorFlow in the backend environment before real model inference.';
+      case 'MODEL_LOAD_FAILED':
+        return 'The backend could not load the configured plant model. Please try again after the server is checked.';
+      case 'UPLOAD_EXPIRED':
+        return 'The temporary upload expired. Upload the image again.';
       default:
         return 'Please try another image.';
     }
@@ -941,215 +1223,6 @@ class _PickerButton extends StatelessWidget {
   }
 }
 
-class _ManualCharacteristicsPanel extends StatelessWidget {
-  const _ManualCharacteristicsPanel({
-    required this.value,
-    required this.enabled,
-    required this.onChanged,
-  });
-
-  final QualityManualInputs value;
-  final bool enabled;
-  final ValueChanged<QualityManualInputs> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return ExpansionTile(
-      tilePadding: const EdgeInsets.symmetric(horizontal: 14),
-      childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-      shape: RoundedRectangleBorder(
-        side: const BorderSide(color: AppColors.border),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      collapsedShape: RoundedRectangleBorder(
-        side: const BorderSide(color: AppColors.border),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      backgroundColor: Colors.white,
-      collapsedBackgroundColor: Colors.white,
-      title: const Text(
-        'Optional leaf characteristics',
-        style: TextStyle(color: AppColors.text, fontWeight: FontWeight.w900),
-      ),
-      subtitle: const Text(
-        'Used only as maturity-stage support.',
-        style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w700),
-      ),
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _ManualNumberField(
-                label: 'Length cm',
-                enabled: enabled,
-                onChanged: (leafLengthCm) =>
-                    onChanged(value.copyWith(leafLengthCm: leafLengthCm)),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _ManualNumberField(
-                label: 'Width cm',
-                enabled: enabled,
-                onChanged: (leafWidthCm) =>
-                    onChanged(value.copyWith(leafWidthCm: leafWidthCm)),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        _ManualOptionGrid(enabled: enabled, value: value, onChanged: onChanged),
-      ],
-    );
-  }
-}
-
-class _ManualNumberField extends StatelessWidget {
-  const _ManualNumberField({
-    required this.label,
-    required this.enabled,
-    required this.onChanged,
-  });
-
-  final String label;
-  final bool enabled;
-  final ValueChanged<double?> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      enabled: enabled,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(fontWeight: FontWeight.w700),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        isDense: true,
-      ),
-      onChanged: (value) => onChanged(double.tryParse(value.trim())),
-    );
-  }
-}
-
-class _ManualOptionGrid extends StatelessWidget {
-  const _ManualOptionGrid({
-    required this.enabled,
-    required this.value,
-    required this.onChanged,
-  });
-
-  final bool enabled;
-  final QualityManualInputs value;
-  final ValueChanged<QualityManualInputs> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        _ManualDropdown(
-          label: 'Texture',
-          value: value.leafTexture,
-          enabled: enabled,
-          items: const ['Unknown', 'Smooth', 'Slightly_Rough', 'Rough'],
-          onChanged: (leafTexture) =>
-              onChanged(value.copyWith(leafTexture: leafTexture)),
-        ),
-        _ManualDropdown(
-          label: 'Edge',
-          value: value.leafEdge,
-          enabled: enabled,
-          items: const ['Unknown', 'Smooth', 'Serrated', 'Irregular'],
-          onChanged: (leafEdge) =>
-              onChanged(value.copyWith(leafEdge: leafEdge)),
-        ),
-        _ManualDropdown(
-          label: 'Spots',
-          value: value.surfaceSpots,
-          enabled: enabled,
-          items: const ['Unknown', 'None', 'Few', 'Many'],
-          onChanged: (surfaceSpots) =>
-              onChanged(value.copyWith(surfaceSpots: surfaceSpots)),
-        ),
-        _ManualDropdown(
-          label: 'Holes',
-          value: value.holes,
-          enabled: enabled,
-          items: const ['Unknown', 'None', 'Few', 'Many'],
-          onChanged: (holes) => onChanged(value.copyWith(holes: holes)),
-        ),
-        _ManualDropdown(
-          label: 'Discoloration',
-          value: value.discoloration,
-          enabled: enabled,
-          items: const [
-            'Unknown',
-            'None',
-            'Yellow',
-            'Brown',
-            'Purple',
-            'Mixed',
-          ],
-          onChanged: (discoloration) =>
-              onChanged(value.copyWith(discoloration: discoloration)),
-        ),
-      ],
-    );
-  }
-}
-
-class _ManualDropdown extends StatelessWidget {
-  const _ManualDropdown({
-    required this.label,
-    required this.value,
-    required this.enabled,
-    required this.items,
-    required this.onChanged,
-  });
-
-  final String label;
-  final String value;
-  final bool enabled;
-  final List<String> items;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 160,
-      child: DropdownButtonFormField<String>(
-        value: value,
-        isExpanded: true,
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: const TextStyle(fontWeight: FontWeight.w700),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          isDense: true,
-        ),
-        items: items
-            .map(
-              (item) => DropdownMenuItem(
-                value: item,
-                child: Text(
-                  item.replaceAll('_', ' '),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            )
-            .toList(),
-        onChanged: enabled
-            ? (selected) {
-                if (selected != null) {
-                  onChanged(selected);
-                }
-              }
-            : null,
-      ),
-    );
-  }
-}
-
 class _ValidationPanel extends StatelessWidget {
   const _ValidationPanel({required this.result});
 
@@ -1162,6 +1235,7 @@ class _ValidationPanel extends StatelessWidget {
         icon: const Icon(Icons.error_outline_rounded, color: AppColors.danger),
         title: _reasonTitle(result!.reason),
         subtitle: _reasonHelp(result!.reason),
+        result: result,
       );
     }
 
@@ -1178,6 +1252,8 @@ class _ValidationPanel extends StatelessWidget {
         return 'Image is too dark';
       case 'IMAGE_OVEREXPOSED':
         return 'Image is overexposed';
+      case 'UPLOAD_FAILED':
+        return 'Image upload failed';
       default:
         return 'Image could not be validated';
     }
@@ -1193,6 +1269,8 @@ class _ValidationPanel extends StatelessWidget {
         return 'Move the leaf into brighter, even lighting.';
       case 'IMAGE_OVEREXPOSED':
         return 'Avoid harsh light or flash glare on the leaf surface.';
+      case 'UPLOAD_FAILED':
+        return 'Check your internet connection and try the upload again.';
       default:
         return 'Choose a valid image file and try again.';
     }
@@ -2841,79 +2919,6 @@ class QualityStructuredFeatureInfluence {
   final String effect;
   final String description;
 }
-
-class QualityManualInputs {
-  const QualityManualInputs({
-    this.leafLengthCm,
-    this.leafWidthCm,
-    this.leafTexture = 'Unknown',
-    this.leafEdge = 'Unknown',
-    this.surfaceSpots = 'Unknown',
-    this.holes = 'Unknown',
-    this.discoloration = 'Unknown',
-  });
-
-  final double? leafLengthCm;
-  final double? leafWidthCm;
-  final String leafTexture;
-  final String leafEdge;
-  final String surfaceSpots;
-  final String holes;
-  final String discoloration;
-
-  bool get hasValues => toJson().isNotEmpty;
-
-  Map<String, dynamic> toJson() {
-    final json = <String, dynamic>{};
-    if (leafLengthCm != null) {
-      json['leaf_length_cm'] = leafLengthCm;
-    }
-    if (leafWidthCm != null) {
-      json['leaf_width_cm'] = leafWidthCm;
-    }
-    _addKnown(json, 'leaf_texture', leafTexture);
-    _addKnown(json, 'leaf_edge', leafEdge);
-    _addKnown(json, 'surface_spots', surfaceSpots);
-    _addKnown(json, 'holes', holes);
-    _addKnown(json, 'discoloration', discoloration);
-    return json;
-  }
-
-  QualityManualInputs copyWith({
-    Object? leafLengthCm = _manualUnset,
-    Object? leafWidthCm = _manualUnset,
-    String? leafTexture,
-    String? leafEdge,
-    String? surfaceSpots,
-    String? holes,
-    String? discoloration,
-  }) {
-    final nextLeafLengthCm = leafLengthCm == _manualUnset
-        ? this.leafLengthCm
-        : leafLengthCm as double?;
-    final nextLeafWidthCm = leafWidthCm == _manualUnset
-        ? this.leafWidthCm
-        : leafWidthCm as double?;
-
-    return QualityManualInputs(
-      leafLengthCm: nextLeafLengthCm,
-      leafWidthCm: nextLeafWidthCm,
-      leafTexture: leafTexture ?? this.leafTexture,
-      leafEdge: leafEdge ?? this.leafEdge,
-      surfaceSpots: surfaceSpots ?? this.surfaceSpots,
-      holes: holes ?? this.holes,
-      discoloration: discoloration ?? this.discoloration,
-    );
-  }
-
-  static void _addKnown(Map<String, dynamic> json, String key, String value) {
-    if (value.trim().toLowerCase() != 'unknown') {
-      json[key] = value;
-    }
-  }
-}
-
-const Object _manualUnset = Object();
 
 class QualitySelectedImage {
   const QualitySelectedImage({required this.file, required this.bytes});

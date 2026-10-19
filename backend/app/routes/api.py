@@ -8,14 +8,20 @@ import sys
 from math import isfinite
 from pathlib import Path
 
-from flask import Blueprint, jsonify, request, send_file
+from flask import Blueprint, current_app, jsonify, request, send_file
 from werkzeug.datastructures import FileStorage
 
-from app.services.predictor import ModelNotReadyError, model_status, predict_herb
+from app.services.predictor import (
+    ModelNotReadyError,
+    model_status,
+    predict_herb,
+    preload_model as preload_prediction_model,
+)
 from app.services.organ_detector import (
     OrganDetectorNotReadyError,
     detect_organs,
     detector_status,
+    preload_model as preload_organ_model,
 )
 from app.services.health_assessor import assess_plant_health
 from app.services.expert_verification import (
@@ -24,6 +30,13 @@ from app.services.expert_verification import (
     image_path,
     list_pending_requests,
     verify_request,
+)
+from app.services.quality_upload_store import (
+    create_upload,
+    discard_upload,
+    get_plant_result,
+    get_upload,
+    set_plant_result,
 )
 bp = Blueprint('api', __name__)
 from flask import Blueprint, jsonify, request
@@ -120,13 +133,58 @@ quality_gradcam = _load_quality_service(
     "quality_gradcam",
     "quality.gradcam.py",
 )
+_model_preload_results = {}
+
+
+def preload_backend_models(include_all=False):
+    """Warm inference models once and keep them cached for Waitress threads."""
+    loaders = {
+        "quality_plant": quality_plant_identifier.preload_model,
+        "quality_condition": quality_condition_classifier.preload_model,
+        "quality_maturity": quality_maturity_classifier.preload_model,
+    }
+    if include_all:
+        loaders.update({
+            "prediction_plant": lambda: preload_prediction_model("plant"),
+            "prediction_seed": lambda: preload_prediction_model("seed"),
+            "prediction_flower": lambda: preload_prediction_model("flower"),
+            "organ_detector": preload_organ_model,
+        })
+    global _model_preload_results
+    results = {}
+    for name, loader in loaders.items():
+        try:
+            results[name] = "loaded" if loader() else "unavailable"
+        except Exception as exc:  # Keep other endpoints available if one model fails.
+            results[name] = f"failed: {exc}"
+    _model_preload_results = {
+        name: {
+            "loaded": result == "loaded",
+            "status": result.split(":", 1)[0],
+        }
+        for name, result in results.items()
+    }
+    return results
+
+
 @bp.route('/health', methods=['GET'])
 def health():
     status = model_status()
+    quality_ready = (
+        all(item["loaded"] for item in _model_preload_results.values())
+        if _model_preload_results
+        else None
+    )
     return jsonify({
-        "status": "healthy" if status["ready"] else "degraded",
+        "status": "healthy"
+        if status["ready"] and quality_ready is not False
+        else "degraded",
         "message": "Backend is working",
         "model": status,
+        "quality_models": {
+            "ready": quality_ready,
+            "models": _model_preload_results,
+        },
         "organ_detector": detector_status(),
     })
 
@@ -344,6 +402,148 @@ def validate_quality_image():
     if result.get("reason") == "INVALID_IMAGE":
         status_code = 400
 
+    return jsonify(result), status_code
+
+
+def _combined_validation_result(image_bytes_list):
+    results = [
+        quality_image_validator.validate_image_bytes(image_bytes)
+        for image_bytes in image_bytes_list
+    ]
+    failed = next((result for result in results if not result.get("valid")), None)
+    if failed is not None:
+        return {**failed, "image_count": len(results)}
+
+    blur_scores = [result["blur_score"] for result in results if "blur_score" in result]
+    brightness_values = [
+        result["brightness"] for result in results if "brightness" in result
+    ]
+    return {
+        "valid": True,
+        "resolution": results[0].get("resolution") if results else None,
+        "blur_score": round(sum(blur_scores) / len(blur_scores), 2)
+        if blur_scores else None,
+        "brightness": round(sum(brightness_values) / len(brightness_values), 2)
+        if brightness_values else None,
+        "warnings": [],
+        "image_count": len(results),
+    }
+
+
+def _stored_images_or_response(upload_id):
+    images = get_upload(upload_id)
+    if images is None:
+        return None, (
+            jsonify({
+                "accepted": False,
+                "reason": "UPLOAD_EXPIRED",
+                "error": "The temporary upload expired. Upload the image again.",
+            }),
+            404,
+        )
+    return images, None
+
+
+@bp.route('/quality/uploads', methods=['POST'])
+def create_quality_upload():
+    image_files = request.files.getlist('image')
+    if not image_files:
+        return jsonify({"accepted": False, "reason": "INVALID_IMAGE"}), 400
+    if len(image_files) > 3:
+        return jsonify({"accepted": False, "reason": "TOO_MANY_IMAGES"}), 400
+
+    images = [image_file.read() for image_file in image_files]
+    if any(not image_bytes for image_bytes in images):
+        return jsonify({"accepted": False, "reason": "INVALID_IMAGE"}), 400
+
+    upload_id = create_upload(images)
+    return jsonify({"upload_id": upload_id, "image_count": len(images)}), 201
+
+
+@bp.route('/quality/uploads/<upload_id>', methods=['DELETE'])
+def delete_quality_upload(upload_id):
+    discard_upload(upload_id)
+    return '', 204
+
+
+@bp.route('/quality/uploads/<upload_id>/validate', methods=['POST'])
+def validate_quality_upload(upload_id):
+    images, error_response = _stored_images_or_response(upload_id)
+    if error_response is not None:
+        return error_response
+
+    result = _combined_validation_result(images)
+    if not result.get("valid"):
+        discard_upload(upload_id)
+    status_code = 200 if result.get("valid") else 422
+    if result.get("reason") == "INVALID_IMAGE":
+        status_code = 400
+    return jsonify(result), status_code
+
+
+@bp.route('/quality/uploads/<upload_id>/identify', methods=['POST'])
+def identify_quality_upload(upload_id):
+    images, error_response = _stored_images_or_response(upload_id)
+    if error_response is not None:
+        return error_response
+
+    try:
+        result = quality_plant_identifier.identify_plant_from_multiple_images(images)
+    except Exception:
+        current_app.logger.exception("Quality plant model inference failed")
+        discard_upload(upload_id)
+        return jsonify({
+            "accepted": False,
+            "reason": "MODEL_LOAD_FAILED",
+            "error": "The plant model could not be loaded.",
+        }), 503
+
+    if not result.get("accepted"):
+        discard_upload(upload_id)
+    else:
+        set_plant_result(upload_id, result)
+    status_code = 200 if result.get("accepted") else 422
+    if result.get("reason") == "INVALID_IMAGE":
+        status_code = 400
+    return jsonify(result), status_code
+
+
+@bp.route('/quality/uploads/<upload_id>/assess', methods=['POST'])
+def assess_quality_upload(upload_id):
+    images, error_response = _stored_images_or_response(upload_id)
+    if error_response is not None:
+        return error_response
+
+    try:
+        plant_result = get_plant_result(upload_id)
+        if plant_result is None:
+            plant_result = quality_plant_identifier.identify_plant_from_multiple_images(
+                images
+            )
+        result = quality_condition_classifier.assess_condition_from_multiple_images(
+            image_bytes_list=images,
+            plant_result=plant_result,
+            disease_lookup=quality_disease_lookup,
+            maturity_classifier=quality_maturity_classifier,
+            maturity_lookup=quality_maturity_lookup,
+            maturity_decision=quality_maturity_decision,
+            manual_support_service=quality_manual_maturity_support,
+            gradcam_service=quality_gradcam,
+            manual_inputs={},
+        )
+    except Exception:
+        current_app.logger.exception("Quality condition model inference failed")
+        return jsonify({
+            "accepted": False,
+            "reason": "MODEL_LOAD_FAILED",
+            "error": "The condition model could not be loaded.",
+        }), 503
+    finally:
+        discard_upload(upload_id)
+
+    status_code = 200 if result.get("accepted") else 422
+    if result.get("reason") == "INVALID_IMAGE":
+        status_code = 400
     return jsonify(result), status_code
 
 @bp.route('/quality/identify-plant', methods=['POST'])

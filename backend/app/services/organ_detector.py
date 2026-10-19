@@ -1,14 +1,11 @@
 from pathlib import Path
-
-try:
-    from ultralytics import YOLO
-except ImportError:
-    YOLO = None
+from importlib.util import find_spec
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
 MODEL_PATH = BACKEND_DIR / "ml" / "exports" / "yolo_organ" / "best.pt"
 ALLOWED_CLASSES = {"leaf", "seed", "flower"}
 _model = None
+_yolo_class = None
 
 
 class OrganDetectorNotReadyError(RuntimeError):
@@ -17,16 +14,16 @@ class OrganDetectorNotReadyError(RuntimeError):
 
 def detector_status():
     return {
-        "ready": YOLO is not None and MODEL_PATH.exists(),
-        "ultralytics_installed": YOLO is not None,
+        "ready": find_spec("ultralytics") is not None and MODEL_PATH.exists(),
+        "ultralytics_installed": find_spec("ultralytics") is not None,
         "model_path": str(MODEL_PATH.relative_to(BACKEND_DIR)),
         "model_exists": MODEL_PATH.exists(),
     }
 
 
 def _load_model():
-    global _model
-    if YOLO is None:
+    global _model, _yolo_class
+    if find_spec("ultralytics") is None:
         raise OrganDetectorNotReadyError(
             "Ultralytics is not installed. Install backend/ml/requirements.txt."
         )
@@ -36,8 +33,22 @@ def _load_model():
             "backend/ml/exports/yolo_organ/."
         )
     if _model is None:
-        _model = YOLO(str(MODEL_PATH))
+        if _yolo_class is None:
+            try:
+                from ultralytics import YOLO
+            except (ImportError, OSError) as exc:
+                raise OrganDetectorNotReadyError(
+                    "Ultralytics could not start. Check available memory and its runtime dependencies."
+                ) from exc
+            _yolo_class = YOLO
+        _model = _yolo_class(str(MODEL_PATH))
     return _model
+
+
+def preload_model():
+    """Load and retain the YOLO detector in this server process."""
+    _load_model()
+    return True
 
 
 def detect_organs(uploaded_file, confidence=0.35):
